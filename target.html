@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>亚克力喜欢可达鸭吗？</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: 'Arial', sans-serif;
+            background-color: #f8f9fa;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            text-align: center;
+        }
+        .container {
+            max-width: 600px;
+            padding: 40px;
+            background-color: white;
+            border-radius: 10px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+            margin: 20px;
+        }
+        h1 {
+            font-size: 2.5rem;
+            color: #e74c3c;
+            margin-bottom: 50px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.1);
+        }
+        .buttons {
+            display: flex;
+            justify-content: center;
+            gap: 30px;
+            margin-bottom: 30px;
+        }
+        .button {
+            padding: 15px 30px;
+            border: none;
+            border-radius: 5px;
+            font-size: 1.2rem;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        .like-button {
+            background-color: #e74c3c;
+            color: white;
+        }
+        .dislike-button {
+            background-color: #95a5a6;
+            color: white;
+        }
+        .like-button:hover {
+            background-color: #c0392b;
+            transform: scale(1.05);
+        }
+        .dislike-button:hover {
+            background-color: #7f8c8d;
+            transform: scale(1.05);
+        }
+        .like-button.large {
+            transform: scale(1.2);
+        }
+        .back-link {
+            display: inline-block;
+            margin-top: 30px;
+            padding: 10px 20px;
+            background-color: #3498db;
+            color: white;
+            text-decoration: none;
+            border-radius: 5px;
+            transition: background-color 0.3s;
+        }
+        .back-link:hover {
+            background-color: #2980b9;
+        }
+        .popup {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background-color: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.2);
+            z-index: 1000;
+            text-align: center;
+        }
+        .popup-content {
+            font-size: 1.2rem;
+            color: #333;
+            margin-bottom: 20px;
+        }
+        .popup-button {
+            padding: 10px 20px;
+            background-color: #3498db;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>亚克力喜欢可达鸭吗？</h1>
+        
+        <div class="buttons">
+            <button class="button like-button" onclick="showLikePopup()">喜欢</button>
+            <button class="button dislike-button" onclick="handleDislike()">不喜欢</button>
+        </div>
+        
+        <a href="heart_popups.html" class="back-link">返回心形弹窗</a>
+    </div>
+    
+    <script>
+        function showLikePopup() {
+            // 创建弹窗
+            const popup = document.createElement('div');
+            popup.className = 'popup';
+            popup.innerHTML = `
+                <div class="popup-content">可达鸭现在想你了，快点来找可达鸭玩</div>
+                <button class="popup-button" onclick="this.parentElement.remove()">关闭</button>
+            `;
+            document.body.appendChild(popup);
+        }
+        
+        function handleDislike() {
+            // 隐藏不喜欢按钮
+            const dislikeButton = document.querySelector('.dislike-button');
+            dislikeButton.style.display = 'none';
+            
+            // 放大喜欢按钮
+            const likeButton = document.querySelector('.like-button');
+            likeButton.classList.add('large');
+        }
+    </script>
+</body>
+</html>

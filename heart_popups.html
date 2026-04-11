@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>心形弹窗</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: Arial, sans-serif;
+        }
+        .popup {
+            position: fixed;
+            width: 200px;
+            height: 100px;
+            background-color: #ff6b6b;
+            border: 1px solid #ff4757;
+            border-radius: 5px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            z-index: 1000;
+        }
+        .link {
+            color: white;
+            text-decoration: none;
+            cursor: pointer;
+            font-size: 14px;
+            text-align: center;
+            font-weight: bold;
+        }
+        .link:hover {
+            text-decoration: underline;
+        }
+    </style>
+</head>
+<body>
+    <script>
+        // 心形坐标计算函数
+        function heartPoint(t, scale = 30) {
+            const x = 16 * Math.sin(t) ** 3;
+            const y = 13 * Math.cos(t) - 5 * Math.cos(2*t) - 2 * Math.cos(3*t) - Math.cos(4*t);
+            return { x: Math.floor(x * scale), y: Math.floor(-y * scale) };
+        }
+
+        // 生成心形上的点
+        function generateHeartPoints() {
+            const points = [];
+            for (let t = 0; t < 360; t += 5) {
+                const angle = t * Math.PI / 180;
+                const point = heartPoint(angle);
+                // 偏移量使心形居中
+                points.push({ x: point.x + window.innerWidth / 2, y: point.y + window.innerHeight / 2 });
+            }
+            return points;
+        }
+
+        // 创建弹窗
+        function createPopup(x, y, index) {
+            const popup = document.createElement('div');
+            popup.className = 'popup';
+            popup.style.left = (x - 100) + 'px';
+            popup.style.top = (y - 50) + 'px';
+            
+            const link = document.createElement('a');
+            link.className = 'link';
+            link.href = 'target.html';
+            link.target = '_blank';
+            link.textContent = '可达鸭喜欢亚克力';
+            
+            popup.appendChild(link);
+            document.body.appendChild(popup);
+        }
+
+        // 主函数
+        function main() {
+            const points = generateHeartPoints();
+            points.forEach((point, index) => {
+                setTimeout(() => {
+                    createPopup(point.x, point.y, index);
+                }, index * 100);
+            });
+        }
+
+        // 页面加载完成后执行
+        window.onload = main;
+    </script>
+</body>
+</html>
