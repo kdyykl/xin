@@ -2,7 +2,7 @@
 <html lang="zh-CN">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, user-scalable=yes">
     <title>💗 亚克力，你听到了吗？</title>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
@@ -253,6 +253,20 @@
             animation: fadeIn 1s ease 1.3s both;
         }
         .back-link:hover { opacity: 1; }
+
+        /* 移动端适配 */
+        @media (max-width: 600px) {
+            .card { padding: 35px 20px !important; border-radius: 24px !important; }
+            h1 { font-size: 1.5rem !important; }
+            .duck-emoji { font-size: 3rem !important; }
+            .subtitle { font-size: 0.95rem !important; }
+            .btn-group { gap: 12px !important; }
+            .btn { min-width: 110px !important; padding: 13px 24px !important; font-size: 1rem !important; }
+            .popup-card { padding: 30px 20px !important; }
+            .popup-title { font-size: 1.2rem !important; }
+            .popup-text { font-size: 0.95rem !important; }
+            .popup-emoji { font-size: 3rem !important; }
+        }
     </style>
 </head>
 <body>
@@ -334,12 +348,7 @@
             document.getElementById('dislikeBtn').style.pointerEvents = 'none';
             animateProgress(100);
             launchConfetti();
-            const texts = [
-                '可达鸭现在就想来找你玩<br>快快快我们一起去吃好吃的！',
-                '啊啊啊啊好开心！<br>今天是最幸福的一天！',
-                '鸭鸭决定请你吃一整周的冰淇淋！🍨'
-            ];
-            document.getElementById('popupText').innerHTML = texts[Math.floor(Math.random() * texts.length)];
+            document.getElementById('popupText').textContent = '我也喜欢你 💗';
             document.getElementById('likeOverlay').classList.add('show');
         }
 

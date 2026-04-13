@@ -2,7 +2,7 @@
 <html lang="zh-CN">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, user-scalable=yes">
     <title>🦆 来自可达鸭的心动信号</title>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
@@ -166,6 +166,19 @@
         @keyframes sparkleAnim {
             0%   { transform: scale(1); opacity: 1; }
             100% { transform: scale(0); opacity: 0; }
+        }
+
+        /* 移动端适配 */
+        @media (max-width: 600px) {
+            .main-text h1 { font-size: 1.5rem !important; }
+            .main-text p { font-size: 0.95rem !important; }
+            .heart { width: 80px; height: 80px; }
+            .heart::before, .heart::after { width: 80px; height: 80px; }
+            .heart::before { top: -40px !important; }
+            .heart::after { left: 40px !important; }
+            .btn-enter { padding: 13px 36px !important; font-size: 1rem !important; }
+            .love-phrases { margin-top: 20px !important; }
+            .phrase { font-size: 1rem !important; }
         }
     </style>
 </head>

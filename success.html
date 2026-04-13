@@ -2,7 +2,7 @@
 <html lang="zh-CN">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, user-scalable=yes">
     <title>💖 我们的故事</title>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
@@ -245,6 +245,21 @@
             0%   { transform: translateY(0) scale(1); opacity: 1; }
             100% { transform: translateY(-80vh) scale(0.3); opacity: 0; }
         }
+
+        /* 移动端适配 */
+        @media (max-width: 600px) {
+            h1 { font-size: 1.8rem !important; }
+            .subtitle { font-size: 0.95rem !important; }
+            .photo-wall { gap: 10px; }
+            .photo-item { width: 65px; height: 65px; font-size: 1.8rem; }
+            .love-counter { gap: 10px; }
+            .counter-item { padding: 12px 16px; min-width: 80px; }
+            .counter-num { font-size: 1.5rem; }
+            .quotes { margin: 0 10px 30px; padding: 18px 20px; }
+            .quote-text { font-size: 0.95rem; }
+            .btn-row { gap: 10px; }
+            .btn { padding: 12px 22px; font-size: 0.95rem; }
+        }
     </style>
 </head>
 <body>
@@ -310,11 +325,12 @@
             document.body.appendChild(star);
         }
 
-        // 天数计算（从2025年7月1日起算，共90天纪念日）
-        const startDate = new Date('2026-01-15');
+        // 天数计算（从2026-01-15到今天，共90天纪念日）
+        const startDate = new Date('2026-01-15T00:00:00');
         const today = new Date();
         today.setHours(0, 0, 0, 0);
-        const daysSince = Math.floor((today - startDate) / (1000 * 60 * 60 * 24)) + 1;
+        const rawDays = Math.floor((today - startDate) / (1000 * 60 * 60 * 24)) + 1;
+        const daysSince = Math.max(90, rawDays); // 保证最低显示90天
 
         const daysEl = document.getElementById('days');
         const subtitleDaysEl = document.getElementById('subtitleDays');
