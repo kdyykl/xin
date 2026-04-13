@@ -3,140 +3,374 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>亚克力喜欢可达鸭吗？</title>
+    <title>💗 亚克力，你听到了吗？</title>
     <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
         body {
-            margin: 0;
-            padding: 0;
-            font-family: 'Arial', sans-serif;
-            background-color: #f8f9fa;
+            min-height: 100vh;
+            background: linear-gradient(135deg, #fce4ec 0%, #f8bbd0 50%, #f48fb1 100%);
             display: flex;
             flex-direction: column;
             align-items: center;
             justify-content: center;
-            min-height: 100vh;
+            font-family: 'PingFang SC', 'Microsoft YaHei', sans-serif;
+            overflow: hidden;
+            position: relative;
+        }
+
+        /* 飘落花瓣 */
+        .petal {
+            position: fixed;
+            pointer-events: none;
+            top: -20px;
+            animation: petalFall linear infinite;
+            opacity: 0.8;
+        }
+        @keyframes petalFall {
+            0%   { transform: translateY(-20px) rotate(0deg) translateX(0); opacity: 0; }
+            10%  { opacity: 0.8; }
+            90%  { opacity: 0.8; }
+            100% { transform: translateY(110vh) rotate(720deg) translateX(100px); opacity: 0; }
+        }
+
+        /* 主卡片 */
+        .card {
+            background: rgba(255,255,255,0.92);
+            backdrop-filter: blur(20px);
+            border-radius: 30px;
+            padding: 50px 40px;
+            max-width: 520px;
+            width: 90%;
             text-align: center;
+            box-shadow: 0 20px 60px rgba(244, 143, 177, 0.4);
+            animation: cardAppear 0.8s cubic-bezier(0.34, 1.56, 0.64, 1) 0.3s both;
+            position: relative;
+            z-index: 10;
         }
-        .container {
-            max-width: 600px;
-            padding: 40px;
-            background-color: white;
-            border-radius: 10px;
-            box-shadow: 0 4px 20px rgba(0,0,0,0.1);
-            margin: 20px;
+        @keyframes cardAppear {
+            from { opacity: 0; transform: scale(0.8) translateY(40px); }
+            to   { opacity: 1; transform: scale(1) translateY(0); }
         }
+
+        .duck-emoji {
+            font-size: 4rem;
+            margin-bottom: 20px;
+            animation: duckBounce 1.5s ease-in-out infinite;
+            display: block;
+        }
+        @keyframes duckBounce {
+            0%, 100% { transform: translateY(0) rotate(-5deg); }
+            50%      { transform: translateY(-15px) rotate(5deg); }
+        }
+
         h1 {
-            font-size: 2.5rem;
-            color: #e74c3c;
-            margin-bottom: 50px;
-            text-shadow: 2px 2px 4px rgba(0,0,0,0.1);
+            font-size: 2rem;
+            color: #c2185b;
+            margin-bottom: 15px;
+            line-height: 1.5;
+            animation: fadeIn 1s ease 0.6s both;
         }
-        .buttons {
+        .subtitle {
+            color: #e91e8c;
+            font-size: 1.1rem;
+            margin-bottom: 40px;
+            animation: fadeIn 1s ease 0.8s both;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to   { opacity: 1; }
+        }
+
+        /* 进度条 */
+        .progress-bar {
+            background: #fce4ec;
+            border-radius: 50px;
+            height: 14px;
+            width: 100%;
+            margin-bottom: 8px;
+            overflow: hidden;
+            animation: fadeIn 1s ease 1s both;
+        }
+        .progress-fill {
+            height: 100%;
+            border-radius: 50px;
+            background: linear-gradient(90deg, #ff6b9d, #c44569);
+            width: 0%;
+            transition: width 1.2s cubic-bezier(0.4, 0, 0.2, 1);
+            box-shadow: 0 0 10px rgba(255,107,157,0.6);
+        }
+        .progress-labels {
             display: flex;
-            justify-content: center;
-            gap: 30px;
+            justify-content: space-between;
+            font-size: 0.85rem;
+            color: #999;
             margin-bottom: 30px;
+            animation: fadeIn 1s ease 1.1s both;
         }
-        .button {
-            padding: 15px 30px;
+
+        /* 按钮组 */
+        .btn-group {
+            display: flex;
+            gap: 20px;
+            justify-content: center;
+            flex-wrap: wrap;
+            animation: fadeIn 1s ease 1.2s both;
+        }
+        .btn {
+            padding: 16px 36px;
             border: none;
-            border-radius: 5px;
-            font-size: 1.2rem;
+            border-radius: 50px;
+            font-size: 1.1rem;
             font-weight: bold;
             cursor: pointer;
-            transition: all 0.3s ease;
+            transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            min-width: 130px;
         }
-        .like-button {
-            background-color: #e74c3c;
+        .btn-like {
+            background: linear-gradient(135deg, #ff6b9d, #c44569);
             color: white;
         }
-        .dislike-button {
-            background-color: #95a5a6;
-            color: white;
+        .btn-like:hover {
+            transform: scale(1.08) translateY(-3px);
+            box-shadow: 0 8px 30px rgba(255, 107, 157, 0.5);
         }
-        .like-button:hover {
-            background-color: #c0392b;
-            transform: scale(1.05);
+        .btn-dislike {
+            background: linear-gradient(135deg, #e0e0e0, #bdbdbd);
+            color: #888;
         }
-        .dislike-button:hover {
-            background-color: #7f8c8d;
-            transform: scale(1.05);
+        .btn-dislike:hover {
+            transform: scale(1.08) translateY(-3px);
+            box-shadow: 0 8px 30px rgba(0,0,0,0.15);
         }
-        .like-button.large {
-            transform: scale(1.2);
-        }
-        .back-link {
-            display: inline-block;
-            margin-top: 30px;
-            padding: 10px 20px;
-            background-color: #3498db;
-            color: white;
-            text-decoration: none;
-            border-radius: 5px;
-            transition: background-color 0.3s;
-        }
-        .back-link:hover {
-            background-color: #2980b9;
-        }
-        .popup {
+
+        /* 弹窗 */
+        .overlay {
             position: fixed;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            background-color: white;
-            padding: 30px;
-            border-radius: 10px;
-            box-shadow: 0 4px 20px rgba(0,0,0,0.2);
+            inset: 0;
+            background: rgba(0,0,0,0.6);
+            backdrop-filter: blur(8px);
+            display: flex;
+            align-items: center;
+            justify-content: center;
             z-index: 1000;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.4s;
+        }
+        .overlay.show {
+            opacity: 1;
+            pointer-events: all;
+        }
+        .popup-card {
+            background: white;
+            border-radius: 30px;
+            padding: 45px 35px;
+            max-width: 400px;
+            width: 85%;
             text-align: center;
+            transform: scale(0.7);
+            transition: transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+            box-shadow: 0 30px 80px rgba(0,0,0,0.3);
         }
-        .popup-content {
-            font-size: 1.2rem;
-            color: #333;
-            margin-bottom: 20px;
+        .overlay.show .popup-card {
+            transform: scale(1);
         }
-        .popup-button {
-            padding: 10px 20px;
-            background-color: #3498db;
+        .popup-emoji {
+            font-size: 4rem;
+            display: block;
+            margin-bottom: 15px;
+        }
+        .popup-title {
+            font-size: 1.5rem;
+            color: #c2185b;
+            margin-bottom: 12px;
+            font-weight: bold;
+        }
+        .popup-text {
+            color: #666;
+            font-size: 1rem;
+            line-height: 1.7;
+            margin-bottom: 30px;
+        }
+        .popup-btn {
+            padding: 14px 40px;
+            background: linear-gradient(135deg, #ff6b9d, #c44569);
             color: white;
             border: none;
-            border-radius: 5px;
+            border-radius: 50px;
+            font-size: 1rem;
+            font-weight: bold;
             cursor: pointer;
+            transition: transform 0.2s;
         }
+        .popup-btn:hover { transform: scale(1.05); }
+
+        /* 彩带 */
+        .confetti-container {
+            position: fixed;
+            inset: 0;
+            pointer-events: none;
+            z-index: 999;
+        }
+        .confetti {
+            position: absolute;
+            top: -10px;
+            animation: confettiFall linear forwards;
+        }
+        @keyframes confettiFall {
+            0%   { transform: translateY(0) rotate(0deg); opacity: 1; }
+            100% { transform: translateY(110vh) rotate(1080deg); opacity: 0; }
+        }
+
+        .back-link {
+            display: inline-block;
+            margin-top: 25px;
+            color: #e91e8c;
+            text-decoration: none;
+            font-size: 0.95rem;
+            opacity: 0.7;
+            transition: opacity 0.2s;
+            animation: fadeIn 1s ease 1.3s both;
+        }
+        .back-link:hover { opacity: 1; }
     </style>
 </head>
 <body>
-    <div class="container">
-        <h1>亚克力喜欢可达鸭吗？</h1>
-        
-        <div class="buttons">
-            <button class="button like-button" onclick="showLikePopup()">喜欢</button>
-            <button class="button dislike-button" onclick="handleDislike()">不喜欢</button>
+
+    <div class="card">
+        <span class="duck-emoji">🦆</span>
+        <h1>亚克力，<br>可达鸭有一个问题想问你</h1>
+        <p class="subtitle">请诚实地回答鸭鸭哦～</p>
+
+        <div class="progress-bar">
+            <div class="progress-fill" id="progressFill"></div>
         </div>
-        
-        <a href="heart_popups.html" class="back-link">返回心形弹窗</a>
+        <div class="progress-labels">
+            <span>0 票</span>
+            <span id="voteCount">等待你的回答...</span>
+            <span>100+ 票</span>
+        </div>
+
+        <div class="btn-group">
+            <button class="btn btn-like" onclick="handleLike()">💗 喜欢</button>
+            <button class="btn btn-dislike" id="dislikeBtn" onclick="handleDislike()">😢 不喜欢</button>
+        </div>
+
+        <a href="heart_popups.html" class="back-link">← 返回首页</a>
     </div>
-    
+
+    <!-- 弹窗 -->
+    <div class="overlay" id="likeOverlay">
+        <div class="popup-card">
+            <span class="popup-emoji">🎉</span>
+            <div class="popup-title">鸭鸭超开心的！！！</div>
+            <div class="popup-text" id="popupText">可达鸭现在就想来找你玩<br>快快快我们一起去吃好吃的！</div>
+            <button class="popup-btn" onclick="window.location.href='success.html'">💕 一起走吧</button>
+        </div>
+    </div>
+
+    <div class="overlay" id="dislikeOverlay">
+        <div class="popup-card">
+            <span class="popup-emoji">🥺</span>
+            <div class="popup-title">呜呜，鸭鸭不哭...</div>
+            <div class="popup-text">没关系！<br>鸭鸭会一直等你的，<br>总有一天你会发现我的好～</div>
+            <button class="popup-btn" onclick="closeOverlay()">🥺 鸭鸭加油</button>
+        </div>
+    </div>
+
+    <div class="confetti-container" id="confettiContainer"></div>
+
     <script>
-        function showLikePopup() {
-            // 创建弹窗
-            const popup = document.createElement('div');
-            popup.className = 'popup';
-            popup.innerHTML = `
-                <div class="popup-content">可达鸭现在想你了，快点来找可达鸭玩</div>
-                <button class="popup-button" onclick="this.parentElement.remove()">关闭</button>
+        // 花瓣飘落
+        const petalColors = ['#ffcdd2','#f8bbd0','#f48fb1','#ff80ab','#fce4ec','#ffffff'];
+        function createPetal() {
+            const p = document.createElement('div');
+            p.className = 'petal';
+            const size = Math.random() * 14 + 8;
+            const color = petalColors[Math.floor(Math.random() * petalColors.length)];
+            p.innerHTML = '🌸';
+            p.style.cssText = `
+                left: ${Math.random() * 100}vw;
+                font-size: ${size}px;
+                animation-duration: ${Math.random() * 5 + 5}s;
+                animation-delay: ${Math.random() * 3}s;
+                color: ${color};
             `;
-            document.body.appendChild(popup);
+            document.body.appendChild(p);
+            setTimeout(() => p.remove(), 12000);
         }
-        
+        setInterval(createPetal, 400);
+        for (let i = 0; i < 15; i++) setTimeout(createPetal, i * 300);
+
+        // 进度条动画（模拟数据）
+        let voted = false;
+        function animateProgress(target) {
+            const fill = document.getElementById('progressFill');
+            let current = 0;
+            const interval = setInterval(() => {
+                current += 1;
+                fill.style.width = Math.min(current, target) + '%';
+                document.getElementById('voteCount').textContent = Math.floor(current * 0.8 + 47) + ' 票';
+                if (current >= target) clearInterval(interval);
+            }, 20);
+        }
+        // 模拟缓慢增长
+        setTimeout(() => animateProgress(65), 1000);
+
+        function handleLike() {
+            if (voted) return;
+            voted = true;
+            document.getElementById('dislikeBtn').disabled = true;
+            document.getElementById('dislikeBtn').style.opacity = '0.4';
+            animateProgress(100);
+            launchConfetti();
+            const texts = [
+                '可达鸭现在就想来找你玩<br>快快快我们一起去吃好吃的！',
+                '啊啊啊啊好开心！<br>今天是最幸福的一天！',
+                '鸭鸭决定请你吃一整周的冰淇淋！🍨'
+            ];
+            document.getElementById('popupText').innerHTML = texts[Math.floor(Math.random() * texts.length)];
+            document.getElementById('likeOverlay').classList.add('show');
+        }
+
         function handleDislike() {
-            // 隐藏不喜欢按钮
-            const dislikeButton = document.querySelector('.dislike-button');
-            dislikeButton.style.display = 'none';
-            
-            // 放大喜欢按钮
-            const likeButton = document.querySelector('.like-button');
-            likeButton.classList.add('large');
+            if (voted) return;
+            voted = true;
+            document.getElementById('dislikeBtn').style.display = 'none';
+            const likeBtn = document.querySelector('.btn-like');
+            likeBtn.style.transform = 'scale(1.2)';
+            likeBtn.style.boxShadow = '0 8px 40px rgba(255,107,157,0.7)';
+            document.getElementById('dislikeOverlay').classList.add('show');
+        }
+
+        function closeOverlay() {
+            document.querySelectorAll('.overlay').forEach(o => o.classList.remove('show'));
+        }
+
+        // 彩带
+        function launchConfetti() {
+            const container = document.getElementById('confettiContainer');
+            const confettiColors = ['#ff6b9d','#c44569','#ffeb3b','#ff9800','#e91e8c','#4caf50','#2196f3','#fff'];
+            for (let i = 0; i < 80; i++) {
+                setTimeout(() => {
+                    const c = document.createElement('div');
+                    c.className = 'confetti';
+                    const size = Math.random() * 10 + 6;
+                    const color = confettiColors[Math.floor(Math.random() * confettiColors.length)];
+                    c.style.cssText = `
+                        left: ${Math.random() * 100}vw;
+                        width: ${size}px;
+                        height: ${size * 0.4}px;
+                        background: ${color};
+                        border-radius: ${Math.random() > 0.5 ? '50%' : '2px'};
+                        animation-duration: ${Math.random() * 2 + 2}s;
+                        box-shadow: 0 0 5px ${color};
+                    `;
+                    container.appendChild(c);
+                    setTimeout(() => c.remove(), 5000);
+                }, i * 30);
+            }
         }
     </script>
 </body>
