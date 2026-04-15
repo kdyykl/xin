@@ -297,7 +297,7 @@
 <body>
 
     <button class="music-control" id="musicBtn" onclick="toggleMusic()"></button>
-    <iframe id="neteasePlayer" frameborder="no" border="0" marginwidth="0" marginheight="0" width="0" height="0" src="//music.163.com/outchain/player?type=2&id=109628&auto=1&height=0"></iframe>
+    <audio id="bgMusic" loop preload="auto" src="https://music.163.com/song/media/outer/url?id=109628.mp3"></audio>
 
     <div class="card">
         <span class="duck-emoji">🦆</span>
@@ -334,30 +334,28 @@
     <div class="confetti-container" id="confettiContainer"></div>
 
     <script>
-        // 音乐
+        // 音乐（卢广仲 - 我爱你）
         const musicBtn = document.getElementById('musicBtn');
-        const neteasePlayer = document.getElementById('neteasePlayer');
+        const bgMusic = document.getElementById('bgMusic');
         let musicStarted = false;
         let isPaused = false;
 
         function toggleMusic() {
             if (!musicStarted) {
-                neteasePlayer.src = '//music.163.com/outchain/player?type=2&id=109628&auto=1&height=66';
+                bgMusic.play().catch(() => bgMusic.src = 'https://y.music.163.com/m/song?id=109628&appid=16073860&临沂=true');
                 musicStarted = true;
                 isPaused = false;
                 musicBtn.classList.remove('paused');
             } else {
                 isPaused = !isPaused;
-                neteasePlayer.src = isPaused
-                    ? '//music.163.com/outchain/player?type=2&id=109628&auto=0&height=0'
-                    : '//music.163.com/outchain/player?type=2&id=109628&auto=1&height=66';
+                isPaused ? bgMusic.pause() : bgMusic.play();
                 musicBtn.classList.toggle('paused', isPaused);
             }
         }
 
         document.addEventListener('click', function initMusic() {
             if (!musicStarted) {
-                neteasePlayer.src = '//music.163.com/outchain/player?type=2&id=109628&auto=1&height=66';
+                bgMusic.play().catch(() => bgMusic.src = 'https://y.music.163.com/m/song?id=109628&appid=16073860&临沂=true');
                 musicStarted = true;
             }
             document.removeEventListener('click', initMusic);

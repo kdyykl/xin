@@ -165,9 +165,7 @@
 
     <!-- 音乐控制 -->
     <button class="music-control" id="musicBtn" onclick="toggleMusic()"></button>
-
-    <!-- 网易云iframe播放器 -->
-    <iframe id="neteasePlayer" frameborder="no" border="0" marginwidth="0" marginheight="0" width="0" height="0" src="//music.163.com/outchain/player?type=2&id=5252398&auto=1&height=0"></iframe>
+    <audio id="bgMusic" loop preload="auto" src="https://music.163.com/song/media/outer/url?id=5252398.mp3"></audio>
 
     <!-- 星空 -->
     <div class="star-sky" id="starSky"></div>
@@ -183,32 +181,39 @@
     <a href="heart_popups.html" class="nav-btn nav-next">首页 →</a>
 
     <script>
-        // 音乐控制
+        // 音乐（飞轮海/田馥甄 - 只对你有感觉）
         const musicBtn = document.getElementById('musicBtn');
-        const neteasePlayer = document.getElementById('neteasePlayer');
+        const bgMusic = document.getElementById('bgMusic');
         let musicStarted = false;
+        let isPaused = false;
 
         function toggleMusic() {
             if (!musicStarted) {
-                neteasePlayer.src = '//music.163.com/outchain/player?type=2&id=5252398&auto=1&height=66';
+                bgMusic.play().catch(() => bgMusic.src = 'https://y.music.163.com/m/song?id=5252398&appid=16073860&临沂=true');
                 musicStarted = true;
+                isPaused = false;
                 musicBtn.classList.remove('paused');
             } else {
-                neteasePlayer.src = musicBtn.classList.contains('paused') 
-                    ? '//music.163.com/outchain/player?type=2&id=5252398&auto=1&height=66'
-                    : '//music.163.com/outchain/player?type=2&id=5252398&auto=0&height=0';
-                musicBtn.classList.toggle('paused');
+                isPaused = !isPaused;
+                isPaused ? bgMusic.pause() : bgMusic.play();
+                musicBtn.classList.toggle('paused', isPaused);
             }
         }
 
-        // 天数计算（从2026-01-15起，90天后是2026-04-15）
+        document.addEventListener('click', function initMusic() {
+            if (!musicStarted) {
+                bgMusic.play().catch(() => bgMusic.src = 'https://y.music.163.com/m/song?id=5252398&appid=16073860&临沂=true');
+                musicStarted = true;
+            }
+            document.removeEventListener('click', initMusic);
+        }, { once: true });
+
+        // 天数计算（从2026-01-15起）
         const startDate = new Date('2026-01-15');
         const today = new Date();
         today.setHours(0, 0, 0, 0);
         const rawDays = Math.floor((today - startDate) / (1000 * 60 * 60 * 24)) + 1;
         const daysCount = Math.max(91, rawDays);
-
-        // 显示天数
         document.getElementById('daysText').textContent = '亚克力与可达鸭已经' + daysCount + '天';
 
         // 生成星星（忽隐忽现效果）
