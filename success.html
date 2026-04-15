@@ -18,6 +18,46 @@
             color: white;
         }
 
+        /* 音乐控制按钮 */
+        .music-control {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            background: rgba(255,255,255,0.15);
+            backdrop-filter: blur(10px);
+            border: 2px solid rgba(255,255,255,0.3);
+            color: white;
+            font-size: 1.5rem;
+            cursor: pointer;
+            z-index: 1000;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s;
+            animation: musicPulse 2s ease-in-out infinite;
+        }
+        .music-control:hover {
+            background: rgba(255,255,255,0.25);
+            transform: scale(1.1);
+        }
+        .music-control.paused {
+            animation: none;
+            opacity: 0.6;
+        }
+        @keyframes musicPulse {
+            0%, 100% { box-shadow: 0 0 10px rgba(255,107,157,0.5); }
+            50% { box-shadow: 0 0 25px rgba(255,107,157,0.9), 0 0 40px rgba(255,107,157,0.5); }
+        }
+        .music-control::before {
+            content: '🎵';
+        }
+        .music-control.paused::before {
+            content: '🔇';
+        }
+
         /* 星空 */
         .star {
             position: fixed;
@@ -259,10 +299,19 @@
             .quote-text { font-size: 0.95rem; }
             .btn-row { gap: 10px; }
             .btn { padding: 12px 22px; font-size: 0.95rem; }
+            .music-control { width: 45px; height: 45px; font-size: 1.3rem; top: 15px; right: 15px; }
         }
     </style>
 </head>
 <body>
+
+    <!-- 音乐控制 -->
+    <button class="music-control" id="musicBtn" onclick="toggleMusic()" title="点击开关音乐"></button>
+
+    <!-- 背景音乐：飞轮海/田馥甄 - 只对你有感觉 (QQ音乐) -->
+    <audio id="bgMusic" loop>
+        <source src="https://isure.stream.qqmusic.qq.com/C400003cI3B43Bj6UJ.m4a?guid=0&uin=0&fromtag=3&src=C400003cI3B43Bj6UJ.m4a" type="audio/mp4">
+    </audio>
 
     <div class="main">
         <div class="avatar-ring">
@@ -309,6 +358,36 @@
     <div class="footer">Made with 💖 by 可达鸭</div>
 
     <script>
+        // 音乐控制
+        const music = document.getElementById('bgMusic');
+        const musicBtn = document.getElementById('musicBtn');
+        let isPlaying = false;
+
+        function toggleMusic() {
+            if (isPlaying) {
+                music.pause();
+                musicBtn.classList.add('paused');
+                isPlaying = false;
+            } else {
+                music.play().catch(e => {
+                    console.log('点击页面任意位置开启音乐');
+                });
+                musicBtn.classList.remove('paused');
+                isPlaying = true;
+            }
+        }
+
+        // 首次点击页面任意位置尝试播放
+        document.addEventListener('click', function initMusic() {
+            if (!isPlaying) {
+                music.play().then(() => {
+                    musicBtn.classList.remove('paused');
+                    isPlaying = true;
+                }).catch(() => {});
+            }
+            document.removeEventListener('click', initMusic);
+        }, { once: true });
+
         // 星空
         for (let i = 0; i < 120; i++) {
             const star = document.createElement('div');
