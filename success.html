@@ -17,17 +17,21 @@
             color: white;
         }
 
-        /* 旋转星空容器 - 圆心在屏幕底部 */
+        /* 旋转星空容器 - 圆心在屏幕底部，容器2倍屏宽防裁剪 */
         .star-sky {
             position: fixed;
-            inset: 0;
+            width: 200vw;
+            height: 200vh;
+            left: 50%;
+            top: 100%;
+            transform-origin: 50% 0%;
+            transform: translateX(-50%);
             pointer-events: none;
-            transform-origin: 50% 100%;
             animation: skyRotate 120s linear infinite;
         }
         @keyframes skyRotate {
-            from { transform: rotate(0deg); }
-            to { transform: rotate(360deg); }
+            from { transform: translateX(-50%) rotate(0deg); }
+            to { transform: translateX(-50%) rotate(360deg); }
         }
 
         /* 星星 - 忽隐忽现效果 */
