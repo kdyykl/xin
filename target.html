@@ -8,7 +8,7 @@
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body {
             min-height: 100vh;
-            background: linear-gradient(135deg, #fce4ec 0%, #f8bbd0 50%, #f48fb1 100%);
+            background: linear-gradient(135deg, #0a0520 0%, #1a0a3e 40%, #2d1050 100%);
             display: flex;
             flex-direction: column;
             align-items: center;
@@ -18,7 +18,7 @@
             position: relative;
         }
 
-        /* 音乐控制按钮 */
+        /* 音乐控制 */
         .music-control {
             position: fixed;
             top: 20px;
@@ -26,40 +26,24 @@
             width: 50px;
             height: 50px;
             border-radius: 50%;
-            background: rgba(255,255,255,0.9);
+            background: rgba(255,255,255,0.1);
             backdrop-filter: blur(10px);
-            border: 2px solid rgba(255,107,157,0.5);
-            color: #ff6b9d;
-            font-size: 1.5rem;
+            border: 2px solid rgba(255,255,255,0.2);
+            color: white;
+            font-size: 1.4rem;
             cursor: pointer;
             z-index: 1000;
             display: flex;
             align-items: center;
             justify-content: center;
             transition: all 0.3s;
-            animation: musicPulse 2s ease-in-out infinite;
-            box-shadow: 0 4px 15px rgba(255,107,157,0.3);
         }
-        .music-control:hover {
-            background: rgba(255,255,255,1);
-            transform: scale(1.1);
-            box-shadow: 0 6px 25px rgba(255,107,157,0.5);
-        }
-        .music-control.paused {
-            animation: none;
-            opacity: 0.7;
-        }
-        @keyframes musicPulse {
-            0%, 100% { box-shadow: 0 4px 15px rgba(255,107,157,0.3), 0 0 10px rgba(255,107,157,0.2); }
-            50% { box-shadow: 0 6px 25px rgba(255,107,157,0.5), 0 0 20px rgba(255,107,157,0.4); }
-        }
-        .music-control::before {
-            content: '🎵';
-        }
-        .music-control.paused::before {
-            content: '🔇';
-        }
+        .music-control:hover { background: rgba(255,255,255,0.2); transform: scale(1.1); }
+        .music-control::before { content: '🎵'; }
+        .music-control.paused::before { content: '🔇'; }
+        .music-control.paused { opacity: 0.6; }
 
+        /* 漂浮花瓣 */
         .petal {
             position: fixed;
             pointer-events: none;
@@ -68,61 +52,63 @@
             opacity: 0.8;
         }
         @keyframes petalFall {
-            0%   { transform: translateY(-20px) rotate(0deg) translateX(0); opacity: 0; }
-            10%  { opacity: 0.8; }
-            90%  { opacity: 0.8; }
+            0% { transform: translateY(-20px) rotate(0deg) translateX(0); opacity: 0; }
+            10% { opacity: 0.8; }
+            90% { opacity: 0.8; }
             100% { transform: translateY(110vh) rotate(720deg) translateX(100px); opacity: 0; }
         }
 
+        /* 主卡片 */
         .card {
-            background: rgba(255,255,255,0.92);
+            background: rgba(255,255,255,0.08);
             backdrop-filter: blur(20px);
+            border: 1px solid rgba(255,255,255,0.1);
             border-radius: 30px;
             padding: 50px 40px;
             max-width: 520px;
             width: 90%;
             text-align: center;
-            box-shadow: 0 20px 60px rgba(244, 143, 177, 0.4);
             animation: cardAppear 0.8s cubic-bezier(0.34, 1.56, 0.64, 1) 0.3s both;
             position: relative;
             z-index: 10;
         }
         @keyframes cardAppear {
             from { opacity: 0; transform: scale(0.8) translateY(40px); }
-            to   { opacity: 1; transform: scale(1) translateY(0); }
+            to { opacity: 1; transform: scale(1) translateY(0); }
         }
 
         .duck-emoji {
-            font-size: 4rem;
+            font-size: clamp(3rem, 8vw, 4rem);
             margin-bottom: 20px;
             animation: duckBounce 1.5s ease-in-out infinite;
             display: block;
         }
         @keyframes duckBounce {
             0%, 100% { transform: translateY(0) rotate(-5deg); }
-            50%      { transform: translateY(-15px) rotate(5deg); }
+            50% { transform: translateY(-15px) rotate(5deg); }
         }
 
         h1 {
-            font-size: 2rem;
-            color: #c2185b;
+            font-size: clamp(1.3rem, 4vw, 2rem);
+            color: #fff;
             margin-bottom: 15px;
             line-height: 1.5;
             animation: fadeIn 1s ease 0.6s both;
         }
         .subtitle {
-            color: #e91e8c;
-            font-size: 1.1rem;
+            color: rgba(255,255,255,0.6);
+            font-size: clamp(0.9rem, 2.5vw, 1.1rem);
             margin-bottom: 40px;
             animation: fadeIn 1s ease 0.8s both;
         }
         @keyframes fadeIn {
             from { opacity: 0; }
-            to   { opacity: 1; }
+            to { opacity: 1; }
         }
 
+        /* 进度条 */
         .progress-bar {
-            background: #fce4ec;
+            background: rgba(255,255,255,0.1);
             border-radius: 50px;
             height: 14px;
             width: 100%;
@@ -142,11 +128,12 @@
             display: flex;
             justify-content: space-between;
             font-size: 0.85rem;
-            color: #999;
+            color: rgba(255,255,255,0.4);
             margin-bottom: 30px;
             animation: fadeIn 1s ease 1.1s both;
         }
 
+        /* 按钮组 */
         .btn-group {
             display: flex;
             gap: 20px;
@@ -158,11 +145,11 @@
             padding: 16px 36px;
             border: none;
             border-radius: 50px;
-            font-size: 1.1rem;
+            font-size: clamp(1rem, 2.5vw, 1.1rem);
             font-weight: bold;
             cursor: pointer;
             transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
-            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
             min-width: 130px;
         }
         .btn-like {
@@ -174,18 +161,20 @@
             box-shadow: 0 8px 30px rgba(255, 107, 157, 0.5);
         }
         .btn-dislike {
-            background: linear-gradient(135deg, #e0e0e0, #bdbdbd);
-            color: #888;
+            background: rgba(255,255,255,0.1);
+            color: rgba(255,255,255,0.6);
+            border: 1px solid rgba(255,255,255,0.2);
         }
         .btn-dislike:hover {
             transform: scale(1.08) translateY(-3px);
-            box-shadow: 0 8px 30px rgba(0,0,0,0.15);
+            background: rgba(255,255,255,0.15);
         }
 
+        /* 弹窗 */
         .overlay {
             position: fixed;
             inset: 0;
-            background: rgba(0,0,0,0.6);
+            background: rgba(0,0,0,0.7);
             backdrop-filter: blur(8px);
             display: flex;
             align-items: center;
@@ -200,7 +189,8 @@
             pointer-events: all;
         }
         .popup-card {
-            background: white;
+            background: rgba(30,10,50,0.95);
+            border: 1px solid rgba(255,107,157,0.3);
             border-radius: 30px;
             padding: 45px 35px;
             max-width: 400px;
@@ -208,25 +198,23 @@
             text-align: center;
             transform: scale(0.7);
             transition: transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
-            box-shadow: 0 30px 80px rgba(0,0,0,0.3);
+            box-shadow: 0 30px 80px rgba(0,0,0,0.5);
         }
-        .overlay.show .popup-card {
-            transform: scale(1);
-        }
+        .overlay.show .popup-card { transform: scale(1); }
         .popup-emoji {
-            font-size: 4rem;
+            font-size: clamp(3rem, 8vw, 4rem);
             display: block;
             margin-bottom: 15px;
         }
         .popup-title {
-            font-size: 1.5rem;
-            color: #c2185b;
+            font-size: clamp(1.2rem, 3vw, 1.5rem);
+            color: #ff9ec4;
             margin-bottom: 12px;
             font-weight: bold;
         }
         .popup-text {
-            color: #666;
-            font-size: 1rem;
+            color: rgba(255,255,255,0.7);
+            font-size: clamp(0.95rem, 2.5vw, 1rem);
             line-height: 1.7;
             margin-bottom: 30px;
         }
@@ -243,6 +231,7 @@
         }
         .popup-btn:hover { transform: scale(1.05); }
 
+        /* 彩带 */
         .confetti-container {
             position: fixed;
             inset: 0;
@@ -255,11 +244,11 @@
             animation: confettiFall linear forwards;
         }
         @keyframes confettiFall {
-            0%   { transform: translateY(0) rotate(0deg); opacity: 1; }
+            0% { transform: translateY(0) rotate(0deg); opacity: 1; }
             100% { transform: translateY(110vh) rotate(1080deg); opacity: 0; }
         }
 
-        /* 乱飞的喜欢按钮 */
+        /* 乱飞按钮 */
         .fly-btn {
             position: fixed;
             padding: 14px 28px;
@@ -280,49 +269,35 @@
             box-shadow: 0 8px 35px rgba(255,107,157,0.8);
         }
         @keyframes flyWobble {
-            0%   { transform: rotate(var(--rot)) translateY(0px); }
+            0% { transform: rotate(var(--rot)) translateY(0px); }
             100% { transform: rotate(calc(var(--rot) * -1)) translateY(var(--fly)) scale(1.05); }
         }
 
         .back-link {
             display: inline-block;
             margin-top: 25px;
-            color: #e91e8c;
+            color: rgba(255,255,255,0.4);
             text-decoration: none;
             font-size: 0.95rem;
-            opacity: 0.7;
-            transition: opacity 0.2s;
+            transition: color 0.2s;
             animation: fadeIn 1s ease 1.3s both;
         }
-        .back-link:hover { opacity: 1; }
+        .back-link:hover { color: rgba(255,255,255,0.7); }
 
-        /* 移动端适配 */
         @media (max-width: 600px) {
             .card { padding: 35px 20px !important; border-radius: 24px !important; }
-            h1 { font-size: 1.5rem !important; }
             .duck-emoji { font-size: 3rem !important; }
-            .subtitle { font-size: 0.95rem !important; }
             .btn-group { gap: 12px !important; }
-            .btn { min-width: 110px !important; padding: 13px 24px !important; font-size: 1rem !important; }
+            .btn { min-width: 110px !important; padding: 13px 24px !important; }
             .popup-card { padding: 30px 20px !important; }
-            .popup-title { font-size: 1.2rem !important; }
-            .popup-text { font-size: 0.95rem !important; }
-            .popup-emoji { font-size: 3rem !important; }
-            .music-control { width: 45px; height: 45px; font-size: 1.3rem; top: 15px; right: 15px; }
+            .music-control { width: 45px; height: 45px; top: 15px; right: 15px; }
         }
     </style>
 </head>
 <body>
 
-    <!-- 音乐控制 -->
-    <button class="music-control" id="musicBtn" onclick="toggleMusic()" title="点击开关音乐"></button>
-
-    <!-- 背景音乐：卢广仲 - 我爱你 -->
-    <audio id="bgMusic" loop preload="auto">
-        <source src="https://music.163.com/song/media/outer/url?id=25706282.mp3" type="audio/mpeg">
-    </audio>
-    <!-- 备用：网易云iframe播放器 -->
-    <iframe id="neteasePlayer" frameborder="no" border="0" marginwidth="0" marginheight="0" width=0 height=0 src="//music.163.com/outchain/player?type=2&id=25706282&auto=1&height=0"></iframe>
+    <button class="music-control" id="musicBtn" onclick="toggleMusic()"></button>
+    <iframe id="neteasePlayer" frameborder="no" border="0" marginwidth="0" marginheight="0" width="0" height="0" src="//music.163.com/outchain/player?type=2&id=109628&auto=1&height=0"></iframe>
 
     <div class="card">
         <span class="duck-emoji">🦆</span>
@@ -339,7 +314,7 @@
         </div>
 
         <div class="btn-group">
-            <button class="btn btn-like" id="mainLikeBtn" onclick="handleLike()">💗 喜欢</button>
+            <button class="btn btn-like" onclick="handleLike()">💗 喜欢</button>
             <button class="btn btn-dislike" id="dislikeBtn" onclick="handleDislike()">😢 不喜欢</button>
         </div>
 
@@ -359,54 +334,43 @@
     <div class="confetti-container" id="confettiContainer"></div>
 
     <script>
-        // 音乐控制
-        const music = document.getElementById('bgMusic');
+        // 音乐
         const musicBtn = document.getElementById('musicBtn');
-        let isPlaying = false;
+        const neteasePlayer = document.getElementById('neteasePlayer');
+        let musicStarted = false;
+        let isPaused = false;
 
         function toggleMusic() {
-            if (isPlaying) {
-                music.pause();
-                musicBtn.classList.add('paused');
-                isPlaying = false;
-            } else {
-                music.play().catch(e => {
-                    console.log('点击页面任意位置开启音乐');
-                });
+            if (!musicStarted) {
+                neteasePlayer.src = '//music.163.com/outchain/player?type=2&id=109628&auto=1&height=66';
+                musicStarted = true;
+                isPaused = false;
                 musicBtn.classList.remove('paused');
-                isPlaying = true;
+            } else {
+                isPaused = !isPaused;
+                neteasePlayer.src = isPaused
+                    ? '//music.163.com/outchain/player?type=2&id=109628&auto=0&height=0'
+                    : '//music.163.com/outchain/player?type=2&id=109628&auto=1&height=66';
+                musicBtn.classList.toggle('paused', isPaused);
             }
         }
 
-        // 页面加载后立即尝试播放
-        window.addEventListener('load', function() {
-            music.play().then(() => {
-                musicBtn.classList.remove('paused');
-                isPlaying = true;
-            }).catch(() => {
-                // 浏览器阻止自动播放，等待用户交互
-                console.log('等待用户点击播放音乐');
-            });
-        });
-
-        // 备用：点击页面任意位置播放
         document.addEventListener('click', function initMusic() {
-            if (!isPlaying) {
-                music.play().then(() => {
-                    musicBtn.classList.remove('paused');
-                    isPlaying = true;
-                }).catch(() => {});
+            if (!musicStarted) {
+                neteasePlayer.src = '//music.163.com/outchain/player?type=2&id=109628&auto=1&height=66';
+                musicStarted = true;
             }
-        });
+            document.removeEventListener('click', initMusic);
+        }, { once: true });
 
-        // 花瓣飘落
+        // 花瓣
         const petalColors = ['#ffcdd2','#f8bbd0','#f48fb1','#ff80ab','#fce4ec','#ffffff'];
         function createPetal() {
             const p = document.createElement('div');
             p.className = 'petal';
+            p.innerHTML = '🌸';
             const size = Math.random() * 14 + 8;
             const color = petalColors[Math.floor(Math.random() * petalColors.length)];
-            p.innerHTML = '🌸';
             p.style.cssText = `
                 left: ${Math.random() * 100}vw;
                 font-size: ${size}px;
@@ -420,7 +384,7 @@
         setInterval(createPetal, 400);
         for (let i = 0; i < 15; i++) setTimeout(createPetal, i * 300);
 
-        // 进度条动画
+        // 进度条
         let voted = false;
         function animateProgress(target) {
             const fill = document.getElementById('progressFill');
@@ -458,8 +422,9 @@
             document.querySelector('.progress-bar').style.opacity = '0';
             document.querySelector('.progress-labels').style.opacity = '0';
 
-            const phrases = ['💗 喜欢！', '❤️ 超喜欢！', '💕 我喜欢！', '💖 真心喜欢！', '🥰 喜欢你！', '💓 心动了！', '🦆 鸭鸭喜欢你！', '💗 喜欢！！', '❤️ 超级喜欢！', '💕 不许不喜欢！'];
-            const cardRect = document.querySelector('.card').getBoundingClientRect();
+            const phrases = ['💗 喜欢！', '❤️ 超喜欢！', '💕 我喜欢！', '💖 真心喜欢！', '🥰 喜欢你！', '💓 心动了！', '🦆 鸭鸭喜欢你！'];
+            const vw = window.innerWidth;
+            const vh = window.innerHeight;
 
             for (let i = 0; i < 20; i++) {
                 setTimeout(() => {
@@ -472,12 +437,9 @@
                     btn.style.fontSize = (Math.random() * 6 + 13) + 'px';
                     btn.style.padding = (Math.random() * 8 + 10) + 'px ' + (Math.random() * 14 + 18) + 'px';
                     btn.style.animationDelay = (Math.random() * 2) + 's';
-                    btn.style.animationDirection = Math.random() > 0.5 ? 'alternate' : 'alternate-reverse';
 
-                    const vw = window.innerWidth;
-                    const vh = window.innerHeight;
-                    let x, y;
                     const zone = Math.floor(Math.random() * 5);
+                    let x, y;
                     if (zone === 0) { x = Math.random() * (vw - 160); y = Math.random() * (vh * 0.3); }
                     else if (zone === 1) { x = Math.random() * (vw - 160); y = vh * 0.7 + Math.random() * (vh * 0.25); }
                     else if (zone === 2) { x = Math.random() * (vw * 0.3); y = Math.random() * (vh - 80); }
@@ -486,7 +448,6 @@
 
                     btn.style.left = x + 'px';
                     btn.style.top = y + 'px';
-
                     btn.onclick = () => { window.location.href = 'success.html'; };
                     document.body.appendChild(btn);
                 }, i * 80);
@@ -495,17 +456,10 @@
             setTimeout(() => {
                 const tip = document.createElement('div');
                 tip.style.cssText = `
-                    position: fixed;
-                    top: 15%;
-                    left: 50%;
-                    transform: translateX(-50%);
-                    background: rgba(255,107,157,0.95);
-                    color: white;
-                    padding: 16px 32px;
-                    border-radius: 50px;
-                    font-size: 1.1rem;
-                    font-weight: bold;
-                    z-index: 998;
+                    position: fixed; top: 15%; left: 50%; transform: translateX(-50%);
+                    background: rgba(255,107,157,0.95); color: white;
+                    padding: 16px 32px; border-radius: 50px;
+                    font-size: 1.1rem; font-weight: bold; z-index: 998;
                     animation: tipBounce 0.6s cubic-bezier(0.34,1.56,0.64,1) both;
                     box-shadow: 0 8px 30px rgba(255,107,157,0.5);
                 `;
@@ -525,23 +479,18 @@
             }, 300);
         }
 
-        function closeOverlay() {
-            document.querySelectorAll('.overlay').forEach(o => o.classList.remove('show'));
-        }
-
         function launchConfetti() {
             const container = document.getElementById('confettiContainer');
-            const confettiColors = ['#ff6b9d','#c44569','#ffeb3b','#ff9800','#e91e8c','#4caf50','#2196f3','#fff'];
+            const colors = ['#ff6b9d','#c44569','#ffeb3b','#ff9800','#e91e8c','#4caf50','#2196f3','#fff'];
             for (let i = 0; i < 80; i++) {
                 setTimeout(() => {
                     const c = document.createElement('div');
                     c.className = 'confetti';
                     const size = Math.random() * 10 + 6;
-                    const color = confettiColors[Math.floor(Math.random() * confettiColors.length)];
+                    const color = colors[Math.floor(Math.random() * colors.length)];
                     c.style.cssText = `
                         left: ${Math.random() * 100}vw;
-                        width: ${size}px;
-                        height: ${size * 0.4}px;
+                        width: ${size}px; height: ${size * 0.4}px;
                         background: ${color};
                         border-radius: ${Math.random() > 0.5 ? '50%' : '2px'};
                         animation-duration: ${Math.random() * 2 + 2}s;
