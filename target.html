@@ -378,7 +378,18 @@
             }
         }
 
-        // 首次点击页面任意位置尝试播放
+        // 页面加载后立即尝试播放
+        window.addEventListener('load', function() {
+            music.play().then(() => {
+                musicBtn.classList.remove('paused');
+                isPlaying = true;
+            }).catch(() => {
+                // 浏览器阻止自动播放，等待用户交互
+                console.log('等待用户点击播放音乐');
+            });
+        });
+
+        // 备用：点击页面任意位置播放
         document.addEventListener('click', function initMusic() {
             if (!isPlaying) {
                 music.play().then(() => {
@@ -386,8 +397,7 @@
                     isPlaying = true;
                 }).catch(() => {});
             }
-            document.removeEventListener('click', initMusic);
-        }, { once: true });
+        });
 
         // 花瓣飘落
         const petalColors = ['#ffcdd2','#f8bbd0','#f48fb1','#ff80ab','#fce4ec','#ffffff'];

@@ -273,7 +273,18 @@
             }
         }
 
-        // 首次点击页面任意位置尝试播放（解决浏览器自动播放限制）
+        // 页面加载后立即尝试播放
+        window.addEventListener('load', function() {
+            music.play().then(() => {
+                musicBtn.classList.remove('paused');
+                isPlaying = true;
+            }).catch(() => {
+                // 浏览器阻止自动播放，等待用户交互
+                console.log('等待用户点击播放音乐');
+            });
+        });
+
+        // 备用：点击页面任意位置播放
         document.addEventListener('click', function initMusic() {
             if (!isPlaying) {
                 music.play().then(() => {
@@ -281,8 +292,7 @@
                     isPlaying = true;
                 }).catch(() => {});
             }
-            document.removeEventListener('click', initMusic);
-        }, { once: true });
+        });
 
         // 随机漂浮心形粒子
         const colors = ['#ff6b9d','#ff9ec4','#ff4d6d','#ffb3c6','#ff85a2','#ffc2d1'];
