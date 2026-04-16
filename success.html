@@ -10,7 +10,11 @@
         body {
             min-height: 100vh;
             min-height: 100dvh;
-            background: linear-gradient(to bottom, #000010 0%, #0a0a2e 50%, #1a0a3e 100%);
+            background: #000005;
+            background-image:
+                radial-gradient(ellipse at 50% 0%, rgba(20,10,60,0.6) 0%, transparent 60%),
+                radial-gradient(ellipse at 80% 20%, rgba(10,20,60,0.4) 0%, transparent 50%),
+                radial-gradient(ellipse at 20% 80%, rgba(30,5,50,0.3) 0%, transparent 50%);
             display: flex;
             align-items: center;
             justify-content: center;
@@ -19,7 +23,7 @@
             color: white;
         }
 
-        /* ── 旋转星空容器：圆心在屏幕底部中央，2倍尺寸防裁剪 ── */
+        /* ── 旋转星空容器 ── */
         .star-sky {
             position: fixed;
             width: 200vw;
@@ -28,21 +32,25 @@
             top: 100%;
             transform-origin: 50% 0%;
             pointer-events: none;
-            animation: skyRotate 120s linear infinite;
+            animation: skyRotate 60s linear infinite;
         }
         @keyframes skyRotate {
             from { transform: translateX(-50%) rotate(0deg); }
             to   { transform: translateX(-50%) rotate(360deg); }
         }
 
-        /* ── 星星：忽隐忽现，更大更亮 ── */
+        /* ── 星星 ── */
         .star {
             position: absolute;
             border-radius: 50%;
             background: white;
+            cursor: pointer;
+            pointer-events: all;
             animation: twinkle var(--dur) ease-in-out infinite;
             animation-delay: var(--delay);
         }
+        .star:hover { filter: brightness(1.5); }
+
         @keyframes twinkle {
             0%   { opacity: 0;   transform: scale(0.5); }
             15%  { opacity: 1;   transform: scale(1.6); }
@@ -51,6 +59,38 @@
             65%  { opacity: 1;   transform: scale(1.5); }
             80%  { opacity: 0.3; transform: scale(1.0); }
             100% { opacity: 0;   transform: scale(0.5); }
+        }
+
+        /* ── 星星点击气泡 ── */
+        .star-label {
+            position: fixed;
+            background: rgba(255,255,255,0.95);
+            color: #1a1a3e;
+            font-size: 11px;
+            font-weight: bold;
+            padding: 5px 10px;
+            border-radius: 20px;
+            pointer-events: none;
+            z-index: 9999;
+            white-space: nowrap;
+            transform: translate(-50%, -130%);
+            box-shadow: 0 2px 12px rgba(100,100,255,0.3);
+            animation: labelPop 0.25s cubic-bezier(0.34,1.56,0.64,1) forwards;
+        }
+        .star-label::after {
+            content: '';
+            position: absolute;
+            bottom: -5px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 8px;
+            height: 8px;
+            background: rgba(255,255,255,0.95);
+            border-radius: 50%;
+        }
+        @keyframes labelPop {
+            0%   { opacity: 0; transform: translate(-50%, -130%) scale(0.5); }
+            100% { opacity: 1; transform: translate(-50%, -130%) scale(1); }
         }
 
         /* ── 流星 ── */
@@ -181,7 +221,7 @@
     <!-- 音乐 -->
     <button class="music-control" id="musicBtn" onclick="toggleMusic()"></button>
     <audio id="bgMusic" loop preload="auto"
-           src="https://music.163.com/song/media/outer/url?id=5252398.mp3"></audio>
+           src="https://music.163.com/song/media/outer/url?id=32507037.mp3"></audio>
 
     <!-- 星空 -->
     <div class="star-sky" id="starSky"></div>
@@ -198,15 +238,16 @@
     <a href="heart_popups.html" class="nav-btn nav-next">首页 →</a>
 
     <script>
-        /* ── 音乐 ── */
+        /* ══════════════════════════════════════════
+           音乐（逃跑计划 - 夜空中最亮的星）
+        ══════════════════════════════════════════ */
         const musicBtn = document.getElementById('musicBtn');
         const bgMusic  = document.getElementById('bgMusic');
         let musicStarted = false;
         let isPaused = false;
 
-        function tryPlay() {
-            bgMusic.play().catch(() => {});
-        }
+        function tryPlay() { bgMusic.play().catch(() => {}); }
+
         function toggleMusic() {
             if (!musicStarted) {
                 tryPlay();
@@ -219,76 +260,162 @@
                 musicBtn.classList.toggle('paused', isPaused);
             }
         }
+
+        // 首次点击页面自动播放
         document.addEventListener('click', function initMusic() {
             if (!musicStarted) { tryPlay(); musicStarted = true; }
             document.removeEventListener('click', initMusic);
         }, { once: true });
 
-        /* ── 天数计算 ──
+        // 页面加载完延迟自动播放（提升触发概率）
+        window.addEventListener('load', () => {
+            setTimeout(() => {
+                if (!musicStarted) { tryPlay(); musicStarted = true; }
+            }, 800);
+        });
+
+        /* ══════════════════════════════════════════
+           天数计算
            基准：2026-04-16 = 第92天
-           往后每过一个自然日 +1
-        ──────────────────── */
-        const BASE_DATE = new Date('2026-04-16T00:00:00+08:00'); // 第92天
-        const BASE_DAYS = 92;
+        ══════════════════════════════════════════ */
+        const BASE_DATE = new Date('2026-04-16T00:00:00+08:00');
+        const BASE_DAYS  = 92;
 
         function calcDays() {
             const now = new Date();
-            // 转成北京时间的"今天零点"
-            const bjOffset = 8 * 60; // 分钟
-            const localOffset = now.getTimezoneOffset(); // 分钟（负数=东区）
-            const bjNow = new Date(now.getTime() + (bjOffset + localOffset) * 60000);
+            const bjNow = new Date(now.getTime() + (480 + now.getTimezoneOffset()) * 60000);
             bjNow.setHours(0, 0, 0, 0);
-
             const base = new Date(BASE_DATE);
             base.setHours(0, 0, 0, 0);
+            return BASE_DAYS + Math.floor((bjNow - base) / 86400000);
+        }
 
-            const diff = Math.floor((bjNow - base) / 86400000);
-            return BASE_DAYS + diff;
+        function formatDate(d) {
+            return d.getFullYear() + '.' +
+                String(d.getMonth() + 1).padStart(2, '0') + '.' +
+                String(d.getDate()).padStart(2, '0');
         }
 
         function updateDisplay() {
             const days = calcDays();
             document.getElementById('daysText').textContent = '亚克力与可达鸭已经' + days + '天';
-
-            // 副标题：显示今天日期
             const now = new Date();
-            const y = now.getFullYear();
-            const m = String(now.getMonth() + 1).padStart(2, '0');
-            const d = String(now.getDate()).padStart(2, '0');
-            document.getElementById('dateText').textContent = y + '.' + m + '.' + d;
+            document.getElementById('dateText').textContent = formatDate(now);
         }
 
         updateDisplay();
-
-        // 每分钟检查一次，跨零点自动更新
         setInterval(updateDisplay, 60000);
 
-        /* ── 生成星星 ── */
-        const starSky = document.getElementById('starSky');
-        const starCount = calcDays() + 50; // 天数 + 额外50颗，更密
+        /* ══════════════════════════════════════════
+           星星日期系统
+           2026-01-14 = 第1颗星 …… today = 第N颗星
+        ══════════════════════════════════════════ */
+        const STAR_START = new Date('2026-01-14T00:00:00+08:00');
+        const today2 = new Date();
+        const bjToday = new Date(today2.getTime() + (480 + today2.getTimezoneOffset()) * 60000);
+        bjToday.setHours(0, 0, 0, 0);
 
-        for (let i = 0; i < starCount; i++) {
+        // 今天对应第几颗星（每过零点 +1）
+        const todayStarIndex = Math.floor((bjToday - STAR_START) / 86400000) + 1;
+        const extraStars = 30; // 额外装饰星（无日期名）
+        const totalStars = todayStarIndex + extraStars;
+
+        // 生成所有星星
+        const starSky = document.getElementById('starSky');
+        const allStars = [];
+
+        for (let i = 0; i < totalStars; i++) {
             const star = document.createElement('div');
             star.className = 'star';
-            // 尺寸：1~5px，更大更明显
-            const size  = Math.random() * 4 + 1;
-            const x     = Math.random() * 100;
-            const y     = Math.random() * 100;
+
+            // 尺寸：有日期的星星稍大更明显
+            const size = i < todayStarIndex
+                ? Math.random() * 3 + 2     // 2~5px（有意义）
+                : Math.random() * 2 + 1;    // 1~3px（装饰）
+
+            // 散落在 200vw × 200vh 星空容器内
+            const x = Math.random() * 100;
+            const y = Math.random() * 100;
             const dur   = Math.random() * 4 + 2.5;
             const delay = Math.random() * 8;
-            // 发光强度随尺寸增大
-            const glow  = size * 5;
+
+            const glow = size * 4;
+
+            // 有日期名的星星有特殊蓝色光晕
+            const hasDate = i < todayStarIndex;
+            const glowColor = hasDate
+                ? `rgba(200,220,255,0.9), 0 0 ${glow*2}px rgba(150,180,255,0.5)`
+                : `rgba(255,255,255,0.85), 0 0 ${glow*2}px rgba(180,200,255,0.4)`;
+
             star.style.cssText = `
                 width:${size}px; height:${size}px;
                 left:${x}%; top:${y}%;
                 --dur:${dur}s; --delay:${delay}s;
-                box-shadow: 0 0 ${glow}px ${glow/2}px rgba(255,255,255,0.85),
-                            0 0 ${glow*2}px rgba(180,200,255,0.4);
+                box-shadow: 0 0 ${glow}px ${glow/2}px ${glowColor};
             `;
+
+            // 有日期的星星才绑定点击
+            if (hasDate) {
+                const starDate = new Date(STAR_START);
+                starDate.setDate(starDate.getDate() + i); // 0-based: i=0 → 01-14
+                const label = formatDate(starDate);
+
+                star.addEventListener('click', (function(l, sx, sy) {
+                    return function(e) {
+                        e.stopPropagation();
+                        showStarLabel(l, sx, sy);
+                    };
+                })(label, x, y));
+            }
+
             starSky.appendChild(star);
+            allStars.push(star);
         }
 
-        /* ── 流星 ── */
+        // 点击任意星星弹出日期气泡
+        function showStarLabel(text, pctX, pctY) {
+            // 先清除旧气泡
+            document.querySelectorAll('.star-label').forEach(el => el.remove());
+
+            const label = document.createElement('div');
+            label.className = 'star-label';
+            label.textContent = text;
+
+            // 气泡定位在星空容器内坐标转屏幕坐标
+            // 星空容器 left=50%, top=100%, width=200vw, height=200vh
+            // 星空容器左上角屏幕坐标: (50% - 100vw, 100vh)
+            // 星星在星空内的百分比 (pctX, pctY) → 屏幕坐标:
+            const vw = window.innerWidth;
+            const vh = window.innerHeight;
+            const skyLeft = vw / 2 - vw;      // 星空容器左边缘屏幕x
+            const skyTop  = vh;               // 星空容器上边缘屏幕y
+
+            const screenX = skyLeft + (pctX / 100) * vw * 2;
+            const screenY = skyTop  + (pctY / 100) * vh * 2;
+
+            label.style.left = screenX + 'px';
+            label.style.top  = screenY + 'px';
+
+            document.body.appendChild(label);
+
+            // 3秒后自动消失
+            setTimeout(() => {
+                label.style.transition = 'opacity 0.4s, transform 0.4s';
+                label.style.opacity = '0';
+                label.style.transform = 'translate(-50%, -130%) scale(0.7)';
+                setTimeout(() => label.remove(), 400);
+            }, 2500);
+
+            // 点击气泡本身也可关闭
+            label.addEventListener('click', (e) => {
+                e.stopPropagation();
+                label.remove();
+            });
+        }
+
+        /* ══════════════════════════════════════════
+           流星
+        ══════════════════════════════════════════ */
         function createShootingStar() {
             const s = document.createElement('div');
             s.className = 'shooting-star';
