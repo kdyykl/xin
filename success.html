@@ -3,18 +3,12 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, user-scalable=yes">
-    <title>💖 我们的故事</title>
+    <title>✨ 夜空中最亮的星</title>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
-
         body {
             min-height: 100vh;
-            min-height: 100dvh;
-            background: #000005;
-            background-image:
-                radial-gradient(ellipse at 50% 0%, rgba(20,10,60,0.6) 0%, transparent 60%),
-                radial-gradient(ellipse at 80% 20%, rgba(10,20,60,0.4) 0%, transparent 50%),
-                radial-gradient(ellipse at 20% 80%, rgba(30,5,50,0.3) 0%, transparent 50%);
+            background: linear-gradient(to bottom, #000008 0%, #0a0a1a 50%, #0f0f2a 100%);
             display: flex;
             align-items: center;
             justify-content: center;
@@ -23,415 +17,364 @@
             color: white;
         }
 
-        /* ── 旋转星空容器 ── */
+        /* 旋转星空 - 速度加快 */
         .star-sky {
             position: fixed;
-            width: 200vw;
-            height: 200vh;
-            left: 50%;
-            top: 100%;
-            transform-origin: 50% 0%;
+            inset: -50%;
+            width: 200%;
+            height: 200%;
             pointer-events: none;
-            animation: skyRotate 60s linear infinite;
+            animation: skyRotate 40s linear infinite;
         }
         @keyframes skyRotate {
-            from { transform: translateX(-50%) rotate(0deg); }
-            to   { transform: translateX(-50%) rotate(360deg); }
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
         }
 
-        /* ── 星星 ── */
+        /* 星星 - 可点击 */
         .star {
             position: absolute;
-            border-radius: 50%;
             background: white;
-            cursor: pointer;
-            pointer-events: all;
-            animation: twinkle var(--dur) ease-in-out infinite;
-            animation-delay: var(--delay);
-        }
-        .star:hover { filter: brightness(1.5); }
-
-        @keyframes twinkle {
-            0%   { opacity: 0;   transform: scale(0.5); }
-            15%  { opacity: 1;   transform: scale(1.6); }
-            30%  { opacity: 0.7; transform: scale(1.1); }
-            50%  { opacity: 0;   transform: scale(0.4); }
-            65%  { opacity: 1;   transform: scale(1.5); }
-            80%  { opacity: 0.3; transform: scale(1.0); }
-            100% { opacity: 0;   transform: scale(0.5); }
-        }
-
-        /* ── 星星点击气泡 ── */
-        .star-label {
-            position: fixed;
-            background: rgba(255,255,255,0.95);
-            color: #1a1a3e;
-            font-size: 11px;
-            font-weight: bold;
-            padding: 5px 10px;
-            border-radius: 20px;
-            pointer-events: none;
-            z-index: 9999;
-            white-space: nowrap;
-            transform: translate(-50%, -130%);
-            box-shadow: 0 2px 12px rgba(100,100,255,0.3);
-            animation: labelPop 0.25s cubic-bezier(0.34,1.56,0.64,1) forwards;
-        }
-        .star-label::after {
-            content: '';
-            position: absolute;
-            bottom: -5px;
-            left: 50%;
-            transform: translateX(-50%);
-            width: 8px;
-            height: 8px;
-            background: rgba(255,255,255,0.95);
             border-radius: 50%;
+            animation: twinkle var(--dur) ease-in-out infinite;
+            cursor: pointer;
+            pointer-events: auto;
+            transition: transform 0.2s, box-shadow 0.2s;
         }
-        @keyframes labelPop {
-            0%   { opacity: 0; transform: translate(-50%, -130%) scale(0.5); }
-            100% { opacity: 1; transform: translate(-50%, -130%) scale(1); }
+        .star:hover {
+            transform: scale(2) !important;
+            box-shadow: 0 0 20px rgba(255,255,255,0.9), 0 0 40px rgba(255,255,255,0.5) !important;
+        }
+        .star.active {
+            background: #ffd700;
+            box-shadow: 0 0 30px #ffd700, 0 0 60px rgba(255,215,0,0.5);
+        }
+        @keyframes twinkle {
+            0%, 100% { opacity: 0.4; transform: scale(1); }
+            50% { opacity: 1; transform: scale(1.3); }
         }
 
-        /* ── 流星 ── */
+        /* 流星 */
         .shooting-star {
             position: absolute;
+            width: 100px;
             height: 2px;
-            background: linear-gradient(to right, rgba(255,255,255,0.9), transparent);
-            border-radius: 2px;
-            animation: shoot linear forwards;
+            background: linear-gradient(to right, white, transparent);
+            animation: shoot linear infinite;
             opacity: 0;
+            transform: rotate(-45deg);
         }
         @keyframes shoot {
-            0%   { transform: translateX(0) translateY(0) rotate(-45deg); opacity: 0; }
-            5%   { opacity: 1; }
-            100% { transform: translateX(-400px) translateY(400px) rotate(-45deg); opacity: 0; }
+            0% { transform: translateX(0) translateY(0) rotate(-45deg); opacity: 0; }
+            10% { opacity: 1; }
+            100% { transform: translateX(-500px) translateY(500px) rotate(-45deg); opacity: 0; }
         }
 
-        /* ── 主文字区域 ── */
+        /* 主文字 */
         .main-text {
             position: relative;
             z-index: 10;
             text-align: center;
-            padding: 20px;
+            pointer-events: none;
             animation: fadeIn 2s ease 0.5s both;
-            width: 100%;
-            max-width: 700px;
         }
         @keyframes fadeIn {
             from { opacity: 0; transform: translateY(20px); }
-            to   { opacity: 1; transform: translateY(0); }
+            to { opacity: 1; transform: translateY(0); }
         }
 
         .days-text {
-            font-size: clamp(1.6rem, 5vw, 3.8rem);
+            font-size: clamp(1.8rem, 5vw, 3rem);
             font-weight: 300;
-            letter-spacing: clamp(2px, 1vw, 6px);
-            line-height: 1.4;
-            text-shadow: 0 0 40px rgba(255,255,255,0.6);
-            background: linear-gradient(135deg, #fff 0%, #ffd700 50%, #fff 100%);
+            letter-spacing: 6px;
+            text-shadow: 0 0 30px rgba(255, 255, 255, 0.5);
+            background: linear-gradient(135deg, #fff, #a0d8ef, #fff);
             background-size: 200% auto;
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
             background-clip: text;
             animation: shimmer 4s linear infinite;
-            word-break: keep-all;
         }
         @keyframes shimmer {
-            0%   { background-position: 0% center; }
+            0% { background-position: 0% center; }
             100% { background-position: 200% center; }
         }
 
-        .sub-text {
-            margin-top: 16px;
-            font-size: clamp(0.85rem, 2.5vw, 1.1rem);
-            color: rgba(255,255,255,0.45);
-            letter-spacing: 2px;
-        }
-
         .hearts {
-            margin-top: clamp(20px, 4vh, 40px);
-            font-size: clamp(2rem, 6vw, 3.5rem);
-            animation: heartbeat 1.5s ease-in-out infinite;
-            line-height: 1;
+            margin-top: 20px;
+            font-size: clamp(1.2rem, 3vw, 1.8rem);
+            animation: heartbeat 2s ease-in-out infinite;
         }
         @keyframes heartbeat {
-            0%, 100% { transform: scale(1); }
-            50%       { transform: scale(1.12); }
+            0%, 100% { transform: scale(1); opacity: 0.8; }
+            50% { transform: scale(1.1); opacity: 1; }
         }
 
-        /* ── 音乐按钮 ── */
+        /* 星星日期提示 */
+        .star-tooltip {
+            position: fixed;
+            background: rgba(0,0,0,0.8);
+            border: 1px solid rgba(255,255,255,0.3);
+            border-radius: 12px;
+            padding: 10px 18px;
+            color: #ffd700;
+            font-size: 0.95rem;
+            pointer-events: none;
+            z-index: 1001;
+            opacity: 0;
+            transform: translate(-50%, -150%);
+            transition: opacity 0.2s;
+            white-space: nowrap;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.5);
+        }
+        .star-tooltip.show {
+            opacity: 1;
+        }
+        .star-tooltip::after {
+            content: '';
+            position: absolute;
+            bottom: -8px;
+            left: 50%;
+            transform: translateX(-50%);
+            border-left: 8px solid transparent;
+            border-right: 8px solid transparent;
+            border-top: 8px solid rgba(0,0,0,0.8);
+        }
+
+        /* 音乐控制 */
         .music-control {
             position: fixed;
-            top: 16px;
-            right: 16px;
-            width: 46px;
-            height: 46px;
+            top: 20px;
+            right: 20px;
+            width: 50px;
+            height: 50px;
             border-radius: 50%;
             background: rgba(255,255,255,0.1);
             backdrop-filter: blur(10px);
             border: 2px solid rgba(255,255,255,0.2);
             color: white;
-            font-size: 1.3rem;
+            font-size: 1.4rem;
             cursor: pointer;
             z-index: 1000;
             display: flex;
             align-items: center;
             justify-content: center;
             transition: all 0.3s;
+            pointer-events: auto;
         }
         .music-control:hover { background: rgba(255,255,255,0.2); transform: scale(1.1); }
         .music-control::before { content: '🎵'; }
         .music-control.paused::before { content: '🔇'; }
-        .music-control.paused { opacity: 0.5; }
+        .music-control.paused { opacity: 0.6; }
 
-        /* ── 导航按钮 ── */
+        /* 导航按钮 */
         .nav-btn {
             position: fixed;
-            bottom: max(20px, env(safe-area-inset-bottom, 20px));
-            padding: 10px 22px;
+            bottom: 30px;
+            padding: 12px 28px;
             border-radius: 50px;
-            border: 1px solid rgba(255,255,255,0.25);
+            border: 1px solid rgba(255,255,255,0.2);
             background: rgba(255,255,255,0.08);
             backdrop-filter: blur(10px);
-            color: rgba(255,255,255,0.75);
-            font-size: clamp(0.8rem, 2.5vw, 0.95rem);
+            color: rgba(255,255,255,0.7);
+            font-size: 0.9rem;
             text-decoration: none;
             transition: all 0.3s;
             z-index: 100;
-            white-space: nowrap;
+            pointer-events: auto;
         }
-        .nav-btn:hover { background: rgba(255,255,255,0.18); transform: scale(1.05); }
-        .nav-prev { left: max(15px, env(safe-area-inset-left, 15px)); }
-        .nav-next { right: max(15px, env(safe-area-inset-right, 15px)); }
+        .nav-btn:hover {
+            background: rgba(255,255,255,0.15);
+            transform: scale(1.05);
+            color: white;
+        }
+        .nav-prev { left: 30px; }
+        .nav-next { right: 30px; }
 
-        /* ── 响应式 ── */
-        @media (max-width: 480px) {
-            .days-text { letter-spacing: 1px; }
-            .nav-btn { padding: 9px 16px; }
+        /* 点击星星的波纹效果 */
+        .ripple {
+            position: fixed;
+            border-radius: 50%;
+            background: rgba(255,215,0,0.3);
+            pointer-events: none;
+            animation: rippleAnim 0.6s ease-out forwards;
+            z-index: 999;
         }
-        @media (min-width: 1200px) {
-            .days-text { font-size: 4rem; }
-            .hearts { font-size: 3.5rem; }
+        @keyframes rippleAnim {
+            0% { transform: scale(0); opacity: 1; }
+            100% { transform: scale(4); opacity: 0; }
+        }
+
+        @media (max-width: 600px) {
+            .music-control { width: 45px; height: 45px; top: 15px; right: 15px; }
+            .nav-btn { padding: 10px 20px; font-size: 0.85rem; }
+            .nav-prev { left: 15px; bottom: 20px; }
+            .nav-next { right: 15px; bottom: 20px; }
+            .days-text { letter-spacing: 3px; }
         }
     </style>
 </head>
 <body>
 
-    <!-- 音乐 -->
+    <!-- 音乐控制 -->
     <button class="music-control" id="musicBtn" onclick="toggleMusic()"></button>
-    <audio id="bgMusic" loop preload="auto"
-           src="https://music.163.com/song/media/outer/url?id=32507037.mp3"></audio>
+
+    <!-- 网易云iframe播放器 - 夜空中最亮的星 -->
+    <iframe id="neteasePlayer" frameborder="no" border="0" marginwidth="0" marginheight="0" width="0" height="0" src="//music.163.com/outchain/player?type=2&id=25706282&auto=1&height=0"></iframe>
 
     <!-- 星空 -->
     <div class="star-sky" id="starSky"></div>
 
+    <!-- 星星日期提示 -->
+    <div class="star-tooltip" id="starTooltip"></div>
+
     <!-- 主文字 -->
     <div class="main-text">
-        <div class="days-text" id="daysText">亚克力与可达鸭已经92天</div>
-        <div class="sub-text" id="dateText"></div>
-        <div class="hearts">🦆 ❤️</div>
+        <div class="days-text" id="daysText">亚克力与可达鸭</div>
+        <div class="hearts">🦆 ✨</div>
     </div>
 
     <!-- 导航 -->
-    <a href="target.html"      class="nav-btn nav-prev">← 表白</a>
+    <a href="target.html" class="nav-btn nav-prev">← 表白</a>
     <a href="heart_popups.html" class="nav-btn nav-next">首页 →</a>
 
     <script>
-        /* ══════════════════════════════════════════
-           音乐（逃跑计划 - 夜空中最亮的星）
-        ══════════════════════════════════════════ */
+        // 音乐控制
         const musicBtn = document.getElementById('musicBtn');
-        const bgMusic  = document.getElementById('bgMusic');
+        const neteasePlayer = document.getElementById('neteasePlayer');
         let musicStarted = false;
         let isPaused = false;
 
-        function tryPlay() { bgMusic.play().catch(() => {}); }
-
         function toggleMusic() {
             if (!musicStarted) {
-                tryPlay();
+                neteasePlayer.src = '//music.163.com/outchain/player?type=2&id=25706282&auto=1&height=66';
                 musicStarted = true;
                 isPaused = false;
                 musicBtn.classList.remove('paused');
             } else {
                 isPaused = !isPaused;
-                isPaused ? bgMusic.pause() : tryPlay();
+                neteasePlayer.src = isPaused
+                    ? '//music.163.com/outchain/player?type=2&id=25706282&auto=0&height=0'
+                    : '//music.163.com/outchain/player?type=2&id=25706282&auto=1&height=66';
                 musicBtn.classList.toggle('paused', isPaused);
             }
         }
 
-        // 首次点击页面自动播放
-        document.addEventListener('click', function initMusic() {
-            if (!musicStarted) { tryPlay(); musicStarted = true; }
+        // 首次点击页面开启音乐
+        document.addEventListener('click', function initMusic(e) {
+            if (!musicStarted && !e.target.classList.contains('star')) {
+                neteasePlayer.src = '//music.163.com/outchain/player?type=2&id=25706282&auto=1&height=66';
+                musicStarted = true;
+            }
             document.removeEventListener('click', initMusic);
         }, { once: true });
 
-        // 页面加载完延迟自动播放（提升触发概率）
-        window.addEventListener('load', () => {
-            setTimeout(() => {
-                if (!musicStarted) { tryPlay(); musicStarted = true; }
-            }, 800);
-        });
+        // 计算日期范围：2026-01-14 到 今天
+        const startDate = new Date('2026-01-14');
+        const today = new Date();
+        today.setHours(0, 0, 0, 0);
+        
+        // 计算天数差
+        const dayDiff = Math.floor((today - startDate) / (1000 * 60 * 60 * 24)) + 1;
+        const daysCount = Math.max(1, dayDiff); // 至少1天
 
-        /* ══════════════════════════════════════════
-           天数计算
-           基准：2026-04-16 = 第92天
-        ══════════════════════════════════════════ */
-        const BASE_DATE = new Date('2026-04-16T00:00:00+08:00');
-        const BASE_DAYS  = 92;
-
-        function calcDays() {
-            const now = new Date();
-            const bjNow = new Date(now.getTime() + (480 + now.getTimezoneOffset()) * 60000);
-            bjNow.setHours(0, 0, 0, 0);
-            const base = new Date(BASE_DATE);
-            base.setHours(0, 0, 0, 0);
-            return BASE_DAYS + Math.floor((bjNow - base) / 86400000);
+        // 生成日期数组
+        const dateNames = [];
+        for (let i = 0; i < daysCount; i++) {
+            const d = new Date(startDate);
+            d.setDate(d.getDate() + i);
+            const month = d.getMonth() + 1;
+            const day = d.getDate();
+            dateNames.push(`${month}月${day}日`);
         }
 
-        function formatDate(d) {
-            return d.getFullYear() + '.' +
-                String(d.getMonth() + 1).padStart(2, '0') + '.' +
-                String(d.getDate()).padStart(2, '0');
-        }
+        // 显示总天数
+        document.getElementById('daysText').textContent = '亚克力与可达鸭已经' + daysCount + '天';
 
-        function updateDisplay() {
-            const days = calcDays();
-            document.getElementById('daysText').textContent = '亚克力与可达鸭已经' + days + '天';
-            const now = new Date();
-            document.getElementById('dateText').textContent = formatDate(now);
-        }
-
-        updateDisplay();
-        setInterval(updateDisplay, 60000);
-
-        /* ══════════════════════════════════════════
-           星星日期系统
-           2026-01-14 = 第1颗星 …… today = 第N颗星
-        ══════════════════════════════════════════ */
-        const STAR_START = new Date('2026-01-14T00:00:00+08:00');
-        const today2 = new Date();
-        const bjToday = new Date(today2.getTime() + (480 + today2.getTimezoneOffset()) * 60000);
-        bjToday.setHours(0, 0, 0, 0);
-
-        // 今天对应第几颗星（每过零点 +1）
-        const todayStarIndex = Math.floor((bjToday - STAR_START) / 86400000) + 1;
-        const extraStars = 30; // 额外装饰星（无日期名）
-        const totalStars = todayStarIndex + extraStars;
-
-        // 生成所有星星
+        // 生成星星
         const starSky = document.getElementById('starSky');
-        const allStars = [];
+        const tooltip = document.getElementById('starTooltip');
+        const stars = [];
 
-        for (let i = 0; i < totalStars; i++) {
+        for (let i = 0; i < daysCount; i++) {
             const star = document.createElement('div');
             star.className = 'star';
-
-            // 尺寸：有日期的星星稍大更明显
-            const size = i < todayStarIndex
-                ? Math.random() * 3 + 2     // 2~5px（有意义）
-                : Math.random() * 2 + 1;    // 1~3px（装饰）
-
-            // 散落在 200vw × 200vh 星空容器内
-            const x = Math.random() * 100;
-            const y = Math.random() * 100;
-            const dur   = Math.random() * 4 + 2.5;
-            const delay = Math.random() * 8;
-
-            const glow = size * 4;
-
-            // 有日期名的星星有特殊蓝色光晕
-            const hasDate = i < todayStarIndex;
-            const glowColor = hasDate
-                ? `rgba(200,220,255,0.9), 0 0 ${glow*2}px rgba(150,180,255,0.5)`
-                : `rgba(255,255,255,0.85), 0 0 ${glow*2}px rgba(180,200,255,0.4)`;
-
+            star.dataset.date = dateNames[i];
+            star.dataset.index = i;
+            
+            const size = Math.random() * 2.5 + 1;
+            // 随机分布在旋转的星空中
+            const angle = (i / daysCount) * Math.PI * 2 + Math.random() * 0.5;
+            const radius = 20 + Math.random() * 60; // 距离中心的百分比
+            const x = 50 + radius * Math.cos(angle);
+            const y = 50 + radius * Math.sin(angle);
+            
+            const dur = Math.random() * 2 + 1.5;
+            const delay = Math.random() * 3;
+            
             star.style.cssText = `
-                width:${size}px; height:${size}px;
-                left:${x}%; top:${y}%;
-                --dur:${dur}s; --delay:${delay}s;
-                box-shadow: 0 0 ${glow}px ${glow/2}px ${glowColor};
+                width: ${size}px;
+                height: ${size}px;
+                left: ${x}%;
+                top: ${y}%;
+                --dur: ${dur}s;
+                animation-delay: ${delay}s;
+                box-shadow: 0 0 ${size * 2}px rgba(255,255,255,0.8);
             `;
-
-            // 有日期的星星才绑定点击
-            if (hasDate) {
-                const starDate = new Date(STAR_START);
-                starDate.setDate(starDate.getDate() + i); // 0-based: i=0 → 01-14
-                const label = formatDate(starDate);
-
-                star.addEventListener('click', (function(l, sx, sy) {
-                    return function(e) {
-                        e.stopPropagation();
-                        showStarLabel(l, sx, sy);
-                    };
-                })(label, x, y));
-            }
-
-            starSky.appendChild(star);
-            allStars.push(star);
-        }
-
-        // 点击任意星星弹出日期气泡
-        function showStarLabel(text, pctX, pctY) {
-            // 先清除旧气泡
-            document.querySelectorAll('.star-label').forEach(el => el.remove());
-
-            const label = document.createElement('div');
-            label.className = 'star-label';
-            label.textContent = text;
-
-            // 气泡定位在星空容器内坐标转屏幕坐标
-            // 星空容器 left=50%, top=100%, width=200vw, height=200vh
-            // 星空容器左上角屏幕坐标: (50% - 100vw, 100vh)
-            // 星星在星空内的百分比 (pctX, pctY) → 屏幕坐标:
-            const vw = window.innerWidth;
-            const vh = window.innerHeight;
-            const skyLeft = vw / 2 - vw;      // 星空容器左边缘屏幕x
-            const skyTop  = vh;               // 星空容器上边缘屏幕y
-
-            const screenX = skyLeft + (pctX / 100) * vw * 2;
-            const screenY = skyTop  + (pctY / 100) * vh * 2;
-
-            label.style.left = screenX + 'px';
-            label.style.top  = screenY + 'px';
-
-            document.body.appendChild(label);
-
-            // 3秒后自动消失
-            setTimeout(() => {
-                label.style.transition = 'opacity 0.4s, transform 0.4s';
-                label.style.opacity = '0';
-                label.style.transform = 'translate(-50%, -130%) scale(0.7)';
-                setTimeout(() => label.remove(), 400);
-            }, 2500);
-
-            // 点击气泡本身也可关闭
-            label.addEventListener('click', (e) => {
+            
+            // 点击事件
+            star.addEventListener('click', function(e) {
                 e.stopPropagation();
-                label.remove();
+                
+                // 高亮效果
+                stars.forEach(s => s.classList.remove('active'));
+                this.classList.add('active');
+                
+                // 显示提示
+                tooltip.textContent = '✨ ' + this.dataset.date;
+                tooltip.style.left = e.clientX + 'px';
+                tooltip.style.top = e.clientY + 'px';
+                tooltip.classList.add('show');
+                
+                // 波纹效果
+                const ripple = document.createElement('div');
+                ripple.className = 'ripple';
+                ripple.style.width = ripple.style.height = '20px';
+                ripple.style.left = (e.clientX - 10) + 'px';
+                ripple.style.top = (e.clientY - 10) + 'px';
+                document.body.appendChild(ripple);
+                setTimeout(() => ripple.remove(), 600);
+                
+                // 3秒后隐藏提示
+                setTimeout(() => {
+                    tooltip.classList.remove('show');
+                    this.classList.remove('active');
+                }, 3000);
             });
+            
+            starSky.appendChild(star);
+            stars.push(star);
         }
 
-        /* ══════════════════════════════════════════
-           流星
-        ══════════════════════════════════════════ */
+        // 流星
         function createShootingStar() {
-            const s = document.createElement('div');
-            s.className = 'shooting-star';
-            const len = 100 + Math.random() * 150;
-            s.style.cssText = `
-                left:${20 + Math.random() * 60}%;
-                top:${5 + Math.random() * 45}%;
-                width:${len}px;
-                animation-duration:${0.7 + Math.random() * 0.6}s;
+            const star = document.createElement('div');
+            star.className = 'shooting-star';
+            const startX = 30 + Math.random() * 50;
+            const startY = Math.random() * 40;
+            star.style.cssText = `
+                left: ${startX}%;
+                top: ${startY}%;
+                animation-duration: ${0.8 + Math.random() * 0.6}s;
             `;
-            starSky.appendChild(s);
-            setTimeout(() => s.remove(), 2000);
-            setTimeout(createShootingStar, 6000 + Math.random() * 12000);
+            starSky.appendChild(star);
+            setTimeout(() => star.remove(), 2000);
         }
-        for (let i = 0; i < 4; i++) {
-            setTimeout(createShootingStar, i * 7000 + Math.random() * 4000);
+        
+        // 定期生成流星
+        setInterval(createShootingStar, 3000 + Math.random() * 4000);
+        for (let i = 0; i < 3; i++) {
+            setTimeout(createShootingStar, i * 2000 + Math.random() * 2000);
         }
     </script>
 </body>
