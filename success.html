@@ -23,13 +23,28 @@
             color: white;
         }
 
-        /* ── 星空层：星星直接放 viewport 内，不旋转容器 ── */
+        /* ── 星空层：绕屏幕下方中央旋转 ── */
         .star-field {
             position: fixed;
             inset: 0;
             pointer-events: none;
+            overflow: hidden;
         }
-        .star-field .star {
+        /* 旋转容器：200vw×200vh，绕屏幕底中央旋转，永不裁剪子元素 */
+        .star-rotator {
+            position: absolute;
+            width: 250vw;
+            height: 250vh;
+            left: -75vw;
+            top: -100vh;
+            transform-origin: 50% 200vh;
+            animation: skyRotate 80s linear infinite;
+        }
+        @keyframes skyRotate {
+            from { transform: rotate(0deg); }
+            to   { transform: rotate(360deg); }
+        }
+        .star-rotator .star {
             position: absolute;
             pointer-events: all;
             cursor: pointer;
@@ -214,7 +229,9 @@
     <audio id="bgMusic" loop preload="auto"
            src="https://music.163.com/song/media/outer/url?id=32507037.mp3"></audio>
 
-    <div class="star-field" id="starField"></div>
+    <div class="star-field" id="starField">
+            <div class="star-rotator" id="starRotator"></div>
+        </div>
 
     <div class="main-text">
         <div class="days-text" id="daysText">亚克力与可达鸭已经92天</div>
@@ -296,7 +313,7 @@
         const extraStars = 30;
         const totalStars = todayStarIndex + extraStars;
 
-        const starField = document.getElementById('starField');
+        const starRotator = document.getElementById('starRotator');
         const STAR_COUNT = totalStars;
 
         for (let i = 0; i < STAR_COUNT; i++) {
@@ -343,7 +360,7 @@
                 })(label, x, y));
             }
 
-            starField.appendChild(star);
+            starRotator.appendChild(star);
         }
 
         function showLabel(text, x, y) {
@@ -370,7 +387,7 @@
                 'top:'  + (5  + Math.random() * 45) + '%;' +
                 'width:' + (100 + Math.random() * 150) + 'px;' +
                 'animation-duration:' + (0.7 + Math.random() * 0.6) + 's;';
-            starField.appendChild(s);
+            starRotator.appendChild(s);
             setTimeout(() => s.remove(), 2000);
             setTimeout(createShootingStar, 6000 + Math.random() * 12000);
         }
