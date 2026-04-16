@@ -6,8 +6,10 @@
     <title>💖 我们的故事</title>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
+
         body {
             min-height: 100vh;
+            min-height: 100dvh;
             background: linear-gradient(to bottom, #000010 0%, #0a0a2e 50%, #1a0a3e 100%);
             display: flex;
             align-items: center;
@@ -17,7 +19,7 @@
             color: white;
         }
 
-        /* 旋转星空容器 - 圆心在屏幕底部，容器2倍屏宽防裁剪 */
+        /* ── 旋转星空容器：圆心在屏幕底部中央，2倍尺寸防裁剪 ── */
         .star-sky {
             position: fixed;
             width: 200vw;
@@ -25,100 +27,112 @@
             left: 50%;
             top: 100%;
             transform-origin: 50% 0%;
-            transform: translateX(-50%);
             pointer-events: none;
             animation: skyRotate 120s linear infinite;
         }
         @keyframes skyRotate {
             from { transform: translateX(-50%) rotate(0deg); }
-            to { transform: translateX(-50%) rotate(360deg); }
+            to   { transform: translateX(-50%) rotate(360deg); }
         }
 
-        /* 星星 - 忽隐忽现效果 */
+        /* ── 星星：忽隐忽现，更大更亮 ── */
         .star {
             position: absolute;
-            background: white;
             border-radius: 50%;
+            background: white;
             animation: twinkle var(--dur) ease-in-out infinite;
             animation-delay: var(--delay);
         }
         @keyframes twinkle {
-            0% { opacity: 0; transform: scale(0.8); }
-            15% { opacity: 1; transform: scale(1.3); }
-            30% { opacity: 0.6; transform: scale(1); }
-            50% { opacity: 0; transform: scale(0.6); }
-            65% { opacity: 0.9; transform: scale(1.2); }
-            80% { opacity: 0.2; transform: scale(0.9); }
-            100% { opacity: 0; transform: scale(0.8); }
+            0%   { opacity: 0;   transform: scale(0.5); }
+            15%  { opacity: 1;   transform: scale(1.6); }
+            30%  { opacity: 0.7; transform: scale(1.1); }
+            50%  { opacity: 0;   transform: scale(0.4); }
+            65%  { opacity: 1;   transform: scale(1.5); }
+            80%  { opacity: 0.3; transform: scale(1.0); }
+            100% { opacity: 0;   transform: scale(0.5); }
         }
 
-        /* 流星 */
+        /* ── 流星 ── */
         .shooting-star {
             position: absolute;
-            width: 2px;
             height: 2px;
-            background: linear-gradient(to right, white, transparent);
-            animation: shoot linear infinite;
+            background: linear-gradient(to right, rgba(255,255,255,0.9), transparent);
+            border-radius: 2px;
+            animation: shoot linear forwards;
             opacity: 0;
         }
         @keyframes shoot {
-            0% { transform: translateX(0) translateY(0); opacity: 0; }
-            10% { opacity: 1; }
-            100% { transform: translateX(-300px) translateY(300px); opacity: 0; }
+            0%   { transform: translateX(0) translateY(0) rotate(-45deg); opacity: 0; }
+            5%   { opacity: 1; }
+            100% { transform: translateX(-400px) translateY(400px) rotate(-45deg); opacity: 0; }
         }
 
-        /* 主文字 */
+        /* ── 主文字区域 ── */
         .main-text {
             position: relative;
             z-index: 10;
             text-align: center;
+            padding: 20px;
             animation: fadeIn 2s ease 0.5s both;
+            width: 100%;
+            max-width: 700px;
         }
         @keyframes fadeIn {
             from { opacity: 0; transform: translateY(20px); }
-            to { opacity: 1; transform: translateY(0); }
+            to   { opacity: 1; transform: translateY(0); }
         }
 
         .days-text {
-            font-size: clamp(2rem, 6vw, 4rem);
+            font-size: clamp(1.6rem, 5vw, 3.8rem);
             font-weight: 300;
-            letter-spacing: 4px;
-            text-shadow: 0 0 30px rgba(255, 255, 255, 0.5);
-            background: linear-gradient(135deg, #fff, #ffd700, #fff);
+            letter-spacing: clamp(2px, 1vw, 6px);
+            line-height: 1.4;
+            text-shadow: 0 0 40px rgba(255,255,255,0.6);
+            background: linear-gradient(135deg, #fff 0%, #ffd700 50%, #fff 100%);
             background-size: 200% auto;
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
             background-clip: text;
             animation: shimmer 4s linear infinite;
+            word-break: keep-all;
         }
         @keyframes shimmer {
-            0% { background-position: 0% center; }
+            0%   { background-position: 0% center; }
             100% { background-position: 200% center; }
         }
 
+        .sub-text {
+            margin-top: 16px;
+            font-size: clamp(0.85rem, 2.5vw, 1.1rem);
+            color: rgba(255,255,255,0.45);
+            letter-spacing: 2px;
+        }
+
         .hearts {
-            margin-top: 30px;
-            font-size: clamp(1.5rem, 4vw, 2.5rem);
+            margin-top: clamp(20px, 4vh, 40px);
+            font-size: clamp(2rem, 6vw, 3.5rem);
             animation: heartbeat 1.5s ease-in-out infinite;
+            line-height: 1;
         }
         @keyframes heartbeat {
             0%, 100% { transform: scale(1); }
-            50% { transform: scale(1.1); }
+            50%       { transform: scale(1.12); }
         }
 
-        /* 音乐控制按钮 */
+        /* ── 音乐按钮 ── */
         .music-control {
             position: fixed;
-            top: 20px;
-            right: 20px;
-            width: 50px;
-            height: 50px;
+            top: 16px;
+            right: 16px;
+            width: 46px;
+            height: 46px;
             border-radius: 50%;
             background: rgba(255,255,255,0.1);
             backdrop-filter: blur(10px);
             border: 2px solid rgba(255,255,255,0.2);
             color: white;
-            font-size: 1.4rem;
+            font-size: 1.3rem;
             cursor: pointer;
             z-index: 1000;
             display: flex;
@@ -126,148 +140,172 @@
             justify-content: center;
             transition: all 0.3s;
         }
-        .music-control:hover {
-            background: rgba(255,255,255,0.2);
-            transform: scale(1.1);
-        }
+        .music-control:hover { background: rgba(255,255,255,0.2); transform: scale(1.1); }
         .music-control::before { content: '🎵'; }
         .music-control.paused::before { content: '🔇'; }
-        .music-control.paused { opacity: 0.6; }
+        .music-control.paused { opacity: 0.5; }
 
-        /* 导航按钮 */
+        /* ── 导航按钮 ── */
         .nav-btn {
             position: fixed;
-            bottom: 30px;
-            padding: 12px 28px;
+            bottom: max(20px, env(safe-area-inset-bottom, 20px));
+            padding: 10px 22px;
             border-radius: 50px;
-            border: 1px solid rgba(255,255,255,0.3);
-            background: rgba(255,255,255,0.1);
+            border: 1px solid rgba(255,255,255,0.25);
+            background: rgba(255,255,255,0.08);
             backdrop-filter: blur(10px);
-            color: rgba(255,255,255,0.8);
-            font-size: 0.9rem;
+            color: rgba(255,255,255,0.75);
+            font-size: clamp(0.8rem, 2.5vw, 0.95rem);
             text-decoration: none;
             transition: all 0.3s;
             z-index: 100;
+            white-space: nowrap;
         }
-        .nav-btn:hover {
-            background: rgba(255,255,255,0.2);
-            transform: scale(1.05);
-        }
-        .nav-prev { left: 30px; }
-        .nav-next { right: 30px; }
+        .nav-btn:hover { background: rgba(255,255,255,0.18); transform: scale(1.05); }
+        .nav-prev { left: max(15px, env(safe-area-inset-left, 15px)); }
+        .nav-next { right: max(15px, env(safe-area-inset-right, 15px)); }
 
-        @media (max-width: 600px) {
-            .music-control { width: 45px; height: 45px; top: 15px; right: 15px; }
-            .nav-btn { padding: 10px 20px; font-size: 0.85rem; }
-            .nav-prev { left: 15px; bottom: 20px; }
-            .nav-next { right: 15px; bottom: 20px; }
-            .hearts { margin-top: 20px; }
+        /* ── 响应式 ── */
+        @media (max-width: 480px) {
+            .days-text { letter-spacing: 1px; }
+            .nav-btn { padding: 9px 16px; }
+        }
+        @media (min-width: 1200px) {
+            .days-text { font-size: 4rem; }
+            .hearts { font-size: 3.5rem; }
         }
     </style>
 </head>
 <body>
 
-    <!-- 音乐控制 -->
+    <!-- 音乐 -->
     <button class="music-control" id="musicBtn" onclick="toggleMusic()"></button>
-    <audio id="bgMusic" loop preload="auto" src="https://music.163.com/song/media/outer/url?id=5252398.mp3"></audio>
+    <audio id="bgMusic" loop preload="auto"
+           src="https://music.163.com/song/media/outer/url?id=5252398.mp3"></audio>
 
     <!-- 星空 -->
     <div class="star-sky" id="starSky"></div>
 
     <!-- 主文字 -->
     <div class="main-text">
-        <div class="days-text" id="daysText">亚克力与可达鸭已经91天</div>
+        <div class="days-text" id="daysText">亚克力与可达鸭已经92天</div>
+        <div class="sub-text" id="dateText"></div>
         <div class="hearts">🦆 ❤️</div>
     </div>
 
     <!-- 导航 -->
-    <a href="target.html" class="nav-btn nav-prev">← 表白</a>
+    <a href="target.html"      class="nav-btn nav-prev">← 表白</a>
     <a href="heart_popups.html" class="nav-btn nav-next">首页 →</a>
 
     <script>
-        // 音乐（飞轮海/田馥甄 - 只对你有感觉）
+        /* ── 音乐 ── */
         const musicBtn = document.getElementById('musicBtn');
-        const bgMusic = document.getElementById('bgMusic');
+        const bgMusic  = document.getElementById('bgMusic');
         let musicStarted = false;
         let isPaused = false;
 
+        function tryPlay() {
+            bgMusic.play().catch(() => {});
+        }
         function toggleMusic() {
             if (!musicStarted) {
-                bgMusic.play().catch(() => bgMusic.src = 'https://y.music.163.com/m/song?id=5252398&appid=16073860&临沂=true');
+                tryPlay();
                 musicStarted = true;
                 isPaused = false;
                 musicBtn.classList.remove('paused');
             } else {
                 isPaused = !isPaused;
-                isPaused ? bgMusic.pause() : bgMusic.play();
+                isPaused ? bgMusic.pause() : tryPlay();
                 musicBtn.classList.toggle('paused', isPaused);
             }
         }
-
         document.addEventListener('click', function initMusic() {
-            if (!musicStarted) {
-                bgMusic.play().catch(() => bgMusic.src = 'https://y.music.163.com/m/song?id=5252398&appid=16073860&临沂=true');
-                musicStarted = true;
-            }
+            if (!musicStarted) { tryPlay(); musicStarted = true; }
             document.removeEventListener('click', initMusic);
         }, { once: true });
 
-        // 天数计算（从2026-01-15起）
-        const startDate = new Date('2026-01-15');
-        const today = new Date();
-        today.setHours(0, 0, 0, 0);
-        const rawDays = Math.floor((today - startDate) / (1000 * 60 * 60 * 24)) + 1;
-        const daysCount = Math.max(91, rawDays);
-        document.getElementById('daysText').textContent = '亚克力与可达鸭已经' + daysCount + '天';
+        /* ── 天数计算 ──
+           基准：2026-04-16 = 第92天
+           往后每过一个自然日 +1
+        ──────────────────── */
+        const BASE_DATE = new Date('2026-04-16T00:00:00+08:00'); // 第92天
+        const BASE_DAYS = 92;
 
-        // 生成星星（忽隐忽现效果）
+        function calcDays() {
+            const now = new Date();
+            // 转成北京时间的"今天零点"
+            const bjOffset = 8 * 60; // 分钟
+            const localOffset = now.getTimezoneOffset(); // 分钟（负数=东区）
+            const bjNow = new Date(now.getTime() + (bjOffset + localOffset) * 60000);
+            bjNow.setHours(0, 0, 0, 0);
+
+            const base = new Date(BASE_DATE);
+            base.setHours(0, 0, 0, 0);
+
+            const diff = Math.floor((bjNow - base) / 86400000);
+            return BASE_DAYS + diff;
+        }
+
+        function updateDisplay() {
+            const days = calcDays();
+            document.getElementById('daysText').textContent = '亚克力与可达鸭已经' + days + '天';
+
+            // 副标题：显示今天日期
+            const now = new Date();
+            const y = now.getFullYear();
+            const m = String(now.getMonth() + 1).padStart(2, '0');
+            const d = String(now.getDate()).padStart(2, '0');
+            document.getElementById('dateText').textContent = y + '.' + m + '.' + d;
+        }
+
+        updateDisplay();
+
+        // 每分钟检查一次，跨零点自动更新
+        setInterval(updateDisplay, 60000);
+
+        /* ── 生成星星 ── */
         const starSky = document.getElementById('starSky');
-        for (let i = 0; i < daysCount; i++) {
+        const starCount = calcDays() + 50; // 天数 + 额外50颗，更密
+
+        for (let i = 0; i < starCount; i++) {
             const star = document.createElement('div');
             star.className = 'star';
-            const size = Math.random() * 2.5 + 0.5;
-            const x = Math.random() * 100;
-            const y = Math.random() * 100;
-            const dur = Math.random() * 4 + 3; // 3-7秒一个完整忽隐忽现周期
-            const delay = Math.random() * 7;     // 随机延迟，让星星不同步
+            // 尺寸：1~5px，更大更明显
+            const size  = Math.random() * 4 + 1;
+            const x     = Math.random() * 100;
+            const y     = Math.random() * 100;
+            const dur   = Math.random() * 4 + 2.5;
+            const delay = Math.random() * 8;
+            // 发光强度随尺寸增大
+            const glow  = size * 5;
             star.style.cssText = `
-                width: ${size}px;
-                height: ${size}px;
-                left: ${x}%;
-                top: ${y}%;
-                --dur: ${dur}s;
-                --delay: ${delay}s;
-                box-shadow: 0 0 ${size * 3}px rgba(255,255,255,0.6);
+                width:${size}px; height:${size}px;
+                left:${x}%; top:${y}%;
+                --dur:${dur}s; --delay:${delay}s;
+                box-shadow: 0 0 ${glow}px ${glow/2}px rgba(255,255,255,0.85),
+                            0 0 ${glow*2}px rgba(180,200,255,0.4);
             `;
             starSky.appendChild(star);
         }
 
-        // 流星
-        for (let i = 0; i < 5; i++) {
-            setTimeout(() => createShootingStar(), i * 8000 + Math.random() * 5000);
-        }
+        /* ── 流星 ── */
         function createShootingStar() {
-            const star = document.createElement('div');
-            star.className = 'shooting-star';
-            star.style.cssText = `
-                left: ${30 + Math.random() * 50}%;
-                top: ${Math.random() * 50}%;
-                width: ${80 + Math.random() * 120}px;
-                animation-duration: ${0.8 + Math.random() * 0.6}s;
+            const s = document.createElement('div');
+            s.className = 'shooting-star';
+            const len = 100 + Math.random() * 150;
+            s.style.cssText = `
+                left:${20 + Math.random() * 60}%;
+                top:${5 + Math.random() * 45}%;
+                width:${len}px;
+                animation-duration:${0.7 + Math.random() * 0.6}s;
             `;
-            starSky.appendChild(star);
-            setTimeout(() => star.remove(), 2000);
-            setTimeout(createShootingStar, 5000 + Math.random() * 10000);
+            starSky.appendChild(s);
+            setTimeout(() => s.remove(), 2000);
+            setTimeout(createShootingStar, 6000 + Math.random() * 12000);
         }
-
-        // 首次点击页面自动开启音乐
-        document.addEventListener('click', function initMusic() {
-            if (!musicStarted) {
-                neteasePlayer.src = '//music.163.com/outchain/player?type=2&id=5252398&auto=1&height=66';
-                musicStarted = true;
-            }
-            document.removeEventListener('click', initMusic);
-        }, { once: true });
+        for (let i = 0; i < 4; i++) {
+            setTimeout(createShootingStar, i * 7000 + Math.random() * 4000);
+        }
     </script>
 </body>
 </html>
