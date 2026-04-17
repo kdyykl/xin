@@ -206,9 +206,106 @@
             .days-text { font-size: 4rem; }
             .hearts { font-size: 3.5rem; }
         }
+
+        /* ── 开场幕布 ── */
+        .curtain {
+            position: fixed;
+            inset: 0;
+            z-index: 99999;
+            background: radial-gradient(ellipse at center, #0a0a15 0%, #000008 100%);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            transition: opacity 1.2s ease, transform 1.2s ease;
+        }
+        .curtain.hide {
+            opacity: 0;
+            transform: scale(1.1);
+            pointer-events: none;
+        }
+        .curtain-stars {
+            position: absolute;
+            inset: 0;
+            overflow: hidden;
+            pointer-events: none;
+        }
+        .curtain-stars::before,
+        .curtain-stars::after {
+            content: '';
+            position: absolute;
+            width: 3px; height: 3px;
+            background: white;
+            border-radius: 50%;
+            box-shadow:
+                10vw 20vh 0 0 rgba(255,255,255,0.8),
+                25vw 45vh 0 -1px rgba(255,255,255,0.6),
+                40vw 15vh 0 0 rgba(255,255,255,0.7),
+                55vw 60vh 0 -1px rgba(255,255,255,0.5),
+                70vw 30vh 0 0 rgba(255,255,255,0.8),
+                85vw 70vh 0 -1px rgba(255,255,255,0.6),
+                15vw 80vh 0 0 rgba(255,255,255,0.7),
+                90vw 10vh 0 -1px rgba(255,255,255,0.5),
+                5vw 55vh 0 0 rgba(255,255,255,0.6),
+                95vw 45vh 0 -1px rgba(255,255,255,0.8),
+                30vw 5vh 0 0 rgba(255,255,255,0.7),
+                60vw 85vh 0 -1px rgba(255,255,255,0.6),
+                20vw 35vh 0 0 rgba(255,255,255,0.5),
+                80vw 55vh 0 -1px rgba(255,255,255,0.8),
+                45vw 75vh 0 0 rgba(255,255,255,0.7);
+            animation: curtainTwinkle 3s ease-in-out infinite;
+        }
+        .curtain-stars::after {
+            animation-delay: 1.5s;
+        }
+        @keyframes curtainTwinkle {
+            0%, 100% { opacity: 0.3; }
+            50% { opacity: 1; }
+        }
+        .curtain-title {
+            font-size: clamp(1.2rem, 4vw, 2rem);
+            color: rgba(255,255,255,0.6);
+            letter-spacing: 4px;
+            margin-bottom: 30px;
+            animation: pulse 2s ease-in-out infinite;
+        }
+        @keyframes pulse {
+            0%, 100% { opacity: 0.6; }
+            50% { opacity: 1; }
+        }
+        .start-btn {
+            padding: 18px 50px;
+            font-size: clamp(1rem, 3vw, 1.3rem);
+            font-family: inherit;
+            font-weight: 500;
+            color: white;
+            background: linear-gradient(135deg, rgba(255,100,150,0.3), rgba(100,150,255,0.3));
+            border: 2px solid rgba(255,255,255,0.4);
+            border-radius: 50px;
+            cursor: pointer;
+            backdrop-filter: blur(10px);
+            transition: all 0.4s cubic-bezier(0.34,1.56,0.64,1);
+            animation: glow 2s ease-in-out infinite;
+        }
+        .start-btn:hover {
+            transform: scale(1.08);
+            background: linear-gradient(135deg, rgba(255,100,150,0.5), rgba(100,150,255,0.5));
+            box-shadow: 0 0 30px rgba(255,150,200,0.5);
+        }
+        @keyframes glow {
+            0%, 100% { box-shadow: 0 0 20px rgba(255,150,200,0.3); }
+            50% { box-shadow: 0 0 40px rgba(255,150,200,0.5); }
+        }
     </style>
 </head>
 <body>
+
+    <!-- 开场幕布 -->
+    <div class="curtain" id="curtain">
+        <div class="curtain-stars"></div>
+        <div class="curtain-title">✨ 萤火虫之夜 ✨</div>
+        <button class="start-btn" id="startBtn">开始我们的故事</button>
+    </div>
 
     <button class="music-control" id="musicBtn" onclick="toggleMusic()"></button>
     <audio id="bgMusic" loop preload="auto"
@@ -225,7 +322,9 @@
 
 
     <script>
-        /* ── 音乐：尽可能自动播放 ── */
+        /* ── 开场幕布 + 音乐 ── */
+        const curtain = document.getElementById('curtain');
+        const startBtn = document.getElementById('startBtn');
         const musicBtn = document.getElementById('musicBtn');
         const bgMusic  = document.getElementById('bgMusic');
         let musicStarted = false;
@@ -248,18 +347,13 @@
             }
         }
 
-        // 页面加载立刻尝试
-        tryPlay();
-
-        // 各种交互事件都尝试
-        ['click', 'touchstart', 'touchend', 'scroll', 'mousemove', 'keydown'].forEach(evt => {
-            document.addEventListener(evt, tryPlay, { once: true, passive: true });
-        });
-
-        // 延迟再试几次
-        [100, 300, 500, 1000, 2000].forEach(ms => {
-            setTimeout(tryPlay, ms);
-        });
+        // 点击"开始我们的故事"按钮
+        startBtn.addEventListener('click', function() {
+            curtain.classList.add('hide');
+            tryPlay();
+            // 动画结束后移除幕布
+            setTimeout(() => curtain.remove(), 1200);
+        }, { once: true });
 
         /* ── 天数计算 ── */
         const BASE_DATE = new Date('2026-04-16T00:00:00+08:00');
