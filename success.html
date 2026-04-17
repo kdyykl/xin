@@ -197,29 +197,10 @@
         .music-control.paused::before { content: '🔇'; }
         .music-control.paused { opacity: 0.5; }
 
-        /* ── 导航按钮 ── */
-        .nav-btn {
-            position: fixed;
-            bottom: max(20px, env(safe-area-inset-bottom, 20px));
-            padding: 10px 22px;
-            border-radius: 50px;
-            border: 1px solid rgba(255,255,255,0.25);
-            background: rgba(255,255,255,0.08);
-            backdrop-filter: blur(10px);
-            color: rgba(255,255,255,0.75);
-            font-size: clamp(0.8rem, 2.5vw, 0.95rem);
-            text-decoration: none;
-            transition: all 0.3s;
-            z-index: 100;
-            white-space: nowrap;
-        }
-        .nav-btn:hover { background: rgba(255,255,255,0.18); transform: scale(1.05); }
-        .nav-prev { left: max(15px, env(safe-area-inset-left, 15px)); }
-        .nav-next { right: max(15px, env(safe-area-inset-right, 15px)); }
+
 
         @media (max-width: 480px) {
             .days-text { letter-spacing: 1px; }
-            .nav-btn { padding: 9px 16px; }
         }
         @media (min-width: 1200px) {
             .days-text { font-size: 4rem; }
@@ -241,8 +222,7 @@
         <div class="hearts">🦆 ❤️</div>
     </div>
 
-    <a href="target.html"       class="nav-btn nav-prev">← 表白</a>
-    <a href="heart_popups.html"  class="nav-btn nav-next">首页 →</a>
+
 
     <script>
         /* ── 音乐 ── */
