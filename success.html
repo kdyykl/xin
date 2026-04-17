@@ -25,11 +25,13 @@
             position: fixed;
             inset: 0;
             pointer-events: none;
+            z-index: 1;
         }
         .star-field .star {
             position: absolute;
             pointer-events: all;
             cursor: pointer;
+            z-index: calc(100 + var(--star-idx, 0) % 100);
         }
 
         /* ── 星星：荧光绿萤火虫 ── */
@@ -119,23 +121,21 @@
 
         /* ── 主文字 ── */
         .main-text {
-            position: relative;
-            z-index: 10;
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            z-index: 500;
             text-align: center;
             padding: 20px;
             animation: fadeIn 2s ease 0.5s both;
             width: 100%;
             max-width: 700px;
             pointer-events: none;
-            /* 垂直居中，且可小范围滚动 */
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
         }
         @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(20px); }
-            to   { opacity: 1; transform: translateY(0); }
+            from { opacity: 0; transform: translate(-50%, calc(-50% + 20px)); }
+            to   { opacity: 1; transform: translate(-50%, -50%); }
         }
 
         .days-text {
@@ -203,6 +203,10 @@
 
         @media (max-width: 480px) {
             .days-text { letter-spacing: 1px; }
+            .main-text { max-width: 90vw; }
+        }
+        @media (max-height: 500px) {
+            .main-text { top: 45%; }
         }
         @media (min-width: 1200px) {
             .days-text { font-size: 4rem; }
@@ -310,11 +314,11 @@
     </div>
 
     <button class="music-control" id="musicBtn" onclick="toggleMusic()"></button>
-    <!-- NetEase 播放器 iframe (通过 referer 绕过限制) -->
-    <iframe id="musicIframe" allow="autoplay; encrypted-media"
-            src="https://music.163.com/song.html?id=2083785152&autoplay=true"
-            style="display:none;width:0;height:0;border:0;opacity:0;position:absolute;"
-            referrerpolicy="no-referrer"></iframe>
+    <!-- NetEase 播放器 iframe（用 JS 动态设置 src，让浏览器认为是用户主动触发的） -->
+    <iframe id="musicIframe" allow="autoplay; encrypted-media" frameborder="0"
+            style="position:fixed;bottom:0;right:0;width:1px;height:1px;border:none;z-index:600;opacity:0;pointer-events:none;"
+            referrerpolicy="no-referrer"
+            src=""></iframe>
     <audio id="bgMusic" loop preload="auto"></audio>
 
     <div class="star-field" id="starField"></div>
@@ -333,19 +337,25 @@
         const startBtn = document.getElementById('startBtn');
         const musicBtn = document.getElementById('musicBtn');
         const bgMusic  = document.getElementById('bgMusic');
+        const musicIframe = document.getElementById('musicIframe');
         let musicStarted = false;
         let isPaused = false;
 
-        function tryPlay() {
+        // 音乐 URL：邓紫棋《唯一》
+        const MUSIC_URL = 'https://music.163.com/song/media/outer/url?id=2083785152.mp3';
+        const NETEASE_PLAYER_URL = 'https://music.163.com/song.html?id=2083785152&autoplay=true';
+
+        function startAudio() {
+            bgMusic.src = MUSIC_URL;
             bgMusic.play().then(() => {
                 musicStarted = true;
                 isPaused = false;
                 musicBtn.classList.remove('paused');
             }).catch(function() {
-                // audio 直接播放失败，改为通过 iframe 触发
+                // audio 直链失败 → 用 iframe 方式播放（用户点击触发，绕过 autoplay 限制）
+                bgMusic.src = '';
+                musicIframe.src = NETEASE_PLAYER_URL;
                 musicStarted = true;
-                var iframe = document.getElementById('musicIframe');
-                iframe.src = 'https://music.163.com/song.html?id=2083785152&autoplay=true';
                 isPaused = false;
                 musicBtn.classList.remove('paused');
             });
@@ -353,36 +363,32 @@
 
         function toggleMusic() {
             if (!musicStarted) {
-                tryPlay();
-            } else {
-                isPaused = !isPaused;
-                if (isPaused) {
-                    bgMusic.pause();
-                    musicBtn.classList.add('paused');
-                } else {
-                    bgMusic.play().catch(function() {
-                        var iframe = document.getElementById('musicIframe');
-                        iframe.src = 'https://music.163.com/song.html?id=2083785152&autoplay=true';
-                    });
+                startAudio();
+            } else if (isPaused) {
+                // 恢复：优先 audio，备用 iframe
+                bgMusic.src = MUSIC_URL;
+                bgMusic.play().then(() => {
                     musicBtn.classList.remove('paused');
-                }
+                    isPaused = false;
+                    musicIframe.src = '';
+                }).catch(function() {
+                    musicIframe.src = NETEASE_PLAYER_URL;
+                    musicBtn.classList.remove('paused');
+                    isPaused = false;
+                });
+            } else {
+                // 暂停
+                bgMusic.pause();
+                musicIframe.src = '';
+                musicBtn.classList.add('paused');
+                isPaused = true;
             }
         }
 
-        // 点击"开始我们的故事"按钮
+        // 点击"开始我们的故事"按钮 → 触发音乐
         startBtn.addEventListener('click', function() {
             curtain.classList.add('hide');
-            // 用户主动点击，绕过浏览器限制，触发音乐
-            bgMusic.src = 'https://music.163.com/song.html?id=2083785152&autoplay=true';
-            bgMusic.play().catch(function() {
-                // fallback: 用 iframe 方式播放
-                var iframe = document.getElementById('musicIframe');
-                iframe.src = 'https://music.163.com/song.html?id=2083785152&autoplay=true';
-            });
-            musicStarted = true;
-            isPaused = false;
-            musicBtn.classList.remove('paused');
-            // 动画结束后移除幕布
+            startAudio();
             setTimeout(() => curtain.remove(), 1200);
         }, { once: true });
 
