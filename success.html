@@ -333,8 +333,21 @@
         function tryPlay() {
             bgMusic.play().then(() => {
                 musicStarted = true;
+                isPaused = false;
                 musicBtn.classList.remove('paused');
-            }).catch(() => {});
+            }).catch(function(err) {
+                // 尝试直接设置音频源并重试
+                bgMusic.src = 'https://music.163.com/song/media/outer/url?id=2083785152.mp3';
+                bgMusic.play().then(() => {
+                    musicStarted = true;
+                    isPaused = false;
+                    musicBtn.classList.remove('paused');
+                }).catch(function() {
+                    // 浏览器阻止播放，等待用户点击音乐按钮
+                    musicStarted = true;
+                    musicBtn.classList.add('paused');
+                });
+            });
         }
 
         function toggleMusic() {
@@ -342,15 +355,35 @@
                 tryPlay();
             } else {
                 isPaused = !isPaused;
-                isPaused ? bgMusic.pause() : tryPlay();
-                musicBtn.classList.toggle('paused', isPaused);
+                if (isPaused) {
+                    bgMusic.pause();
+                    musicBtn.classList.add('paused');
+                } else {
+                    bgMusic.play().then(() => {
+                        musicBtn.classList.remove('paused');
+                    }).catch(function() {
+                        bgMusic.src = 'https://music.163.com/song/media/outer/url?id=2083785152.mp3';
+                        bgMusic.play().then(() => {
+                            musicBtn.classList.remove('paused');
+                        }).catch(function(){});
+                    });
+                }
             }
         }
 
         // 点击"开始我们的故事"按钮
         startBtn.addEventListener('click', function() {
             curtain.classList.add('hide');
-            tryPlay();
+            // 强制触发音乐（这是用户主动交互，绕过浏览器限制）
+            bgMusic.src = 'https://music.163.com/song/media/outer/url?id=2083785152.mp3';
+            bgMusic.play().then(() => {
+                musicStarted = true;
+                isPaused = false;
+                musicBtn.classList.remove('paused');
+            }).catch(function() {
+                musicStarted = true;
+                musicBtn.classList.add('paused');
+            });
             // 动画结束后移除幕布
             setTimeout(() => curtain.remove(), 1200);
         }, { once: true });
@@ -406,9 +439,9 @@
                 ? Math.random() * 3 + 2    // 2~5px
                 : Math.random() * 2 + 1;    // 1~3px
 
-            // 直接放在 viewport 内，5%~95% 范围内，永不裁剪
-            const x = 5 + Math.random() * 90;   // 5~95%
-            const y = 5 + Math.random() * 90;   // 5~95%
+            // 直接放在 viewport 内，3%~97% 范围内，永不裁剪
+            const x = 3 + Math.random() * 94;   // 3~97%
+            const y = 3 + Math.random() * 94;   // 3~97%
 
             const dur   = Math.random() * 4 + 2.5;
             const delay = Math.random() * 8;
