@@ -35,40 +35,58 @@
             cursor: pointer;
         }
 
-        /* ── 星星：更大更亮，忽隐忽现 ── */
+        /* ── 星星：荧光绿萤火虫 ── */
         .star {
             border-radius: 50%;
-            background: white;
-            animation: twinkle var(--dur) ease-in-out infinite;
-            animation-delay: var(--delay);
+            background: #39ff14;
+            animation: twinkle var(--dur) ease-in-out infinite,
+                       fireflyMove var(--flyDur, 15s) ease-in-out infinite;
+            animation-delay: var(--delay), var(--flyDelay, 0s);
+            transition: left 0.8s cubic-bezier(0.34,1.56,0.64,1),
+                        top 0.8s cubic-bezier(0.34,1.56,0.64,1),
+                        transform 0.8s cubic-bezier(0.34,1.56,0.64,1),
+                        box-shadow 0.8s;
+            will-change: left, top, transform;
         }
         .star:hover { filter: brightness(1.8); }
-
-        @keyframes twinkle {
-            0%   { opacity: 0;   transform: scale(0.4); }
-            15%  { opacity: 1;   transform: scale(1.6); }
-            30%  { opacity: 0.7; transform: scale(1.1); }
-            50%  { opacity: 0;   transform: scale(0.3); }
-            65%  { opacity: 1;   transform: scale(1.5); }
-            80%  { opacity: 0.3; transform: scale(0.9); }
-            100% { opacity: 0;   transform: scale(0.4); }
+        .star.centered {
+            animation: none !important;
+            z-index: 500;
         }
 
-        /* ── 日期气泡 ── */
+        @keyframes twinkle {
+            0%   { opacity: 0.15; transform: scale(0.6); }
+            15%  { opacity: 0.9;  transform: scale(1.4); }
+            30%  { opacity: 0.5;  transform: scale(1); }
+            50%  { opacity: 0.15; transform: scale(0.5); }
+            65%  { opacity: 0.85; transform: scale(1.3); }
+            80%  { opacity: 0.3;  transform: scale(0.8); }
+            100% { opacity: 0.15; transform: scale(0.6); }
+        }
+        @keyframes fireflyMove {
+            0%   { margin-left: 0;  margin-top: 0; }
+            25%  { margin-left: var(--dx1, 30px); margin-top: var(--dy1, -20px); }
+            50%  { margin-left: var(--dx2, -20px); margin-top: var(--dy2, 25px); }
+            75%  { margin-left: var(--dx3, 15px); margin-top: var(--dy3, -30px); }
+            100% { margin-left: 0; margin-top: 0; }
+        }
+
+        /* ── 日期气泡（萤火虫风格） ── */
         .star-label {
             position: fixed;
-            background: rgba(255,255,255,0.97);
-            color: #1a1a4e;
-            font-size: clamp(10px, 3vw, 13px);
+            background: rgba(10,40,5,0.92);
+            color: #39ff14;
+            font-size: clamp(11px, 3vw, 14px);
             font-weight: bold;
-            padding: 6px 14px;
+            padding: 8px 16px;
             border-radius: 20px;
+            border: 1px solid rgba(57,255,20,0.4);
             pointer-events: none;
             z-index: 9999;
             white-space: nowrap;
-            transform: translate(-50%, -140%);
-            box-shadow: 0 2px 16px rgba(100,120,255,0.35);
-            animation: labelPop 0.22s cubic-bezier(0.34,1.56,0.64,1) forwards;
+            text-align: center;
+            box-shadow: 0 0 20px rgba(57,255,20,0.3), 0 2px 16px rgba(0,0,0,0.5);
+            animation: labelPop 0.3s cubic-bezier(0.34,1.56,0.64,1) forwards;
         }
         .star-label::after {
             content: '';
@@ -76,10 +94,11 @@
             bottom: -6px;
             left: 50%;
             transform: translateX(-50%);
-            width: 8px;
-            height: 8px;
-            background: rgba(255,255,255,0.97);
+            width: 6px;
+            height: 6px;
+            background: #39ff14;
             border-radius: 50%;
+            box-shadow: 0 0 8px #39ff14;
         }
         @keyframes labelPop {
             0%   { opacity: 0; transform: translate(-50%, -140%) scale(0.4); }
@@ -316,10 +335,18 @@
             const dur   = Math.random() * 4 + 2.5;
             const delay = Math.random() * 8;
             const glow  = size * 4;
+            const flyDur = (Math.random() * 12 + 10).toFixed(1);
+            const flyDelay = (Math.random() * 8).toFixed(1);
+            const dx1 = (Math.random() * 60 - 30).toFixed(0);
+            const dy1 = (Math.random() * 60 - 30).toFixed(0);
+            const dx2 = (Math.random() * 60 - 30).toFixed(0);
+            const dy2 = (Math.random() * 60 - 30).toFixed(0);
+            const dx3 = (Math.random() * 60 - 30).toFixed(0);
+            const dy3 = (Math.random() * 60 - 30).toFixed(0);
 
             const glowColor = hasDate
-                ? `rgba(200,220,255,0.9), 0 0 ${glow*2}px rgba(150,180,255,0.5)`
-                : `rgba(255,255,255,0.85), 0 0 ${glow*2}px rgba(180,200,255,0.4)`;
+                ? `rgba(57,255,20,0.9), 0 0 ${glow*2}px rgba(57,255,20,0.5)`
+                : `rgba(57,255,20,0.7), 0 0 ${glow*2}px rgba(57,255,20,0.3)`;
 
             star.style.cssText =
                 'width:'  + size + 'px;' +
@@ -328,6 +355,11 @@
                 'top:'    + y.toFixed(2) + '%;' +
                 '--dur:'  + dur.toFixed(1) + 's;' +
                 '--delay:' + delay.toFixed(1) + 's;' +
+                '--flyDur:' + flyDur + 's;' +
+                '--flyDelay:' + flyDelay + 's;' +
+                '--dx1:' + dx1 + 'px;--dy1:' + dy1 + 'px;' +
+                '--dx2:' + dx2 + 'px;--dy2:' + dy2 + 'px;' +
+                '--dx3:' + dx3 + 'px;--dy3:' + dy3 + 'px;' +
                 'box-shadow:0 0 ' + glow + 'px ' + (glow/2) + 'px ' + glowColor + ';';
 
             if (hasDate) {
@@ -335,30 +367,66 @@
                 starDate.setDate(starDate.getDate() + i);
                 const label = formatDate(starDate);
 
-                star.addEventListener('click', (function(l, sx, sy) {
+                star.addEventListener('click', (function(l, el) {
                     return function(e) {
                         e.stopPropagation();
-                        showLabel(l, sx, sy);
+                        flyToCenter(l, el);
                     };
-                })(label, x, y));
+                })(label, star));
             }
 
             starField.appendChild(star);
         }
 
-        function showLabel(text, x, y) {
+        let activeLabel = null;
+
+        function flyToCenter(text, starEl) {
+            // 移除旧的标签和之前居中的星星
             document.querySelectorAll('.star-label').forEach(el => el.remove());
+            document.querySelectorAll('.star.centered').forEach(el => {
+                el.classList.remove('centered');
+                el.style.transform = '';
+                el.style.left = el.dataset.origLeft;
+                el.style.top = el.dataset.origTop;
+            });
+
+            // 记住原始位置
+            starEl.dataset.origLeft = starEl.style.left;
+            starEl.dataset.origTop = starEl.style.top;
+
+            // 飞到屏幕中间
+            starEl.classList.add('centered');
+            starEl.style.left = '50%';
+            starEl.style.top = '50%';
+            starEl.style.transform = 'translate(-50%, -50%) scale(3)';
+            starEl.style.boxShadow = '0 0 40px 15px rgba(57,255,20,0.9), 0 0 80px 30px rgba(57,255,20,0.4)';
+
+            // 显示名字
             const label = document.createElement('div');
             label.className = 'star-label';
             label.textContent = '✨ ' + text;
-            label.style.left = x + '%';
-            label.style.top  = y + '%';
+            label.style.left = '50%';
+            label.style.top = '50%';
+            label.style.transform = 'translate(-50%, -180%)';
             document.body.appendChild(label);
+            activeLabel = label;
+
+            // 点击空白处复原
             setTimeout(() => {
-                label.style.transition = 'opacity 0.4s';
-                label.style.opacity = '0';
-                setTimeout(() => label.remove(), 400);
-            }, 2500);
+                function reset(e) {
+                    if (e && e.target.closest('.star')) return;
+                    document.removeEventListener('click', reset);
+                    label.style.transition = 'opacity 0.4s';
+                    label.style.opacity = '0';
+                    setTimeout(() => label.remove(), 400);
+                    starEl.classList.remove('centered');
+                    starEl.style.transform = '';
+                    starEl.style.boxShadow = '';
+                    starEl.style.left = starEl.dataset.origLeft;
+                    starEl.style.top = starEl.dataset.origTop;
+                }
+                document.addEventListener('click', reset);
+            }, 200);
         }
 
         /* ── 流星 ── */
