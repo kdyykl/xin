@@ -225,20 +225,22 @@
 
 
     <script>
-        /* ── 音乐 ── */
+        /* ── 音乐：尽可能自动播放 ── */
         const musicBtn = document.getElementById('musicBtn');
         const bgMusic  = document.getElementById('bgMusic');
         let musicStarted = false;
         let isPaused = false;
 
-        function tryPlay() { bgMusic.play().catch(() => {}); }
+        function tryPlay() {
+            bgMusic.play().then(() => {
+                musicStarted = true;
+                musicBtn.classList.remove('paused');
+            }).catch(() => {});
+        }
 
         function toggleMusic() {
             if (!musicStarted) {
                 tryPlay();
-                musicStarted = true;
-                isPaused = false;
-                musicBtn.classList.remove('paused');
             } else {
                 isPaused = !isPaused;
                 isPaused ? bgMusic.pause() : tryPlay();
@@ -246,15 +248,17 @@
             }
         }
 
-        document.addEventListener('click', function initMusic() {
-            if (!musicStarted) { tryPlay(); musicStarted = true; }
-            document.removeEventListener('click', initMusic);
-        }, { once: true });
+        // 页面加载立刻尝试
+        tryPlay();
 
-        window.addEventListener('load', () => {
-            setTimeout(() => {
-                if (!musicStarted) { tryPlay(); musicStarted = true; }
-            }, 800);
+        // 各种交互事件都尝试
+        ['click', 'touchstart', 'touchend', 'scroll', 'mousemove', 'keydown'].forEach(evt => {
+            document.addEventListener(evt, tryPlay, { once: true, passive: true });
+        });
+
+        // 延迟再试几次
+        [100, 300, 500, 1000, 2000].forEach(ms => {
+            setTimeout(tryPlay, ms);
         });
 
         /* ── 天数计算 ── */
