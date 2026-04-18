@@ -313,8 +313,10 @@
     </div>
 
     <button class="music-control" id="musicBtn" onclick="toggleMusic()"></button>
-    <!-- 网易云音乐播放器 -->
-    <iframe id="neteasePlayer" frameborder="no" border="0" marginwidth="0" marginheight="0" width=1 height=1 style="position:fixed;left:-9999px;top:-9999px;opacity:0;pointer-events:none;" src="about:blank"></iframe>
+    <!-- 网易云音乐迷你播放器 -->
+    <div id="playerWrap" style="position:fixed;bottom:20px;left:50%;transform:translateX(-50%);z-index:100;opacity:0;transition:opacity 0.8s;pointer-events:none;">
+        <iframe id="neteasePlayer" frameborder="no" border="0" marginwidth="0" marginheight="0" width=298 height=52 src="about:blank"></iframe>
+    </div>
 
     <div class="star-field" id="starField"></div>
 
@@ -332,27 +334,27 @@
         const startBtn = document.getElementById('startBtn');
         const musicBtn = document.getElementById('musicBtn');
         const neteasePlayer = document.getElementById('neteasePlayer');
-        const SONG_URL = '//music.163.com/outchain/player?type=2&id=2083785152&auto=1&height=0';
+        const playerWrap = document.getElementById('playerWrap');
+        const SONG_URL = 'https://music.163.com/outchain/player?type=2&id=2083785152&auto=1&height=32';
         let musicStarted = false;
-        let isPaused = false;
 
         function playMusic() {
             neteasePlayer.src = SONG_URL;
+            playerWrap.style.opacity = '1';
+            playerWrap.style.pointerEvents = 'auto';
             musicStarted = true;
-            isPaused = false;
             musicBtn.classList.remove('paused');
         }
 
         function stopMusic() {
             neteasePlayer.src = 'about:blank';
-            isPaused = true;
+            playerWrap.style.opacity = '0';
+            playerWrap.style.pointerEvents = 'none';
             musicBtn.classList.add('paused');
         }
 
         function toggleMusic() {
-            if (isPaused) {
-                playMusic();
-            } else if (musicStarted) {
+            if (musicStarted && !musicBtn.classList.contains('paused')) {
                 stopMusic();
             } else {
                 playMusic();
