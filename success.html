@@ -314,6 +314,8 @@
 
     <button class="music-control" id="musicBtn" onclick="toggleMusic()"></button>
     <audio id="bgMusic" loop preload="auto" src="bgm.mp3"></audio>
+    <!-- 网易云 iframe 备用播放器 -->
+    <iframe id="neteasePlayer" frameborder="no" border="0" marginwidth="0" marginheight="0" width=1 height=1 style="position:fixed;left:-9999px;top:-9999px;opacity:0;pointer-events:none;" src="//music.163.com/outchain/player?type=2&id=2083785152&auto=0&height=0"></iframe>
 
     <div class="star-field" id="starField"></div>
 
@@ -331,25 +333,43 @@
         const startBtn = document.getElementById('startBtn');
         const musicBtn = document.getElementById('musicBtn');
         const bgMusic  = document.getElementById('bgMusic');
+        const neteasePlayer = document.getElementById('neteasePlayer');
         let musicStarted = false;
         let isPaused = false;
+        let useNetease = false;
+
+        function tryPlayMusic() {
+            return bgMusic.play().then(() => {
+                useNetease = false;
+            }).catch(() => {
+                // 本地播放失败 → 用网易云 iframe
+                useNetease = true;
+                neteasePlayer.src = '//music.163.com/outchain/player?type=2&id=2083785152&auto=1&height=0';
+            });
+        }
 
         function toggleMusic() {
             if (isPaused) {
-                bgMusic.play().then(() => {
-                    musicBtn.classList.remove('paused');
-                    isPaused = false;
-                });
+                if (useNetease) {
+                    neteasePlayer.src = '//music.163.com/outchain/player?type=2&id=2083785152&auto=1&height=0';
+                } else {
+                    bgMusic.play();
+                }
+                musicBtn.classList.remove('paused');
+                isPaused = false;
             } else if (musicStarted) {
-                bgMusic.pause();
+                if (useNetease) {
+                    neteasePlayer.src = 'about:blank';
+                } else {
+                    bgMusic.pause();
+                }
                 musicBtn.classList.add('paused');
                 isPaused = true;
             } else {
-                bgMusic.play().then(() => {
+                tryPlayMusic().then(() => {
                     musicStarted = true;
+                    isPaused = false;
                     musicBtn.classList.remove('paused');
-                }).catch(() => {
-                    musicBtn.classList.add('paused');
                 });
             }
         }
@@ -357,13 +377,10 @@
         // 点击"开始我们的故事"按钮 → 触发音乐
         startBtn.addEventListener('click', function() {
             curtain.classList.add('hide');
-            bgMusic.play().then(() => {
+            tryPlayMusic().then(() => {
                 musicStarted = true;
                 isPaused = false;
                 musicBtn.classList.remove('paused');
-            }).catch(() => {
-                musicStarted = true;
-                musicBtn.classList.add('paused');
             });
             setTimeout(() => curtain.remove(), 1200);
         }, { once: true });
