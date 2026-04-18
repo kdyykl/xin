@@ -15,7 +15,6 @@
                 radial-gradient(ellipse at 50% 0%, rgba(20,10,60,0.7) 0%, transparent 55%),
                 radial-gradient(ellipse at 20% 30%, rgba(10,20,60,0.4) 0%, transparent 50%),
                 radial-gradient(ellipse at 80% 20%, rgba(15,10,50,0.5) 0%, transparent 50%);
-            overflow-x: hidden;
             font-family: 'PingFang SC', 'Microsoft YaHei', sans-serif;
             color: white;
         }
@@ -129,8 +128,8 @@
             text-align: center;
             padding: 20px;
             animation: fadeIn 2s ease 0.5s both;
-            width: 100%;
-            max-width: 700px;
+            width: auto;
+            max-width: 95vw;
             pointer-events: none;
         }
         @keyframes fadeIn {
@@ -139,9 +138,9 @@
         }
 
         .days-text {
-            font-size: clamp(1.6rem, 5vw, 3.8rem);
+            font-size: clamp(1.4rem, 4.5vw, 3.5rem);
             font-weight: 300;
-            letter-spacing: clamp(2px, 1vw, 6px);
+            letter-spacing: clamp(1px, 0.8vw, 5px);
             line-height: 1.4;
             text-shadow: 0 0 40px rgba(255,255,255,0.6);
             background: linear-gradient(135deg, #fff 0%, #ffd700 50%, #fff 100%);
@@ -150,7 +149,7 @@
             -webkit-text-fill-color: transparent;
             background-clip: text;
             animation: shimmer 4s linear infinite;
-            word-break: keep-all;
+            white-space: nowrap;
         }
         @keyframes shimmer {
             0%   { background-position: 0% center; }
@@ -202,8 +201,8 @@
 
 
         @media (max-width: 480px) {
-            .days-text { letter-spacing: 1px; }
-            .main-text { max-width: 90vw; }
+            .days-text { letter-spacing: 1px; font-size: 1.3rem; }
+            .main-text { max-width: 98vw; padding: 10px; }
         }
         @media (max-height: 500px) {
             .main-text { top: 45%; }
@@ -314,12 +313,7 @@
     </div>
 
     <button class="music-control" id="musicBtn" onclick="toggleMusic()"></button>
-    <!-- NetEase 播放器 iframe（用 JS 动态设置 src，让浏览器认为是用户主动触发的） -->
-    <iframe id="musicIframe" allow="autoplay; encrypted-media" frameborder="0"
-            style="position:fixed;bottom:0;right:0;width:1px;height:1px;border:none;z-index:600;opacity:0;pointer-events:none;"
-            referrerpolicy="no-referrer"
-            src=""></iframe>
-    <audio id="bgMusic" loop preload="auto"></audio>
+    <audio id="bgMusic" loop preload="auto" src="bgm.mp3"></audio>
 
     <div class="star-field" id="starField"></div>
 
@@ -337,58 +331,40 @@
         const startBtn = document.getElementById('startBtn');
         const musicBtn = document.getElementById('musicBtn');
         const bgMusic  = document.getElementById('bgMusic');
-        const musicIframe = document.getElementById('musicIframe');
         let musicStarted = false;
         let isPaused = false;
 
-        // 音乐 URL：邓紫棋《唯一》
-        const MUSIC_URL = 'https://music.163.com/song/media/outer/url?id=2083785152.mp3';
-        const NETEASE_PLAYER_URL = 'https://music.163.com/song.html?id=2083785152&autoplay=true';
-
-        function startAudio() {
-            bgMusic.src = MUSIC_URL;
-            bgMusic.play().then(() => {
-                musicStarted = true;
-                isPaused = false;
-                musicBtn.classList.remove('paused');
-            }).catch(function() {
-                // audio 直链失败 → 用 iframe 方式播放（用户点击触发，绕过 autoplay 限制）
-                bgMusic.src = '';
-                musicIframe.src = NETEASE_PLAYER_URL;
-                musicStarted = true;
-                isPaused = false;
-                musicBtn.classList.remove('paused');
-            });
-        }
-
         function toggleMusic() {
-            if (!musicStarted) {
-                startAudio();
-            } else if (isPaused) {
-                // 恢复：优先 audio，备用 iframe
-                bgMusic.src = MUSIC_URL;
+            if (isPaused) {
                 bgMusic.play().then(() => {
                     musicBtn.classList.remove('paused');
                     isPaused = false;
-                    musicIframe.src = '';
-                }).catch(function() {
-                    musicIframe.src = NETEASE_PLAYER_URL;
-                    musicBtn.classList.remove('paused');
-                    isPaused = false;
                 });
-            } else {
-                // 暂停
+            } else if (musicStarted) {
                 bgMusic.pause();
-                musicIframe.src = '';
                 musicBtn.classList.add('paused');
                 isPaused = true;
+            } else {
+                bgMusic.play().then(() => {
+                    musicStarted = true;
+                    musicBtn.classList.remove('paused');
+                }).catch(() => {
+                    musicBtn.classList.add('paused');
+                });
             }
         }
 
         // 点击"开始我们的故事"按钮 → 触发音乐
         startBtn.addEventListener('click', function() {
             curtain.classList.add('hide');
-            startAudio();
+            bgMusic.play().then(() => {
+                musicStarted = true;
+                isPaused = false;
+                musicBtn.classList.remove('paused');
+            }).catch(() => {
+                musicStarted = true;
+                musicBtn.classList.add('paused');
+            });
             setTimeout(() => curtain.remove(), 1200);
         }, { once: true });
 
