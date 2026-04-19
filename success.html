@@ -281,12 +281,8 @@
         <button class="start-btn" id="startBtn">开始我们的故事</button>
     </div>
 
-    <!-- 音乐播放器：隐藏但可正常播放 -->
-    <iframe id="musicPlayer" allow="autoplay" style="
-        position:fixed;right:-9999px;bottom:0;
-        width:280px;height:68px;border:none;
-        pointer-events:none;
-    " sandbox="allow-same-origin allow-scripts allow-forms allow-popups allow-autoplay"></iframe>
+    <!-- 背景音乐 -->
+    <audio id="bgMusic" preload="auto"></audio>
 
     <div class="star-field" id="starField"></div>
 
@@ -298,14 +294,13 @@
 
     <script>
         /* ── 音乐播放 ── */
-        // QQ音乐嵌入式播放器（隐藏但不离开视口，防止浏览器停止渲染）
-        var QQ_PLAYER = 'https://y.qq.com/iframe/player.html?song_id=438910555&songmid=001NgljR0RUhy1&auto=1& ADTAG=pyq';
+        var bgMusic = document.getElementById('bgMusic');
+        bgMusic.src = 'bgm.mp3';
 
         document.getElementById('startBtn').addEventListener('click', function() {
             var curtain = document.getElementById('curtain');
             curtain.classList.add('hide');
-            var player = document.getElementById('musicPlayer');
-            player.src = QQ_PLAYER;
+            bgMusic.play().catch(function(){});
             setTimeout(function() { curtain.remove(); }, 1200);
         });
 
