@@ -169,28 +169,6 @@
             50%       { transform: scale(1.12); }
         }
 
-        /* ── 音乐播放器 ── */
-        .player-wrap {
-            position: fixed;
-            bottom: 0;
-            left: 0;
-            right: 0;
-            height: 70px;
-            background: rgba(0,0,10,0.85);
-            backdrop-filter: blur(12px);
-            border-top: 1px solid rgba(255,255,255,0.1);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            z-index: 1000;
-            padding: 0 16px;
-        }
-        .player-wrap iframe {
-            border: none;
-            width: 100%;
-            max-width: 500px;
-            height: 66px;
-        }
 
         /* ── 开场幕布 ── */
         .curtain {
@@ -303,13 +281,7 @@
         <button class="start-btn" id="startBtn">开始我们的故事</button>
     </div>
 
-    <!-- 底部播放器 -->
-    <div class="player-wrap" id="playerWrap">
-        <iframe id="musicPlayer" allow="autoplay"
-            src="about:blank"
-            sandbox="allow-same-origin allow-scripts allow-forms allow-popups">
-        </iframe>
-    </div>
+    <audio id="bgMusic" preload="auto"></audio>
 
     <div class="star-field" id="starField"></div>
 
@@ -321,13 +293,13 @@
 
     <script>
         /* ── 音乐播放 ── */
-        var PLAYER_URL = 'https://music.163.com/outchain/player?type=2&id=2083785152&auto=0&height=66';
+        var bgMusic = document.getElementById('bgMusic');
+        bgMusic.src = 'bgm.mp3';
 
         document.getElementById('startBtn').addEventListener('click', function() {
             var curtain = document.getElementById('curtain');
-            var player  = document.getElementById('musicPlayer');
             curtain.classList.add('hide');
-            player.src = PLAYER_URL;
+            bgMusic.play().catch(function(){});
             setTimeout(function() { curtain.remove(); }, 1200);
         });
 
