@@ -296,12 +296,18 @@
         /* ── 背景音乐 ── */
         var bgMusic = document.getElementById('bgMusic');
         bgMusic.src = 'bgm.mp3';
+        bgMusic.load();
 
         /* ── 开始按钮 ── */
         document.getElementById('startBtn').addEventListener('click', function() {
             var curtain = document.getElementById('curtain');
             curtain.classList.add('hide');
-            bgMusic.play().catch(function(){});
+            var playPromise = bgMusic.play();
+            if (playPromise !== undefined) {
+                playPromise.catch(function(error) {
+                    console.log('播放被阻止:', error);
+                });
+            }
             setTimeout(function() { curtain.remove(); }, 1200);
         });
 
