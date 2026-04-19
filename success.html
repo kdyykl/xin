@@ -281,6 +281,9 @@
         <button class="start-btn" id="startBtn">开始我们的故事</button>
     </div>
 
+    <!-- 背景音乐 -->
+    <audio id="bgMusic" preload="auto"></audio>
+
     <div class="star-field" id="starField"></div>
 
     <div class="main-text">
@@ -290,10 +293,15 @@
     </div>
 
     <script>
+        /* ── 背景音乐 ── */
+        var bgMusic = document.getElementById('bgMusic');
+        bgMusic.src = 'bgm.mp3';
+
         /* ── 开始按钮 ── */
         document.getElementById('startBtn').addEventListener('click', function() {
             var curtain = document.getElementById('curtain');
             curtain.classList.add('hide');
+            bgMusic.play().catch(function(){});
             setTimeout(function() { curtain.remove(); }, 1200);
         });
 
