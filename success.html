@@ -281,6 +281,28 @@
         <button class="start-btn" id="startBtn">开始我们的故事</button>
     </div>
 
+    <!-- 背景音乐（隐藏） -->
+    <audio id="bgMusic" preload="auto"></audio>
+
+    <!-- 音乐控制按钮 -->
+    <button id="musicBtn" style="
+        position: fixed;
+        bottom: 20px;
+        right: 20px;
+        width: 44px;
+        height: 44px;
+        border-radius: 50%;
+        border: 2px solid rgba(255,255,255,0.3);
+        background: rgba(0,0,0,0.4);
+        backdrop-filter: blur(10px);
+        color: white;
+        font-size: 18px;
+        cursor: pointer;
+        z-index: 9999;
+        display: none;
+        transition: all 0.3s;
+    " title="音乐开关">🎵</button>
+
     <div class="star-field" id="starField"></div>
 
     <div class="main-text">
@@ -290,10 +312,42 @@
     </div>
 
     <script>
+        /* ── 背景音乐 ── */
+        var bgMusic = document.getElementById('bgMusic');
+        var musicBtn = document.getElementById('musicBtn');
+        bgMusic.src = 'bgm.mp3';
+        bgMusic.loop = true;
+        var isMuted = false;
+
+        /* ── 音乐按钮控制 ── */
+        musicBtn.addEventListener('click', function() {
+            if (bgMusic.paused) {
+                bgMusic.play();
+                musicBtn.textContent = '🎵';
+                musicBtn.style.opacity = '1';
+            } else {
+                bgMusic.pause();
+                musicBtn.textContent = '🎵';
+                musicBtn.style.opacity = '0.4';
+            }
+        });
+
         /* ── 开始按钮 ── */
         document.getElementById('startBtn').addEventListener('click', function() {
             var curtain = document.getElementById('curtain');
             curtain.classList.add('hide');
+            
+            // 开始播放音乐
+            bgMusic.play().then(function() {
+                musicBtn.style.display = 'block';
+                musicBtn.textContent = '🎵';
+            }).catch(function(e) {
+                console.log('音乐播放被阻止:', e);
+                musicBtn.style.display = 'block';
+                musicBtn.textContent = '🎵';
+                musicBtn.style.opacity = '0.4';
+            });
+            
             setTimeout(function() { curtain.remove(); }, 1200);
         });
 
