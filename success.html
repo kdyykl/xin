@@ -234,7 +234,9 @@
             0%, 100% { opacity: 0.6; }
             50% { opacity: 1; }
         }
-        .start-btn {
+
+        /* ── 开始按钮 ── */
+        .story-btn {
             padding: 18px 50px;
             font-size: clamp(1rem, 3vw, 1.3rem);
             font-family: inherit;
@@ -248,65 +250,68 @@
             transition: all 0.4s cubic-bezier(0.34,1.56,0.64,1);
             animation: glow 2s ease-in-out infinite;
         }
-        .start-btn:hover {
+        .story-btn:hover {
             transform: scale(1.08);
-            background: linear-gradient(135deg, rgba(255,100,150,0.5), rgba(100,150,255,0.5));
-            box-shadow: 0 0 30px rgba(255,150,200,0.5);
+            box-shadow: 0 0 30px rgba(255,255,255,0.3);
         }
         @keyframes glow {
-            0%, 100% { box-shadow: 0 0 20px rgba(255,150,200,0.3); }
-            50% { box-shadow: 0 0 40px rgba(255,150,200,0.5); }
+            0%, 100% { box-shadow: 0 0 15px rgba(255,255,255,0.1); }
+            50% { box-shadow: 0 0 30px rgba(255,255,255,0.25); }
         }
 
-        /* ── 响应式 ── */
-        @media (max-width: 480px) {
-            .days-text { letter-spacing: 1px; font-size: 1.3rem; }
-            .main-text { max-width: 98vw; padding: 10px; }
+        /* ── 音乐静音按钮（浮动在右下角）── */
+        #musicBtn {
+            position: fixed;
+            bottom: 28px;
+            right: 28px;
+            width: 48px;
+            height: 48px;
+            border-radius: 50%;
+            background: rgba(10, 10, 30, 0.75);
+            border: 1.5px solid rgba(255,255,255,0.3);
+            color: white;
+            font-size: 22px;
+            cursor: pointer;
+            z-index: 99998;
+            backdrop-filter: blur(8px);
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            line-height: 1;
         }
-        @media (max-height: 500px) {
-            .main-text { top: 45%; }
+        #musicBtn:hover {
+            background: rgba(20, 20, 50, 0.9);
+            transform: scale(1.1);
+            box-shadow: 0 0 20px rgba(255,255,255,0.2);
         }
-        @media (min-width: 1200px) {
-            .days-text { font-size: 4rem; }
-            .hearts { font-size: 3.5rem; }
+        #musicBtn.muted {
+            opacity: 0.55;
+            border-color: rgba(255,255,255,0.2);
         }
     </style>
 </head>
 <body>
 
-    <!-- 开场幕布 -->
-    <div class="curtain" id="curtain">
-        <div class="curtain-stars"></div>
-        <div class="curtain-title">和你在一起总能遇到萤火虫</div>
-        <button class="start-btn" id="startBtn">开始我们的故事</button>
-    </div>
-
-    <!-- 背景音乐（隐藏） -->
+    <!-- 隐藏的音频播放器 -->
     <audio id="bgMusic" preload="auto"></audio>
 
-    <!-- 音乐控制按钮 -->
-    <button id="musicBtn" style="
-        position: fixed;
-        bottom: 20px;
-        right: 20px;
-        width: 44px;
-        height: 44px;
-        border-radius: 50%;
-        border: 2px solid rgba(255,255,255,0.3);
-        background: rgba(0,0,0,0.4);
-        backdrop-filter: blur(10px);
-        color: white;
-        font-size: 18px;
-        cursor: pointer;
-        z-index: 9999;
-        display: none;
-        transition: all 0.3s;
-    " title="音乐开关">🎵</button>
+    <!-- 音乐静音按钮 -->
+    <button id="musicBtn" title="音乐静音">🔇</button>
 
+    <!-- 幕布 -->
+    <div class="curtain" id="curtain">
+        <div class="curtain-stars"></div>
+        <div class="curtain-title">✨ 我们的故事 ✨</div>
+        <button class="story-btn" id="storyBtn">开始我们的故事</button>
+    </div>
+
+    <!-- 星星区域 -->
     <div class="star-field" id="starField"></div>
 
+    <!-- 主文字 -->
     <div class="main-text">
-        <div class="days-text" id="daysText"></div>
+        <div class="days-text" id="daysText">加载中...</div>
         <div class="sub-text" id="dateText"></div>
         <div class="hearts">🦆 ❤️</div>
     </div>
@@ -315,39 +320,35 @@
         /* ── 背景音乐 ── */
         var bgMusic = document.getElementById('bgMusic');
         var musicBtn = document.getElementById('musicBtn');
-        bgMusic.src = 'bgm.mp3';
+        bgMusic.src = 'music/test1.mp3';
         bgMusic.loop = true;
-        var isMuted = false;
 
-        /* ── 音乐按钮控制 ── */
-        musicBtn.addEventListener('click', function() {
-            if (bgMusic.paused) {
-                bgMusic.play();
-                musicBtn.textContent = '🎵';
-                musicBtn.style.opacity = '1';
-            } else {
-                bgMusic.pause();
-                musicBtn.textContent = '🎵';
-                musicBtn.style.opacity = '0.4';
-            }
+        /* ── 静音按钮控制 ── */
+        musicBtn.addEventListener('click', function(e) {
+            e.stopPropagation();
+            bgMusic.muted = !bgMusic.muted;
+            musicBtn.classList.toggle('muted', bgMusic.muted);
+            musicBtn.textContent = bgMusic.muted ? '🔇' : '🔊';
+            musicBtn.title = bgMusic.muted ? '取消静音' : '音乐静音';
         });
 
         /* ── 开始按钮 ── */
-        document.getElementById('startBtn').addEventListener('click', function() {
+        document.getElementById('storyBtn').addEventListener('click', function() {
             var curtain = document.getElementById('curtain');
             curtain.classList.add('hide');
-            
-            // 开始播放音乐
+
+            // 播放音乐
             bgMusic.play().then(function() {
-                musicBtn.style.display = 'block';
-                musicBtn.textContent = '🎵';
+                musicBtn.style.display = 'flex';
+                musicBtn.textContent = '🔊';
+                musicBtn.classList.remove('muted');
             }).catch(function(e) {
                 console.log('音乐播放被阻止:', e);
-                musicBtn.style.display = 'block';
-                musicBtn.textContent = '🎵';
-                musicBtn.style.opacity = '0.4';
+                musicBtn.style.display = 'flex';
+                musicBtn.textContent = '🔇';
+                musicBtn.classList.add('muted');
             });
-            
+
             setTimeout(function() { curtain.remove(); }, 1200);
         });
 
