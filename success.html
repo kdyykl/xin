@@ -49,7 +49,7 @@
             animation: twinkle var(--dur) ease-in-out infinite,
                        centerFloat 3s ease-in-out infinite !important;
             animation-delay: var(--delay), 0s !important;
-            z-index: 500;
+            z-index: 10000;
         }
         @keyframes centerFloat {
             0%   { margin-left: 0;    margin-top: 0; }
@@ -114,9 +114,9 @@
 
         .main-text {
             position: fixed;
-            top: 50%;
+            bottom: 5vh;
             left: 50%;
-            transform: translate(-50%, -50%);
+            transform: translateX(-50%);
             z-index: 500;
             text-align: center;
             padding: 20px;
@@ -124,6 +124,10 @@
             width: auto;
             max-width: 95vw;
             pointer-events: none;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateX(-50%) translateY(20px); }
+            to   { opacity: 1; transform: translateX(-50%) translateY(0); }
         }
         @keyframes fadeIn {
             from { opacity: 0; transform: translate(-50%, calc(-50% + 20px)); }
@@ -300,7 +304,7 @@
     <!-- 幕布 -->
     <div class="curtain" id="curtain">
         <div class="curtain-stars"></div>
-        <div class="curtain-title">✨ 我们的故事 ✨</div>
+        <div class="curtain-title">✨ 和你在一起总能遇见萤火虫 ✨</div>
         <button class="story-btn" id="storyBtn">开始我们的故事</button>
     </div>
 
@@ -318,7 +322,7 @@
         /* ── 背景音乐 ── */
         var bgMusic = document.getElementById('bgMusic');
         var musicBtn = document.getElementById('musicBtn');
-        bgMusic.src = 'bgm.mp3';
+        bgMusic.src = 'https://raw.githubusercontent.com/kdyykl/xin/main/bgm.mp3';
         bgMusic.loop = true;
 
         /* ── 静音按钮控制 ── */
