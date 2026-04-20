@@ -46,8 +46,18 @@
         }
         .star:hover { filter: brightness(1.8); }
         .star.centered {
-            animation: none !important;
+            animation: twinkle var(--dur) ease-in-out infinite,
+                       centerFloat 3s ease-in-out infinite !important;
+            animation-delay: var(--delay), 0s !important;
             z-index: 500;
+        }
+        @keyframes centerFloat {
+            0%   { margin-left: 0;    margin-top: 0; }
+            20%  { margin-left: 6px;  margin-top: -8px; }
+            40%  { margin-left: -7px; margin-top: 5px; }
+            60%  { margin-left: 5px;  margin-top: 9px; }
+            80%  { margin-left: -5px; margin-top: -6px; }
+            100% { margin-left: 0;    margin-top: 0; }
         }
 
         @keyframes twinkle {
@@ -441,13 +451,15 @@
                 el.style.transform = '';
                 el.style.left = el._origLeft;
                 el.style.top  = el._origTop;
+                el.style.boxShadow = '';
             });
             starEl._origLeft = starEl.style.left;
             starEl._origTop  = starEl.style.top;
             starEl.classList.add('centered');
             starEl.style.left = '50%';
             starEl.style.top  = '50%';
-            starEl.style.transform = 'translate(-50%,-50%) scale(3)';
+            // 保持 twinkle 动画继续运行，光效和没点之前一样闪
+            // centerFloat 负责中心轻微漂浮
             starEl.style.boxShadow = '0 0 40px 15px rgba(57,255,20,0.9), 0 0 80px 30px rgba(57,255,20,0.4)';
 
             var label = document.createElement('div');
@@ -467,9 +479,10 @@
                     setTimeout(function(){ label.remove(); }, 400);
                     starEl.classList.remove('centered');
                     starEl.style.transform = '';
-                    starEl.style.boxShadow = '';
                     starEl.style.left = starEl._origLeft;
                     starEl.style.top  = starEl._origTop;
+                    // 恢复原始 box-shadow
+                    starEl.style.boxShadow = '';
                 }
                 document.addEventListener('click', reset);
             }, 200);
