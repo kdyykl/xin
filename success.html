@@ -114,9 +114,9 @@
 
         .main-text {
             position: fixed;
-            bottom: 5vh;
+            top: 50%;
             left: 50%;
-            transform: translateX(-50%);
+            transform: translate(-50%, -50%);
             z-index: 500;
             text-align: center;
             padding: 20px;
@@ -126,8 +126,8 @@
             pointer-events: none;
         }
         @keyframes fadeIn {
-            from { opacity: 0; transform: translateX(-50%) translateY(20px); }
-            to   { opacity: 1; transform: translateX(-50%) translateY(0); }
+            from { opacity: 0; transform: translate(-50%, calc(-50% + 20px)); }
+            to   { opacity: 1; transform: translate(-50%, -50%); }
         }
         @keyframes fadeIn {
             from { opacity: 0; transform: translate(-50%, calc(-50% + 20px)); }
@@ -322,7 +322,7 @@
         /* ── 背景音乐 ── */
         var bgMusic = document.getElementById('bgMusic');
         var musicBtn = document.getElementById('musicBtn');
-        bgMusic.src = 'https://raw.githubusercontent.com/kdyykl/xin/main/bgm.mp3';
+        bgMusic.src = 'https://kdyykl.github.io/xin/bgm.mp3';
         bgMusic.loop = true;
 
         /* ── 静音按钮控制 ── */
