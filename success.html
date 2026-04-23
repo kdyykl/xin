@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, user-scalable=yes">
     <title>💖 我们的故事</title>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
 
@@ -292,6 +293,71 @@
             opacity: 0.55;
             border-color: rgba(255,255,255,0.2);
         }
+
+        /* ── 上传按钮（浮动在左下角）── */
+        #uploadBtn {
+            position: fixed;
+            bottom: 28px;
+            left: 28px;
+            width: 48px;
+            height: 48px;
+            border-radius: 50%;
+            background: rgba(10, 10, 30, 0.75);
+            border: 1.5px solid rgba(255,255,255,0.3);
+            color: white;
+            font-size: 22px;
+            cursor: pointer;
+            z-index: 99998;
+            backdrop-filter: blur(8px);
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            line-height: 1;
+        }
+        #uploadBtn:hover {
+            background: rgba(20, 20, 50, 0.9);
+            transform: scale(1.1);
+            box-shadow: 0 0 20px rgba(255,255,255,0.2);
+        }
+        #uploadBtn.uploading {
+            animation: spin 1s linear infinite;
+        }
+        @keyframes spin {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+        #uploadInput { display: none; }
+
+        /* ── 图片预览弹窗 ── */
+        .photo-modal {
+            position: fixed;
+            inset: 0;
+            z-index: 99997;
+            background: rgba(0,0,0,0.85);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            animation: fadeIn 0.3s ease;
+        }
+        .photo-modal img {
+            max-width: 85vw;
+            max-height: 85vh;
+            border-radius: 12px;
+            box-shadow: 0 0 40px rgba(255,255,255,0.2);
+        }
+        .photo-label {
+            position: absolute;
+            bottom: 15px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(10,40,5,0.9);
+            color: #ffd700;
+            padding: 8px 20px;
+            border-radius: 20px;
+            font-size: 14px;
+            border: 1px solid rgba(255,215,0,0.4);
+        }
     </style>
 </head>
 <body>
@@ -301,6 +367,10 @@
 
     <!-- 音乐静音按钮 -->
     <button id="musicBtn" title="音乐静音">🔇</button>
+
+    <!-- 上传图片按钮 -->
+    <button id="uploadBtn" title="上传图片">📷</button>
+    <input type="file" id="uploadInput" accept="image/*">
 
     <!-- 幕布 -->
     <div class="curtain" id="curtain">
@@ -320,6 +390,75 @@
     </div>
 
     <script>
+        /* ── Supabase 配置 ── */
+        var SUPABASE_URL = 'https://osdxiibthsytrpnovlik.supabase.co';
+        var SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im9zZHhpaWJ0aHN5dHJwbm92bGlrIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzY5MjMzOTEsImV4cCI6MjA5MjQ5OTM5MX0.OLWo36xHhQTGPQk1O9ZWGISIxTjwX5SSolAL2zkHJbc';
+        var supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+        var currentPhotoUrl = null;  // 当天图片URL
+
+        /* ── 页面加载时获取当天图片 ── */
+        async function loadTodayPhoto() {
+            var today = fmtDateISO(new Date());
+            var fileName = today + '.jpg';
+            try {
+                var { data, error } = await supabase.storage.from('photos').list('', {
+                    search: today,
+                    limit: 1
+                });
+                if (data && data.length > 0) {
+                    var file = data[0];
+                    currentPhotoUrl = SUPABASE_URL + '/storage/v1/object/public/photos/' + file.name;
+                }
+            } catch(e) {
+                console.log('获取图片失败:', e);
+            }
+        }
+        function fmtDateISO(d) {
+            return d.getFullYear() + '-' + 
+                   String(d.getMonth()+1).padStart(2,'0') + '-' + 
+                   String(d.getDate()).padStart(2,'0');
+        }
+        loadTodayPhoto();
+
+        /* ── 上传图片功能 ── */
+        var uploadBtn = document.getElementById('uploadBtn');
+        var uploadInput = document.getElementById('uploadInput');
+
+        uploadBtn.addEventListener('click', function() {
+            uploadInput.click();
+        });
+
+        uploadInput.addEventListener('change', async function(e) {
+            var file = e.target.files[0];
+            if (!file) return;
+
+            uploadBtn.textContent = '⏳';
+            uploadBtn.classList.add('uploading');
+
+            var today = fmtDateISO(new Date());
+            var ext = file.name.split('.').pop().toLowerCase();
+            var fileName = today + '.' + ext;
+
+            try {
+                var { data, error } = await supabase.storage
+                    .from('photos')
+                    .upload(fileName, file, { upsert: true });
+
+                if (error) throw error;
+
+                currentPhotoUrl = SUPABASE_URL + '/storage/v1/object/public/photos/' + fileName;
+                alert('✅ 上传成功！点击萤火虫可以看到图片');
+                uploadBtn.textContent = '✅';
+                setTimeout(function(){ uploadBtn.textContent = '📷'; }, 2000);
+            } catch(err) {
+                alert('❌ 上传失败: ' + err.message);
+                uploadBtn.textContent = '📷';
+            }
+
+            uploadBtn.classList.remove('uploading');
+            uploadInput.value = '';
+        });
+
         /* ── 背景音乐 ── */
         var bgMusic = document.getElementById('bgMusic');
         var musicBtn = document.getElementById('musicBtn');
@@ -446,13 +585,13 @@
                 el.style.top  = el._origTop;
                 el.style.boxShadow = '';
             });
+            document.querySelectorAll('.photo-modal').forEach(function(el){ el.remove(); });
+
             starEl._origLeft = starEl.style.left;
             starEl._origTop  = starEl.style.top;
             starEl.classList.add('centered');
             starEl.style.left = '50%';
             starEl.style.top  = '50%';
-            // 保持 twinkle 动画继续运行，光效和没点之前一样闪
-            // centerFloat 负责中心轻微漂浮
             starEl.style.boxShadow = '0 0 40px 15px rgba(57,255,20,0.9), 0 0 80px 30px rgba(57,255,20,0.4)';
 
             var label = document.createElement('div');
@@ -463,6 +602,14 @@
             label.style.transform = 'translate(-50%,-180%)';
             document.body.appendChild(label);
 
+            // 显示当天图片
+            if (currentPhotoUrl) {
+                var modal = document.createElement('div');
+                modal.className = 'photo-modal';
+                modal.innerHTML = '<img src="' + currentPhotoUrl + '" alt="回忆"><div class="photo-label">📸 ' + text + '</div>';
+                document.body.appendChild(modal);
+            }
+
             setTimeout(function() {
                 function reset(e) {
                     if (e && e.target.closest('.star')) return;
@@ -470,11 +617,11 @@
                     label.style.transition = 'opacity 0.4s';
                     label.style.opacity = '0';
                     setTimeout(function(){ label.remove(); }, 400);
+                    document.querySelectorAll('.photo-modal').forEach(function(el){ el.remove(); });
                     starEl.classList.remove('centered');
                     starEl.style.transform = '';
                     starEl.style.left = starEl._origLeft;
                     starEl.style.top  = starEl._origTop;
-                    // 恢复原始 box-shadow
                     starEl.style.boxShadow = '';
                 }
                 document.addEventListener('click', reset);
