@@ -962,7 +962,7 @@
                     var lt = fmtDate(dateObj);
                     flyToCenter(lt, starEl, dateObj);
                     // 延迟收起
-                    setTimeout(function() { closeSheet(); }, 600);
+                    setTimeout(function() { window.closeSheet(); }, 600);
                 };
             })(i, allStarEls[i], sd));
 
