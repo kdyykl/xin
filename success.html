@@ -399,6 +399,122 @@
             font-size: 14px;
             border: 1px solid rgba(255,215,0,0.4);
         }
+
+        /* 拉手条 & 时间轴面板 */
+        .timeline-handle {
+            position: fixed;
+            bottom: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 40px;
+            height: 20px;
+            z-index: 99994;
+            cursor: grab;
+            display: flex;
+            align-items: flex-start;
+            justify-content: center;
+            padding-top: 6px;
+            touch-action: none;
+        }
+        .timeline-handle::after {
+            content: '';
+            width: 28px;
+            height: 4px;
+            border-radius: 2px;
+            background: rgba(255,255,255,0.3);
+            transition: background 0.2s;
+        }
+        .timeline-handle:hover::after,
+        .timeline-handle:active::after {
+            background: rgba(255,255,255,0.6);
+        }
+        .timeline-sheet {
+            position: fixed;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            z-index: 99993;
+            background: rgba(8,12,28,0.96);
+            border-top: 1px solid rgba(255,255,255,0.1);
+            border-radius: 16px 16px 0 0;
+            backdrop-filter: blur(16px);
+            transform: translateY(100%);
+            transition: transform 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+            padding: 8px 0 16px 0;
+            touch-action: none;
+        }
+        .timeline-sheet.open {
+            transform: translateY(0);
+        }
+        .timeline-sheet-handle {
+            width: 28px;
+            height: 4px;
+            border-radius: 2px;
+            background: rgba(255,255,255,0.25);
+            margin: 6px auto 12px auto;
+        }
+        .timeline-title {
+            text-align: center;
+            font-size: 13px;
+            color: rgba(255,255,255,0.4);
+            letter-spacing: 2px;
+            margin-bottom: 12px;
+        }
+        .timeline-scroll {
+            display: flex;
+            overflow-x: auto;
+            overflow-y: hidden;
+            -webkit-overflow-scrolling: touch;
+            padding: 4px 16px 8px 16px;
+            gap: 0;
+            scrollbar-width: none;
+        }
+        .timeline-scroll::-webkit-scrollbar { display: none; }
+        .timeline-day {
+            flex-shrink: 0;
+            width: 52px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 4px;
+            padding: 6px 0;
+            cursor: pointer;
+            border-radius: 10px;
+            transition: background 0.2s;
+        }
+        .timeline-day:hover { background: rgba(255,255,255,0.06); }
+        .timeline-day.active { background: rgba(57,255,20,0.12); }
+        .timeline-day-dot {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            background: rgba(57,255,20,0.6);
+            box-shadow: 0 0 6px rgba(57,255,20,0.4);
+            transition: all 0.2s;
+        }
+        .timeline-day.active .timeline-day-dot {
+            width: 14px;
+            height: 14px;
+            background: #39ff14;
+            box-shadow: 0 0 12px rgba(57,255,20,0.8);
+        }
+        .timeline-day-date {
+            font-size: 11px;
+            color: rgba(255,255,255,0.45);
+            white-space: nowrap;
+        }
+        .timeline-day.active .timeline-day-date {
+            color: #39ff14;
+            font-weight: bold;
+        }
+        .timeline-month-sep {
+            flex-shrink: 0;
+            width: 1px;
+            height: 36px;
+            background: rgba(255,255,255,0.08);
+            margin: 0 4px;
+            align-self: center;
+        }
     </style>
 </head>
 <body>
@@ -406,6 +522,14 @@
     <button id="musicBtn" title="音乐静音">🔇</button>
     <button id="uploadBtn" title="上传图片">📷</button>
     <input type="file" id="uploadInput" accept="image/*">
+
+    <!-- 拉手条 & 时间轴 -->
+    <div class="timeline-handle" id="timelineHandle"></div>
+    <div class="timeline-sheet" id="timelineSheet">
+        <div class="timeline-sheet-handle" id="sheetHandle"></div>
+        <div class="timeline-title">萤火虫时间轴</div>
+        <div class="timeline-scroll" id="timelineScroll"></div>
+    </div>
 
     <div class="curtain" id="curtain">
         <div class="curtain-stars"></div>
@@ -760,6 +884,176 @@
     for (var j = 0; j < 4; j++) {
         setTimeout(spawnStar, j * 5000 + Math.random() * 3000);
     }
+
+    // ========== 时间轴拉手条 & Bottom Sheet ==========
+    var allStarEls = field.querySelectorAll('.star');
+    var timelineSheet = document.getElementById('timelineSheet');
+    var timelineHandle = document.getElementById('timelineHandle');
+    var sheetHandle = document.getElementById('sheetHandle');
+    var timelineScroll = document.getElementById('timelineScroll');
+    var sheetOpen = false;
+    var activeDayEl = null;
+
+    // 生成时间轴节点
+    (function buildTimeline() {
+        var lastMonth = -1;
+        for (var i = 0; i < todayIdx; i++) {
+            var sd = new Date(STAR_START);
+            sd.setDate(sd.getDate() + i);
+            var m = sd.getMonth();
+            if (m !== lastMonth && i > 0) {
+                var sep = document.createElement('div');
+                sep.className = 'timeline-month-sep';
+                timelineScroll.appendChild(sep);
+            }
+            lastMonth = m;
+
+            var day = document.createElement('div');
+            day.className = 'timeline-day';
+            day.dataset.idx = i;
+            var dot = document.createElement('div');
+            dot.className = 'timeline-day-dot';
+            var label = document.createElement('div');
+            label.className = 'timeline-day-date';
+            label.textContent = (sd.getMonth()+1) + '.' + sd.getDate();
+            day.appendChild(dot);
+            day.appendChild(label);
+
+            day.addEventListener('click', (function(idx, starEl, dateObj) {
+                return function(e) {
+                    e.stopPropagation();
+                    // 高亮当前
+                    if (activeDayEl) activeDayEl.classList.remove('active');
+                    this.classList.add('active');
+                    activeDayEl = this;
+                    // 飞到中间
+                    var lt = fmtDate(dateObj);
+                    flyToCenter(lt, starEl, dateObj);
+                    // 延迟收起
+                    setTimeout(function() { closeSheet(); }, 600);
+                };
+            })(i, allStarEls[i], sd));
+
+            timelineScroll.appendChild(day);
+        }
+    })();
+
+    function openSheet() {
+        sheetOpen = true;
+        timelineSheet.classList.add('open');
+        timelineHandle.style.opacity = '0';
+        // 滚动到今天
+        var todayDay = timelineScroll.children[todayIdx - 1];
+        if (todayDay) {
+            todayDay.scrollIntoView({ behavior: 'smooth', inline: 'center', block: 'nearest' });
+        }
+    }
+
+    function closeSheet() {
+        sheetOpen = false;
+        timelineSheet.classList.remove('open');
+        timelineHandle.style.opacity = '1';
+    }
+
+    // 点击拉手条打开
+    timelineHandle.addEventListener('click', function() {
+        if (!sheetOpen) openSheet();
+    });
+
+    // 点击sheet外部关闭
+    document.addEventListener('click', function(e) {
+        if (sheetOpen && !timelineSheet.contains(e.target) && e.target !== timelineHandle) {
+            closeSheet();
+        }
+    });
+
+    // 拖拽逻辑：从拉手条或sheet手柄拖拽
+    var dragStartY = 0;
+    var dragCurrentY = 0;
+    var isDragging = false;
+    var sheetHeight = 160; // 面板大概高度
+
+    function onDragStart(clientY) {
+        isDragging = true;
+        dragStartY = clientY;
+        timelineSheet.style.transition = 'none';
+    }
+
+    function onDragMove(clientY) {
+        if (!isDragging) return;
+        dragCurrentY = clientY;
+        var diff = dragCurrentY - dragStartY;
+        if (sheetOpen) {
+            // 打开状态往下拖
+            if (diff > 0) {
+                timelineSheet.style.transform = 'translateY(' + diff + 'px)';
+            }
+        } else {
+            // 关闭状态往上拖
+            if (diff < 0) {
+                var absDiff = Math.abs(diff);
+                var progress = Math.min(absDiff / sheetHeight, 1);
+                timelineSheet.style.transform = 'translateY(calc(100% - ' + (progress * sheetHeight) + 'px))';
+            }
+        }
+    }
+
+    function onDragEnd() {
+        if (!isDragging) return;
+        isDragging = false;
+        timelineSheet.style.transition = '';
+        var diff = dragCurrentY - dragStartY;
+
+        if (sheetOpen) {
+            if (diff > 50) closeSheet();
+            else timelineSheet.style.transform = '';
+        } else {
+            if (diff < -50) openSheet();
+            else timelineSheet.style.transform = '';
+        }
+    }
+
+    // 拉手条拖拽
+    timelineHandle.addEventListener('touchstart', function(e) {
+        e.preventDefault();
+        onDragStart(e.touches[0].clientY);
+    }, { passive: false });
+    timelineHandle.addEventListener('touchmove', function(e) {
+        e.preventDefault();
+        onDragMove(e.touches[0].clientY);
+    }, { passive: false });
+    timelineHandle.addEventListener('touchend', function(e) {
+        onDragEnd();
+    });
+
+    // sheet手柄拖拽（关闭用）
+    sheetHandle.addEventListener('touchstart', function(e) {
+        e.preventDefault();
+        onDragStart(e.touches[0].clientY);
+    }, { passive: false });
+    sheetHandle.addEventListener('touchmove', function(e) {
+        e.preventDefault();
+        onDragMove(e.touches[0].clientY);
+    }, { passive: false });
+    sheetHandle.addEventListener('touchend', function(e) {
+        onDragEnd();
+    });
+
+    // 鼠标拖拽（桌面端）
+    timelineHandle.addEventListener('mousedown', function(e) {
+        e.preventDefault();
+        onDragStart(e.clientY);
+    });
+    sheetHandle.addEventListener('mousedown', function(e) {
+        e.preventDefault();
+        onDragStart(e.clientY);
+    });
+    document.addEventListener('mousemove', function(e) {
+        if (isDragging) onDragMove(e.clientY);
+    });
+    document.addEventListener('mouseup', function() {
+        if (isDragging) onDragEnd();
+    });
     </script>
 </body>
 </html>
