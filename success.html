@@ -3,6 +3,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, user-scalable=yes">
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+    <meta http-equiv="Pragma" content="no-cache">
+    <meta http-equiv="Expires" content="0">
     <title>💖 我们的故事</title>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <style>
@@ -419,6 +422,14 @@
             border: 1px solid rgba(255,255,255,0.15);
             backdrop-filter: blur(8px);
             transition: all 0.3s ease;
+            /* reset button defaults */
+            padding: 0;
+            margin: 0;
+            outline: none;
+            -webkit-appearance: none;
+            appearance: none;
+            font-family: inherit;
+            color: inherit;
         }
         .timeline-handle:hover {
             background: rgba(20,20,50,0.8);
@@ -538,10 +549,10 @@
     <input type="file" id="uploadInput" accept="image/*">
 
     <!-- 拉手条 & 时间轴 -->
-    <div class="timeline-handle" id="timelineHandle">
+    <button class="timeline-handle" id="timelineHandle" onclick="if(typeof openSheet==='function'&&!window._sheetOpen){openSheet();}else if(typeof closeSheet==='function'&&window._sheetOpen){closeSheet();}">
         <span class="timeline-handle-hint">时间轴</span>
         <span class="timeline-handle-bar"></span>
-    </div>
+    </button>
     <div class="timeline-sheet" id="timelineSheet">
         <div class="timeline-sheet-handle" id="sheetHandle"></div>
         <div class="timeline-title">萤火虫时间轴</div>
@@ -965,6 +976,7 @@
 
     function openSheet() {
         sheetOpen = true;
+        window._sheetOpen = true;
         timelineSheet.classList.add('open');
         timelineSheet.style.transform = '';
         timelineHandle.style.opacity = '0';
@@ -977,6 +989,7 @@
 
     function closeSheet() {
         sheetOpen = false;
+        window._sheetOpen = false;
         timelineSheet.classList.remove('open');
         timelineSheet.style.transform = '';
         timelineHandle.style.opacity = '1';
