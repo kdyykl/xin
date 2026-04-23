@@ -983,19 +983,7 @@
         timelineHandle.style.pointerEvents = '';
     }
 
-    // ========== 点击切换（主要方式） ==========
-    timelineHandle.addEventListener('click', function(e) {
-        e.stopPropagation();
-        if (!sheetOpen) openSheet();
-    });
-
-    document.addEventListener('click', function(e) {
-        if (sheetOpen && !timelineSheet.contains(e.target) && !timelineHandle.contains(e.target)) {
-            closeSheet();
-        }
-    });
-
-    // ========== 拖拽（辅助方式） ==========
+    // ========== 统一交互：mousedown/mouseup 处理点击+拖拽 ==========
     var dragStartY = 0;
     var dragCurrentY = 0;
     var isDragging = false;
@@ -1007,12 +995,12 @@
         dragStartY = y;
         dragCurrentY = y;
         dragStartedOpen = sheetOpen;
-        timelineSheet.style.transition = 'none';
     }
     function dragMove(y) {
         if (!isDragging) return;
         dragCurrentY = y;
         var dy = y - dragStartY;
+        timelineSheet.style.transition = 'none';
         if (dragStartedOpen) {
             if (dy > 0) timelineSheet.style.transform = 'translateY(' + dy + 'px)';
             else timelineSheet.style.transform = 'translateY(0)';
@@ -1024,17 +1012,22 @@
             }
         }
     }
-    function dragEnd() {
+    function dragEnd(fromHandle) {
         if (!isDragging) return;
         isDragging = false;
         timelineSheet.style.transition = '';
         var dy = dragCurrentY - dragStartY;
+
         if (Math.abs(dy) < 10) {
-            // 微小移动忽略，让click处理
+            // 视为点击
             timelineSheet.style.transform = '';
             timelineHandle.style.opacity = '1';
+            if (fromHandle) {
+                if (!dragStartedOpen) openSheet(); else closeSheet();
+            }
             return;
         }
+
         if (dragStartedOpen) {
             dy > 50 ? closeSheet() : (timelineSheet.style.transform = '');
         } else {
@@ -1042,17 +1035,38 @@
         }
     }
 
-    // 触摸
+    // 触摸 - 拉手条
     timelineHandle.addEventListener('touchstart', function(e) { dragBegin(e.touches[0].clientY); }, { passive: true });
     sheetHandle.addEventListener('touchstart', function(e) { dragBegin(e.touches[0].clientY); }, { passive: true });
     document.addEventListener('touchmove', function(e) { if (isDragging) dragMove(e.touches[0].clientY); }, { passive: true });
-    document.addEventListener('touchend', function() { if (isDragging) dragEnd(); });
+    document.addEventListener('touchend', function(e) {
+        if (!isDragging) return;
+        var fromHandle = e.target === timelineHandle || timelineHandle.contains(e.target);
+        dragEnd(fromHandle);
+    });
 
-    // 鼠标 - 不阻止默认行为，让click能触发
-    timelineHandle.addEventListener('mousedown', function(e) { dragBegin(e.clientY); });
-    sheetHandle.addEventListener('mousedown', function(e) { dragBegin(e.clientY); });
+    // 鼠标 - 拉手条
+    timelineHandle.addEventListener('mousedown', function(e) {
+        e.preventDefault(); // 阻止文本选中
+        dragBegin(e.clientY);
+    });
+    sheetHandle.addEventListener('mousedown', function(e) {
+        e.preventDefault();
+        dragBegin(e.clientY);
+    });
     document.addEventListener('mousemove', function(e) { if (isDragging) dragMove(e.clientY); });
-    document.addEventListener('mouseup', function() { if (isDragging) dragEnd(); });
+    document.addEventListener('mouseup', function(e) {
+        if (!isDragging) return;
+        var fromHandle = e.target === timelineHandle || timelineHandle.contains(e.target);
+        dragEnd(fromHandle);
+    });
+
+    // 点击sheet外关闭
+    document.addEventListener('mousedown', function(e) {
+        if (sheetOpen && !timelineSheet.contains(e.target) && !timelineHandle.contains(e.target)) {
+            closeSheet();
+        }
+    });
     </script>
 </body>
 </html>
