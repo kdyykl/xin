@@ -975,28 +975,18 @@
         timelineHandle.style.opacity = '1';
     }
 
-    // 点击拉手条打开
-    timelineHandle.addEventListener('click', function(e) {
-        e.stopPropagation();
-        if (!sheetOpen) openSheet();
-    });
-
-    // 点击sheet外部关闭
-    document.addEventListener('click', function(e) {
-        if (sheetOpen && !timelineSheet.contains(e.target) && e.target !== timelineHandle) {
-            closeSheet();
-        }
-    });
-
-    // 拖拽逻辑：从拉手条或sheet手柄拖拽
+    // 拖拽逻辑
     var dragStartY = 0;
     var dragCurrentY = 0;
     var isDragging = false;
-    var sheetHeight = 160; // 面板大概高度
+    var dragTarget = null;
+    var sheetHeight = 160;
 
-    function onDragStart(clientY) {
+    function onDragStart(clientY, target) {
         isDragging = true;
         dragStartY = clientY;
+        dragCurrentY = clientY;
+        dragTarget = target;
         timelineSheet.style.transition = 'none';
     }
 
@@ -1005,12 +995,10 @@
         dragCurrentY = clientY;
         var diff = dragCurrentY - dragStartY;
         if (sheetOpen) {
-            // 打开状态往下拖
             if (diff > 0) {
                 timelineSheet.style.transform = 'translateY(' + diff + 'px)';
             }
         } else {
-            // 关闭状态往上拖
             if (diff < 0) {
                 var absDiff = Math.abs(diff);
                 var progress = Math.min(absDiff / sheetHeight, 1);
@@ -1024,6 +1012,19 @@
         isDragging = false;
         timelineSheet.style.transition = '';
         var diff = dragCurrentY - dragStartY;
+        var absDiff = Math.abs(diff);
+
+        // 拖拽距离<5px，视为点击
+        if (absDiff < 5) {
+            timelineSheet.style.transform = '';
+            if (dragTarget === 'handle') {
+                if (!sheetOpen) openSheet(); else closeSheet();
+            } else if (dragTarget === 'sheet') {
+                // 点击sheet手柄区域也切换
+            }
+            dragTarget = null;
+            return;
+        }
 
         if (sheetOpen) {
             if (diff > 50) closeSheet();
@@ -1032,42 +1033,47 @@
             if (diff < -50) openSheet();
             else timelineSheet.style.transform = '';
         }
+        dragTarget = null;
     }
 
-    // 拉手条拖拽
+    // 点击页面其他区域关闭sheet
+    document.addEventListener('click', function(e) {
+        if (sheetOpen && !timelineSheet.contains(e.target) && !timelineHandle.contains(e.target)) {
+            closeSheet();
+        }
+    });
+
+    // 触摸事件 - 拉手条
     timelineHandle.addEventListener('touchstart', function(e) {
-        e.preventDefault();
-        onDragStart(e.touches[0].clientY);
-    }, { passive: false });
+        onDragStart(e.touches[0].clientY, 'handle');
+    }, { passive: true });
     timelineHandle.addEventListener('touchmove', function(e) {
-        e.preventDefault();
         onDragMove(e.touches[0].clientY);
-    }, { passive: false });
-    timelineHandle.addEventListener('touchend', function(e) {
+    }, { passive: true });
+    timelineHandle.addEventListener('touchend', function() {
         onDragEnd();
     });
 
-    // sheet手柄拖拽（关闭用）
+    // 触摸事件 - sheet手柄
     sheetHandle.addEventListener('touchstart', function(e) {
-        e.preventDefault();
-        onDragStart(e.touches[0].clientY);
-    }, { passive: false });
+        onDragStart(e.touches[0].clientY, 'sheet');
+    }, { passive: true });
     sheetHandle.addEventListener('touchmove', function(e) {
-        e.preventDefault();
         onDragMove(e.touches[0].clientY);
-    }, { passive: false });
-    sheetHandle.addEventListener('touchend', function(e) {
+    }, { passive: true });
+    sheetHandle.addEventListener('touchend', function() {
         onDragEnd();
     });
 
-    // 鼠标拖拽（桌面端）
+    // 鼠标事件 - 拉手条
     timelineHandle.addEventListener('mousedown', function(e) {
         e.preventDefault();
-        onDragStart(e.clientY);
+        onDragStart(e.clientY, 'handle');
     });
+    // 鼠标事件 - sheet手柄
     sheetHandle.addEventListener('mousedown', function(e) {
         e.preventDefault();
-        onDragStart(e.clientY);
+        onDragStart(e.clientY, 'sheet');
     });
     document.addEventListener('mousemove', function(e) {
         if (isDragging) onDragMove(e.clientY);
