@@ -28,7 +28,6 @@
             position: absolute;
             pointer-events: all;
             cursor: pointer;
-            z-index: calc(100 + var(--star-idx, 0) % 100);
         }
         .star {
             border-radius: 50%;
@@ -406,34 +405,44 @@
             bottom: 0;
             left: 50%;
             transform: translateX(-50%);
-            width: 40px;
-            height: 20px;
-            z-index: 99994;
-            cursor: grab;
+            width: 120px;
+            height: 32px;
+            z-index: 99999;
+            cursor: pointer;
             display: flex;
-            align-items: flex-start;
-            justify-content: center;
-            padding-top: 6px;
+            flex-direction: column;
+            align-items: center;
+            justify-content: flex-end;
+            padding-bottom: 4px;
             touch-action: none;
+            transition: opacity 0.3s;
         }
-        .timeline-handle::after {
-            content: '';
-            width: 28px;
+        .timeline-handle-hint {
+            font-size: 10px;
+            color: rgba(255,255,255,0.25);
+            letter-spacing: 2px;
+            margin-bottom: 2px;
+            pointer-events: none;
+        }
+        .timeline-handle-bar {
+            width: 36px;
             height: 4px;
             border-radius: 2px;
-            background: rgba(255,255,255,0.3);
-            transition: background 0.2s;
+            background: rgba(255,255,255,0.35);
+            transition: background 0.2s, width 0.2s;
+            pointer-events: none;
         }
-        .timeline-handle:hover::after,
-        .timeline-handle:active::after {
-            background: rgba(255,255,255,0.6);
+        .timeline-handle:hover .timeline-handle-bar,
+        .timeline-handle:active .timeline-handle-bar {
+            background: rgba(255,255,255,0.7);
+            width: 44px;
         }
         .timeline-sheet {
             position: fixed;
             left: 0;
             right: 0;
             bottom: 0;
-            z-index: 99993;
+            z-index: 99999;
             background: rgba(8,12,28,0.96);
             border-top: 1px solid rgba(255,255,255,0.1);
             border-radius: 16px 16px 0 0;
@@ -524,7 +533,10 @@
     <input type="file" id="uploadInput" accept="image/*">
 
     <!-- 拉手条 & 时间轴 -->
-    <div class="timeline-handle" id="timelineHandle"></div>
+    <div class="timeline-handle" id="timelineHandle">
+        <span class="timeline-handle-hint">时间轴</span>
+        <span class="timeline-handle-bar"></span>
+    </div>
     <div class="timeline-sheet" id="timelineSheet">
         <div class="timeline-sheet-handle" id="sheetHandle"></div>
         <div class="timeline-title">萤火虫时间轴</div>
@@ -703,6 +715,14 @@
     var musicBtn = document.getElementById('musicBtn');
     bgMusic.src = 'https://kdyykl.github.io/xin/bgm.mp3';
     bgMusic.loop = true;
+    bgMusic.preload = 'auto';
+    // 缓冲策略：等可播放再开始，减少卡顿
+    bgMusic.addEventListener('canplaythrough', function() {
+        if (!bgMusic.paused && bgMusic.readyState < 4) {
+            bgMusic.pause();
+            bgMusic.play().catch(function(){});
+        }
+    });
 
     musicBtn.addEventListener('click', function(e) {
         e.stopPropagation();
@@ -747,7 +767,7 @@
     setInterval(updateDisplay, 60000);
 
     var todayIdx = Math.floor((bjNow - STAR_START) / 86400000) + 1;
-    var totalStars = todayIdx + 30;
+    var totalStars = todayIdx + 15;
     var field = document.getElementById('starField');
 
     for (var i = 0; i < totalStars; i++) {
@@ -956,7 +976,8 @@
     }
 
     // 点击拉手条打开
-    timelineHandle.addEventListener('click', function() {
+    timelineHandle.addEventListener('click', function(e) {
+        e.stopPropagation();
         if (!sheetOpen) openSheet();
     });
 
