@@ -464,6 +464,9 @@
         document.querySelectorAll('.modal-overlay').forEach(function(el){ el.remove(); });
     }
 
+    // 先选照片，再选日期
+    var pendingFile = null;
+
     function showDateModal() {
         removeModals();
         var overlay = document.createElement('div');
@@ -475,74 +478,63 @@
                 '<p class="modal-hint">萤火虫从 ' + STAR_START.getFullYear() + ' 年 ' + (STAR_START.getMonth()+1) + ' 月 ' + STAR_START.getDate() + ' 日开始，每天一只</p>' +
                 '<div class="modal-btn-row">' +
                     '<button class="modal-btn" id="dateCancel">取消</button>' +
-                    '<button class="modal-btn primary" id="dateConfirm">下一步</button>' +
+                    '<button class="modal-btn primary" id="dateConfirm">确认上传</button>' +
                 '</div>' +
             '</div>';
         document.body.appendChild(overlay);
-        document.getElementById('dateCancel').onclick = removeModals;
+        document.getElementById('dateCancel').onclick = function() {
+            removeModals();
+            pendingFile = null;
+        };
         document.getElementById('dateConfirm').onclick = function() {
             var selectedDate = document.getElementById('datePicker').value;
             if (!selectedDate) return;
             removeModals();
-            showConfirmModal(selectedDate);
+            // 如果该日期已有照片，弹确认
+            if (photoMap[selectedDate]) {
+                showConfirmModal(selectedDate);
+            } else {
+                doUpload(selectedDate);
+            }
         };
-        overlay.addEventListener('click', function(e) { if (e.target === overlay) removeModals(); });
+        overlay.addEventListener('click', function(e) { if (e.target === overlay) { removeModals(); pendingFile = null; } });
     }
 
     function showConfirmModal(selectedDate) {
         removeModals();
-        var hasPhoto = !!photoMap[selectedDate];
         var overlay = document.createElement('div');
         overlay.className = 'modal-overlay';
-        var warning = hasPhoto
-            ? '<p class="modal-hint" style="color:#ff9f43;margin-bottom:20px;">该日期已有一张照片，上传会覆盖它</p>'
-            : '<p class="modal-hint" style="margin-bottom:20px;">还没有照片，选择照片上传</p>';
         overlay.innerHTML =
             '<div class="modal-card">' +
-                '<h3>' + selectedDate + (hasPhoto ? ' 已有照片' : ' 还没有照片') + '</h3>' +
-                warning +
+                '<h3>' + selectedDate + ' 已有照片</h3>' +
+                '<p class="modal-hint" style="color:#ff9f43;margin-bottom:20px;">该日期已有一张照片，上传会覆盖它</p>' +
                 '<div class="modal-btn-row">' +
                     '<button class="modal-btn" id="confirmCancel">取消</button>' +
-                    '<button class="modal-btn primary" id="confirmOverwrite">' + (hasPhoto ? '覆盖上传' : '选择照片') + '</button>' +
+                    '<button class="modal-btn primary" id="confirmOverwrite">覆盖上传</button>' +
                 '</div>' +
             '</div>';
         document.body.appendChild(overlay);
-        document.getElementById('confirmCancel').onclick = removeModals;
+        document.getElementById('confirmCancel').onclick = function() { removeModals(); pendingFile = null; };
         document.getElementById('confirmOverwrite').onclick = function() {
             removeModals();
-            pendingDate = selectedDate;
-            document.getElementById('uploadInput').click();
+            doUpload(selectedDate);
         };
-        overlay.addEventListener('click', function(e) { if (e.target === overlay) removeModals(); });
+        overlay.addEventListener('click', function(e) { if (e.target === overlay) { removeModals(); pendingFile = null; } });
     }
 
-    var pendingDate = null;
-    document.getElementById('uploadBtn').addEventListener('click', showDateModal);
-
-    document.getElementById('uploadInput').addEventListener('change', async function(e) {
-        var file = e.target.files[0];
-        if (!file || !pendingDate) return;
+    async function doUpload(dateStr) {
+        if (!pendingFile) return;
         var uploadBtn = document.getElementById('uploadBtn');
-
-        if (file.size > 10 * 1024 * 1024) {
-            alert('文件不能超过 10MB');
-            uploadBtn.textContent = '📷';
-            uploadBtn.classList.remove('uploading');
-            e.target.value = '';
-            pendingDate = null;
-            return;
-        }
-
         uploadBtn.textContent = '⏳';
         uploadBtn.classList.add('uploading');
 
-        var ext = file.name.split('.').pop().toLowerCase();
-        var fileName = pendingDate + '.' + ext;
+        var ext = pendingFile.name.split('.').pop().toLowerCase();
+        var fileName = dateStr + '.' + ext;
 
         try {
-            var { error } = await supabase.storage.from('photos').upload(fileName, file, { upsert: true });
+            var { error } = await supabase.storage.from('photos').upload(fileName, pendingFile, { upsert: true });
             if (error) throw error;
-            photoMap[pendingDate] = SUPABASE_URL + '/storage/v1/object/public/photos/' + fileName;
+            photoMap[dateStr] = SUPABASE_URL + '/storage/v1/object/public/photos/' + fileName;
             uploadBtn.textContent = '✅';
             setTimeout(function() { uploadBtn.textContent = '📷'; }, 2000);
         } catch(err) {
@@ -551,8 +543,36 @@
         }
 
         uploadBtn.classList.remove('uploading');
+        pendingFile = null;
+    }
+
+    // 点击上传按钮 → 先选文件
+    document.getElementById('uploadBtn').addEventListener('click', function() {
+        document.getElementById('uploadInput').click();
+    });
+
+    // 选好文件后 → 验证 → 弹出日期选择
+    document.getElementById('uploadInput').addEventListener('change', function(e) {
+        var file = e.target.files[0];
+        if (!file) return;
+
+        if (file.size > 10 * 1024 * 1024) {
+            alert('文件不能超过 10MB');
+            e.target.value = '';
+            return;
+        }
+
+        var ext = file.name.split('.').pop().toLowerCase();
+        var validExts = ['jpg','jpeg','png','gif','webp'];
+        if (validExts.indexOf(ext) === -1) {
+            alert('仅支持 jpg / png / gif / webp 格式');
+            e.target.value = '';
+            return;
+        }
+
+        pendingFile = file;
         e.target.value = '';
-        pendingDate = null;
+        showDateModal();
     });
 
     var bgMusic = document.getElementById('bgMusic');
