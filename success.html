@@ -402,56 +402,34 @@
             border: 1px solid rgba(255,215,0,0.4);
         }
 
-        /* 拉手条 & 时间轴面板 */
-        .timeline-handle {
+        /* 时间轴按钮（与📷同风格） */
+        #timelineBtn {
             position: fixed;
-            bottom: 16px;
-            left: 50%;
-            transform: translateX(-50%);
-            width: 140px;
-            height: 40px;
-            z-index: 99999;
+            bottom: 88px;
+            right: 28px;
+            width: 48px;
+            height: 48px;
+            border-radius: 50%;
+            background: rgba(10, 10, 30, 0.75);
+            border: 1.5px solid rgba(255,255,255,0.3);
+            color: white;
+            font-size: 22px;
             cursor: pointer;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            gap: 3px;
-            background: rgba(10,10,30,0.6);
-            border-radius: 20px;
-            border: 1px solid rgba(255,255,255,0.15);
+            z-index: 99998;
             backdrop-filter: blur(8px);
             transition: all 0.3s ease;
-            /* reset button defaults */
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            line-height: 1;
             padding: 0;
             margin: 0;
             outline: none;
-            -webkit-appearance: none;
-            appearance: none;
-            font-family: inherit;
-            color: inherit;
         }
-        .timeline-handle:hover {
-            background: rgba(20,20,50,0.8);
-            border-color: rgba(255,255,255,0.35);
-            transform: translateX(-50%) scale(1.05);
-        }
-        .timeline-handle-hint {
-            font-size: 11px;
-            color: rgba(255,255,255,0.4);
-            letter-spacing: 3px;
-        }
-        .timeline-handle-bar {
-            width: 32px;
-            height: 4px;
-            border-radius: 2px;
-            background: rgba(255,255,255,0.45);
-            transition: all 0.2s;
-            pointer-events: none;
-        }
-        .timeline-handle:hover .timeline-handle-bar {
-            background: rgba(255,255,255,0.8);
-            width: 40px;
+        #timelineBtn:hover {
+            background: rgba(20, 20, 50, 0.9);
+            transform: scale(1.1);
+            box-shadow: 0 0 20px rgba(255,255,255,0.2);
         }
         .timeline-sheet {
             position: fixed;
@@ -549,10 +527,7 @@
     <input type="file" id="uploadInput" accept="image/*">
 
     <!-- 拉手条 & 时间轴 -->
-    <button class="timeline-handle" id="timelineHandle" onclick="if(typeof openSheet==='function'&&!window._sheetOpen){openSheet();}else if(typeof closeSheet==='function'&&window._sheetOpen){closeSheet();}">
-        <span class="timeline-handle-hint">时间轴</span>
-        <span class="timeline-handle-bar"></span>
-    </button>
+    <button id="timelineBtn" title="时间轴">📅</button>
     <div class="timeline-sheet" id="timelineSheet">
         <div class="timeline-sheet-handle" id="sheetHandle"></div>
         <div class="timeline-title">萤火虫时间轴</div>
@@ -921,14 +896,35 @@
         setTimeout(spawnStar, j * 5000 + Math.random() * 3000);
     }
 
-    // ========== 时间轴拉手条 & Bottom Sheet ==========
+    // ========== 时间轴按钮 & Bottom Sheet ==========
     var allStarEls = field.querySelectorAll('.star');
     var timelineSheet = document.getElementById('timelineSheet');
-    var timelineHandle = document.getElementById('timelineHandle');
     var sheetHandle = document.getElementById('sheetHandle');
     var timelineScroll = document.getElementById('timelineScroll');
     var sheetOpen = false;
     var activeDayEl = null;
+
+    // 全局函数
+    window.openSheet = function() {
+        sheetOpen = true;
+        timelineSheet.classList.add('open');
+        timelineSheet.style.transform = '';
+        var todayDay = timelineScroll.querySelector('[data-idx="' + (todayIdx - 1) + '"]');
+        if (todayDay) {
+            setTimeout(function() { todayDay.scrollIntoView({ behavior: 'smooth', inline: 'center', block: 'nearest' }); }, 150);
+        }
+    };
+    window.closeSheet = function() {
+        sheetOpen = false;
+        timelineSheet.classList.remove('open');
+        timelineSheet.style.transform = '';
+    };
+
+    // 时间轴按钮点击
+    document.getElementById('timelineBtn').addEventListener('click', function(e) {
+        e.stopPropagation();
+        if (sheetOpen) window.closeSheet(); else window.openSheet();
+    });
 
     // 生成时间轴节点
     (function buildTimeline() {
@@ -974,110 +970,24 @@
         }
     })();
 
-    function openSheet() {
-        sheetOpen = true;
-        window._sheetOpen = true;
-        timelineSheet.classList.add('open');
-        timelineSheet.style.transform = '';
-        timelineHandle.style.opacity = '0';
-        timelineHandle.style.pointerEvents = 'none';
-        var todayDay = timelineScroll.querySelector('[data-idx="' + (todayIdx - 1) + '"]');
-        if (todayDay) {
-            setTimeout(function() { todayDay.scrollIntoView({ behavior: 'smooth', inline: 'center', block: 'nearest' }); }, 150);
-        }
-    }
 
-    function closeSheet() {
-        sheetOpen = false;
-        window._sheetOpen = false;
-        timelineSheet.classList.remove('open');
-        timelineSheet.style.transform = '';
-        timelineHandle.style.opacity = '1';
-        timelineHandle.style.pointerEvents = '';
-    }
 
-    // ========== 统一交互：mousedown/mouseup 处理点击+拖拽 ==========
+    // 简单拖拽：sheet打开时下拉可关闭
     var dragStartY = 0;
-    var dragCurrentY = 0;
     var isDragging = false;
-    var dragStartedOpen = false;
-    var SHEET_H = 160;
 
-    function dragBegin(y) {
-        isDragging = true;
-        dragStartY = y;
-        dragCurrentY = y;
-        dragStartedOpen = sheetOpen;
-    }
-    function dragMove(y) {
-        if (!isDragging) return;
-        dragCurrentY = y;
-        var dy = y - dragStartY;
-        timelineSheet.style.transition = 'none';
-        if (dragStartedOpen) {
-            if (dy > 0) timelineSheet.style.transform = 'translateY(' + dy + 'px)';
-            else timelineSheet.style.transform = 'translateY(0)';
-        } else {
-            if (dy < 0) {
-                var p = Math.min(Math.abs(dy) / SHEET_H, 1);
-                timelineSheet.style.transform = 'translateY(calc(100% - ' + (p * SHEET_H) + 'px))';
-                timelineHandle.style.opacity = String(1 - p);
-            }
-        }
-    }
-    function dragEnd(fromHandle) {
-        if (!isDragging) return;
-        isDragging = false;
-        timelineSheet.style.transition = '';
-        var dy = dragCurrentY - dragStartY;
-
-        if (Math.abs(dy) < 10) {
-            // 视为点击
-            timelineSheet.style.transform = '';
-            timelineHandle.style.opacity = '1';
-            if (fromHandle) {
-                if (!dragStartedOpen) openSheet(); else closeSheet();
-            }
-            return;
-        }
-
-        if (dragStartedOpen) {
-            dy > 50 ? closeSheet() : (timelineSheet.style.transform = '');
-        } else {
-            dy < -50 ? openSheet() : (timelineSheet.style.transform = '', timelineHandle.style.opacity = '1');
-        }
-    }
-
-    // 触摸 - 拉手条
-    timelineHandle.addEventListener('touchstart', function(e) { dragBegin(e.touches[0].clientY); }, { passive: true });
-    sheetHandle.addEventListener('touchstart', function(e) { dragBegin(e.touches[0].clientY); }, { passive: true });
-    document.addEventListener('touchmove', function(e) { if (isDragging) dragMove(e.touches[0].clientY); }, { passive: true });
-    document.addEventListener('touchend', function(e) {
-        if (!isDragging) return;
-        var fromHandle = e.target === timelineHandle || timelineHandle.contains(e.target);
-        dragEnd(fromHandle);
-    });
-
-    // 鼠标 - 拉手条
-    timelineHandle.addEventListener('mousedown', function(e) {
-        e.preventDefault(); // 阻止文本选中
-        dragBegin(e.clientY);
-    });
-    sheetHandle.addEventListener('mousedown', function(e) {
-        e.preventDefault();
-        dragBegin(e.clientY);
-    });
-    document.addEventListener('mousemove', function(e) { if (isDragging) dragMove(e.clientY); });
-    document.addEventListener('mouseup', function(e) {
-        if (!isDragging) return;
-        var fromHandle = e.target === timelineHandle || timelineHandle.contains(e.target);
-        dragEnd(fromHandle);
-    });
+    sheetHandle.addEventListener('touchstart', function(e) { dragStartY = e.touches[0].clientY; isDragging = true; }, { passive: true });
+    document.addEventListener('touchmove', function(e) {
+        if (!isDragging || !sheetOpen) return;
+        var dy = e.touches[0].clientY - dragStartY;
+        if (dy > 50) { window.closeSheet(); isDragging = false; }
+    }, { passive: true });
+    document.addEventListener('touchend', function() { isDragging = false; });
 
     // 点击sheet外关闭
-    document.addEventListener('mousedown', function(e) {
-        if (sheetOpen && !timelineSheet.contains(e.target) && !timelineHandle.contains(e.target)) {
-            closeSheet();
+    document.addEventListener('click', function(e) {
+        if (sheetOpen && !timelineSheet.contains(e.target) && e.target.id !== 'timelineBtn') {
+            window.closeSheet();
         }
     });
     </script>
