@@ -3,16 +3,11 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, user-scalable=yes">
-    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
-    <meta http-equiv="Pragma" content="no-cache">
-    <meta http-equiv="Expires" content="0">
     <title>💖 我们的故事</title>
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body {
-            min-height: 100vh;
-            min-height: 100dvh;
+            min-height: 100vh; min-height: 100dvh;
             background: #000005;
             background-image:
                 radial-gradient(ellipse at 50% 0%, rgba(20,10,60,0.7) 0%, transparent 55%),
@@ -21,28 +16,17 @@
             font-family: 'PingFang SC', 'Microsoft YaHei', sans-serif;
             color: white;
         }
-        .star-field {
-            position: fixed;
-            inset: 0;
-            pointer-events: none;
-            z-index: 1;
-        }
-        .star-field .star {
-            position: absolute;
-            pointer-events: all;
-            cursor: pointer;
-        }
+        .star-field { position: fixed; inset: 0; pointer-events: none; z-index: 1; }
+        .star-field .star { position: absolute; pointer-events: all; cursor: pointer; }
         .star {
-            border-radius: 50%;
-            background: #39ff14;
+            border-radius: 50%; background: #39ff14;
             animation: twinkle var(--dur) ease-in-out infinite,
                        fireflyMove var(--flyDur, 15s) ease-in-out infinite;
             animation-delay: var(--delay), var(--flyDelay, 0s);
             transition: left 1.2s cubic-bezier(0.4, 0, 0.2, 1),
                         top 1.2s cubic-bezier(0.4, 0, 0.2, 1),
                         transform 1.2s cubic-bezier(0.4, 0, 0.2, 1),
-                        box-shadow 0.8s ease,
-                        opacity 0.5s ease;
+                        box-shadow 0.8s ease, opacity 0.5s ease;
             will-change: transform;
         }
         .star:hover { filter: brightness(1.8); }
@@ -77,18 +61,11 @@
             100% { margin-left: 0; margin-top: 0; }
         }
         .star-label {
-            position: fixed;
-            background: rgba(10,40,5,0.92);
-            color: #ffd700;
-            font-size: clamp(11px, 3vw, 14px);
-            font-weight: bold;
-            padding: 8px 16px;
-            border-radius: 20px;
+            position: fixed; background: rgba(10,40,5,0.92); color: #ffd700;
+            font-size: clamp(11px, 3vw, 14px); font-weight: bold;
+            padding: 8px 16px; border-radius: 20px;
             border: 1px solid rgba(255,215,0,0.5);
-            pointer-events: none;
-            z-index: 9999;
-            white-space: nowrap;
-            text-align: center;
+            pointer-events: none; z-index: 9999; white-space: nowrap; text-align: center;
             box-shadow: 0 0 20px rgba(255,215,0,0.3), 0 2px 16px rgba(0,0,0,0.5);
             animation: labelPop 0.3s cubic-bezier(0.34,1.56,0.64,1) forwards;
         }
@@ -97,12 +74,9 @@
             100% { opacity: 1; transform: translate(-50%, -140%) scale(1); }
         }
         .shooting-star {
-            position: absolute;
-            height: 2px;
+            position: absolute; height: 2px;
             background: linear-gradient(to right, rgba(255,255,255,0.9), transparent);
-            border-radius: 2px;
-            animation: shoot linear forwards;
-            opacity: 0;
+            border-radius: 2px; animation: shoot linear forwards; opacity: 0;
         }
         @keyframes shoot {
             0%   { transform: translateX(0) translateY(0) rotate(-45deg); opacity: 0; }
@@ -110,16 +84,9 @@
             100% { transform: translateX(-400px) translateY(400px) rotate(-45deg); opacity: 0; }
         }
         .main-text {
-            position: fixed;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            z-index: 500;
-            text-align: center;
-            padding: 20px;
-            animation: fadeIn 2s ease 0.5s both;
-            width: auto;
-            max-width: 95vw;
+            position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%);
+            z-index: 500; text-align: center; padding: 20px;
+            animation: fadeIn 2s ease 0.5s both; width: auto; max-width: 95vw;
             pointer-events: none;
         }
         @keyframes fadeIn {
@@ -127,420 +94,181 @@
             to   { opacity: 1; transform: translate(-50%, -50%); }
         }
         .days-text {
-            font-size: clamp(1.4rem, 4.5vw, 3.5rem);
-            font-weight: 300;
-            letter-spacing: clamp(1px, 0.8vw, 5px);
-            line-height: 1.4;
+            font-size: clamp(1.4rem, 4.5vw, 3.5rem); font-weight: 300;
+            letter-spacing: clamp(1px, 0.8vw, 5px); line-height: 1.4;
             text-shadow: 0 0 40px rgba(255,255,255,0.6);
             background: linear-gradient(135deg, #fff 0%, #ffd700 50%, #fff 100%);
             background-size: 200% auto;
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
-            animation: shimmer 4s linear infinite;
-            white-space: nowrap;
+            -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+            background-clip: text; animation: shimmer 4s linear infinite; white-space: nowrap;
         }
-        @keyframes shimmer {
-            0%   { background-position: 0% center; }
-            100% { background-position: 200% center; }
-        }
-        .sub-text {
-            margin-top: 14px;
-            font-size: clamp(0.85rem, 2.5vw, 1.1rem);
-            color: rgba(255,255,255,0.45);
-            letter-spacing: 2px;
-        }
-        .hearts {
-            margin-top: clamp(20px, 4vh, 40px);
-            font-size: clamp(2rem, 6vw, 3.5rem);
-            animation: heartbeat 1.5s ease-in-out infinite;
-            line-height: 1;
-        }
-        @keyframes heartbeat {
-            0%, 100% { transform: scale(1); }
-            50%       { transform: scale(1.12); }
-        }
+        @keyframes shimmer { 0% { background-position: 0% center; } 100% { background-position: 200% center; } }
+        .sub-text { margin-top: 14px; font-size: clamp(0.85rem, 2.5vw, 1.1rem); color: rgba(255,255,255,0.45); letter-spacing: 2px; }
+        .hearts { margin-top: clamp(20px, 4vh, 40px); font-size: clamp(2rem, 6vw, 3.5rem); animation: heartbeat 1.5s ease-in-out infinite; line-height: 1; }
+        @keyframes heartbeat { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.12); } }
+
+        /* 幕布 */
         .curtain {
-            position: fixed;
-            inset: 0;
-            z-index: 99999;
+            position: fixed; inset: 0; z-index: 99999;
             background: radial-gradient(ellipse at center, #0a0a15 0%, #000008 100%);
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
+            display: flex; flex-direction: column; align-items: center; justify-content: center;
             transition: opacity 1.2s ease, transform 1.2s ease;
         }
-        .curtain.hide {
-            opacity: 0;
-            transform: scale(1.1);
-            pointer-events: none;
-        }
-        .curtain-stars {
-            position: absolute;
-            inset: 0;
-            overflow: hidden;
-            pointer-events: none;
-        }
-        .curtain-stars::before,
-        .curtain-stars::after {
-            content: '';
-            position: absolute;
-            width: 3px; height: 3px;
-            background: white;
-            border-radius: 50%;
+        .curtain.hide { opacity: 0; transform: scale(1.1); pointer-events: none; }
+        .curtain-stars { position: absolute; inset: 0; overflow: hidden; pointer-events: none; }
+        .curtain-stars::before, .curtain-stars::after {
+            content: ''; position: absolute; width: 3px; height: 3px;
+            background: white; border-radius: 50%;
             box-shadow:
-                10vw 20vh 0 0 rgba(255,255,255,0.8),
-                25vw 45vh 0 -1px rgba(255,255,255,0.6),
-                40vw 15vh 0 0 rgba(255,255,255,0.7),
-                55vw 60vh 0 -1px rgba(255,255,255,0.5),
-                70vw 30vh 0 0 rgba(255,255,255,0.8),
-                85vw 70vh 0 -1px rgba(255,255,255,0.6),
-                15vw 80vh 0 0 rgba(255,255,255,0.7),
-                90vw 10vh 0 -1px rgba(255,255,255,0.5),
-                5vw 55vh 0 0 rgba(255,255,255,0.6),
-                95vw 45vh 0 -1px rgba(255,255,255,0.8),
-                30vw 5vh 0 0 rgba(255,255,255,0.7),
-                60vw 85vh 0 -1px rgba(255,255,255,0.6),
-                20vw 35vh 0 0 rgba(255,255,255,0.5),
-                80vw 55vh 0 -1px rgba(255,255,255,0.8),
+                10vw 20vh 0 0 rgba(255,255,255,0.8), 25vw 45vh 0 -1px rgba(255,255,255,0.6),
+                40vw 15vh 0 0 rgba(255,255,255,0.7), 55vw 60vh 0 -1px rgba(255,255,255,0.5),
+                70vw 30vh 0 0 rgba(255,255,255,0.8), 85vw 70vh 0 -1px rgba(255,255,255,0.6),
+                15vw 80vh 0 0 rgba(255,255,255,0.7), 90vw 10vh 0 -1px rgba(255,255,255,0.5),
+                5vw 55vh 0 0 rgba(255,255,255,0.6), 95vw 45vh 0 -1px rgba(255,255,255,0.8),
+                30vw 5vh 0 0 rgba(255,255,255,0.7), 60vw 85vh 0 -1px rgba(255,255,255,0.6),
+                20vw 35vh 0 0 rgba(255,255,255,0.5), 80vw 55vh 0 0 rgba(255,255,255,0.8),
                 45vw 75vh 0 0 rgba(255,255,255,0.7);
             animation: curtainTwinkle 3s ease-in-out infinite;
         }
         .curtain-stars::after { animation-delay: 1.5s; }
-        @keyframes curtainTwinkle {
-            0%, 100% { opacity: 0.3; }
-            50% { opacity: 1; }
-        }
+        @keyframes curtainTwinkle { 0%, 100% { opacity: 0.3; } 50% { opacity: 1; } }
         .curtain-title {
-            font-size: clamp(1.2rem, 4vw, 2rem);
-            color: rgba(255,255,255,0.6);
-            letter-spacing: 4px;
-            margin-bottom: 30px;
-            animation: pulse 2s ease-in-out infinite;
+            font-size: clamp(1.2rem, 4vw, 2rem); color: rgba(255,255,255,0.6);
+            letter-spacing: 4px; margin-bottom: 30px; animation: pulse 2s ease-in-out infinite;
         }
-        @keyframes pulse {
-            0%, 100% { opacity: 0.6; }
-            50% { opacity: 1; }
-        }
+        @keyframes pulse { 0%, 100% { opacity: 0.6; } 50% { opacity: 1; } }
         .story-btn {
-            padding: 18px 50px;
-            font-size: clamp(1rem, 3vw, 1.3rem);
-            font-family: inherit;
-            font-weight: 500;
-            color: white;
+            padding: 18px 50px; font-size: clamp(1rem, 3vw, 1.3rem);
+            font-family: inherit; font-weight: 500; color: white;
             background: linear-gradient(135deg, rgba(255,100,150,0.3), rgba(100,150,255,0.3));
-            border: 2px solid rgba(255,255,255,0.4);
-            border-radius: 50px;
-            cursor: pointer;
-            backdrop-filter: blur(10px);
+            border: 2px solid rgba(255,255,255,0.4); border-radius: 50px;
+            cursor: pointer; backdrop-filter: blur(10px);
             transition: all 0.4s cubic-bezier(0.34,1.56,0.64,1);
             animation: glow 2s ease-in-out infinite;
         }
-        .story-btn:hover {
-            transform: scale(1.08);
-            box-shadow: 0 0 30px rgba(255,255,255,0.3);
+        .story-btn:hover { transform: scale(1.08); box-shadow: 0 0 30px rgba(255,255,255,0.3); }
+        @keyframes glow { 0%, 100% { box-shadow: 0 0 15px rgba(255,255,255,0.1); } 50% { box-shadow: 0 0 30px rgba(255,255,255,0.25); } }
+
+        /* 底部按钮通用 */
+        .float-btn {
+            position: fixed; width: 48px; height: 48px; border-radius: 50%;
+            background: rgba(10, 10, 30, 0.75); border: 1.5px solid rgba(255,255,255,0.3);
+            color: white; font-size: 22px; cursor: pointer; z-index: 99998;
+            backdrop-filter: blur(8px); transition: all 0.3s ease;
+            display: flex; align-items: center; justify-content: center; line-height: 1;
+            padding: 0; outline: none;
         }
-        @keyframes glow {
-            0%, 100% { box-shadow: 0 0 15px rgba(255,255,255,0.1); }
-            50% { box-shadow: 0 0 30px rgba(255,255,255,0.25); }
-        }
-        #musicBtn {
-            position: fixed;
-            bottom: 28px;
-            right: 28px;
-            width: 48px;
-            height: 48px;
-            border-radius: 50%;
-            background: rgba(10, 10, 30, 0.75);
-            border: 1.5px solid rgba(255,255,255,0.3);
-            color: white;
-            font-size: 22px;
-            cursor: pointer;
-            z-index: 99998;
-            backdrop-filter: blur(8px);
-            transition: all 0.3s ease;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            line-height: 1;
-        }
-        #musicBtn:hover {
-            background: rgba(20, 20, 50, 0.9);
-            transform: scale(1.1);
-            box-shadow: 0 0 20px rgba(255,255,255,0.2);
-        }
+        .float-btn:hover { background: rgba(20, 20, 50, 0.9); transform: scale(1.1); box-shadow: 0 0 20px rgba(255,255,255,0.2); }
+        #musicBtn { bottom: 28px; right: 28px; }
         #musicBtn.muted { opacity: 0.55; border-color: rgba(255,255,255,0.2); }
-        #uploadBtn {
-            position: fixed;
-            bottom: 28px;
-            left: 28px;
-            width: 48px;
-            height: 48px;
-            border-radius: 50%;
-            background: rgba(10, 10, 30, 0.75);
-            border: 1.5px solid rgba(255,255,255,0.3);
-            color: white;
-            font-size: 22px;
-            cursor: pointer;
-            z-index: 99998;
-            backdrop-filter: blur(8px);
-            transition: all 0.3s ease;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            line-height: 1;
-        }
-        #uploadBtn:hover {
-            background: rgba(20, 20, 50, 0.9);
-            transform: scale(1.1);
-            box-shadow: 0 0 20px rgba(255,255,255,0.2);
-        }
+        #uploadBtn { bottom: 28px; left: 28px; }
         #uploadBtn.uploading { animation: spin 1s linear infinite; }
-        @keyframes spin {
-            from { transform: rotate(0deg); }
-            to { transform: rotate(360deg); }
-        }
+        @keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
         #uploadInput { display: none; }
+
+        /* 时间轴按钮 */
+        #timelineBtn { bottom: 88px; right: 28px; }
+
+        /* 模态框通用 */
         .modal-overlay {
-            position: fixed;
-            inset: 0;
-            z-index: 99995;
+            position: fixed; inset: 0; z-index: 100000;
             background: rgba(0,0,0,0.75);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            animation: fadeIn 0.25s ease;
+            display: flex; align-items: center; justify-content: center;
         }
         .modal-card {
-            background: rgba(10,15,30,0.95);
-            border: 1px solid rgba(255,255,255,0.15);
-            border-radius: 16px;
-            padding: 32px 28px;
-            max-width: 90vw;
-            width: 360px;
-            text-align: center;
-            backdrop-filter: blur(16px);
-            box-shadow: 0 20px 60px rgba(0,0,0,0.6);
+            background: rgba(10,15,30,0.95); border: 1px solid rgba(255,255,255,0.15);
+            border-radius: 16px; padding: 32px 28px;
+            max-width: 90vw; width: 360px; text-align: center;
+            backdrop-filter: blur(16px); box-shadow: 0 20px 60px rgba(0,0,0,0.6);
         }
-        .modal-card h3 {
-            font-size: 16px;
-            font-weight: normal;
-            color: rgba(255,255,255,0.9);
-            margin-bottom: 20px;
-            letter-spacing: 1px;
-        }
+        .modal-card h3 { font-size: 16px; font-weight: normal; color: rgba(255,255,255,0.9); margin-bottom: 20px; letter-spacing: 1px; }
         .modal-date {
-            width: 100%;
-            padding: 12px 16px;
-            border-radius: 10px;
-            border: 1px solid rgba(255,255,255,0.25);
-            background: rgba(255,255,255,0.08);
-            color: white;
-            font-size: 16px;
-            font-family: inherit;
-            outline: none;
-            cursor: pointer;
-            margin-bottom: 20px;
-            appearance: none;
-            -webkit-appearance: none;
+            width: 100%; padding: 12px 16px; border-radius: 10px;
+            border: 1px solid rgba(255,255,255,0.25); background: rgba(255,255,255,0.08);
+            color: white; font-size: 16px; font-family: inherit;
+            outline: none; cursor: pointer; margin-bottom: 20px;
+            appearance: none; -webkit-appearance: none;
         }
         .modal-date::-webkit-calendar-picker-indicator { filter: invert(1); cursor: pointer; }
-        .modal-hint {
-            font-size: 12px;
-            color: rgba(255,255,255,0.4);
-            margin-bottom: 20px;
-        }
+        .modal-hint { font-size: 12px; color: rgba(255,255,255,0.4); margin-bottom: 20px; }
         .modal-btn-row { display: flex; gap: 12px; }
         .modal-btn {
-            flex: 1;
-            padding: 12px;
-            border-radius: 10px;
-            border: 1px solid rgba(255,255,255,0.2);
-            background: rgba(255,255,255,0.1);
-            color: white;
-            font-size: 14px;
-            font-family: inherit;
-            cursor: pointer;
-            transition: all 0.2s ease;
+            flex: 1; padding: 12px; border-radius: 10px;
+            border: 1px solid rgba(255,255,255,0.2); background: rgba(255,255,255,0.1);
+            color: white; font-size: 14px; font-family: inherit;
+            cursor: pointer; transition: all 0.2s ease;
         }
         .modal-btn:hover { background: rgba(255,255,255,0.18); }
-        .modal-btn.primary {
-            background: rgba(57,255,20,0.25);
-            border-color: rgba(57,255,20,0.5);
-            color: #39ff14;
-        }
+        .modal-btn.primary { background: rgba(57,255,20,0.25); border-color: rgba(57,255,20,0.5); color: #39ff14; }
         .modal-btn.primary:hover { background: rgba(57,255,20,0.35); }
+
+        /* 照片模态 */
         .photo-modal {
-            position: fixed;
-            inset: 0;
-            z-index: 99997;
+            position: fixed; inset: 0; z-index: 99997;
             background: rgba(0,0,0,0.85);
-            display: flex;
-            align-items: center;
-            justify-content: center;
+            display: flex; align-items: center; justify-content: center;
         }
         .photo-modal img {
-            max-width: 85vw;
-            max-height: 85vh;
-            border-radius: 12px;
+            max-width: 85vw; max-height: 85vh; border-radius: 12px;
             box-shadow: 0 0 40px rgba(255,255,255,0.2);
-            opacity: 0;
-            transition: opacity 0.8s ease;
+            opacity: 0; transition: opacity 0.8s ease;
         }
         .photo-modal img.visible { opacity: 1; }
         .photo-label {
-            position: absolute;
-            bottom: 15px;
-            left: 50%;
-            transform: translateX(-50%);
-            background: rgba(10,40,5,0.9);
-            color: #ffd700;
-            padding: 8px 20px;
-            border-radius: 20px;
-            font-size: 14px;
-            border: 1px solid rgba(255,215,0,0.4);
+            position: absolute; bottom: 15px; left: 50%; transform: translateX(-50%);
+            background: rgba(10,40,5,0.9); color: #ffd700; padding: 8px 20px;
+            border-radius: 20px; font-size: 14px; border: 1px solid rgba(255,215,0,0.4);
         }
 
-        /* 时间轴按钮（与📷同风格） */
-        #timelineBtn {
-            position: fixed;
-            bottom: 88px;
-            right: 28px;
-            width: 48px;
-            height: 48px;
-            border-radius: 50%;
-            background: rgba(10, 10, 30, 0.75);
-            border: 1.5px solid rgba(255,255,255,0.3);
-            color: white;
-            font-size: 22px;
-            cursor: pointer;
-            z-index: 99999;
-            backdrop-filter: blur(8px);
-            transition: all 0.3s ease;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            line-height: 1;
-            padding: 0;
-            margin: 0;
-            outline: none;
+        /* 时间轴模态面板 */
+        .timeline-modal .modal-card {
+            width: 92vw; max-width: 480px; max-height: 75vh;
+            display: flex; flex-direction: column; padding: 20px 16px;
         }
-        #timelineBtn:hover {
-            background: rgba(20, 20, 50, 0.9);
-            transform: scale(1.1);
-            box-shadow: 0 0 20px rgba(255,255,255,0.2);
-        }
-        .timeline-sheet {
-            position: fixed;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            z-index: 99990;
-            background: rgba(8,12,28,0.96);
-            border-top: 1px solid rgba(255,255,255,0.1);
-            border-radius: 16px 16px 0 0;
-            backdrop-filter: blur(16px);
-            transform: translateY(100%);
-            transition: transform 0.35s cubic-bezier(0.4, 0, 0.2, 1);
-            padding: 8px 0 16px 0;
-            touch-action: none;
-            pointer-events: none;
-        }
-        .timeline-sheet.open {
-            transform: translateY(0);
-            pointer-events: auto;
-            z-index: 99999;
-        }
-        .timeline-sheet-handle {
-            width: 28px;
-            height: 4px;
-            border-radius: 2px;
-            background: rgba(255,255,255,0.25);
-            margin: 6px auto 12px auto;
-        }
-        .timeline-title {
-            text-align: center;
-            font-size: 13px;
-            color: rgba(255,255,255,0.4);
-            letter-spacing: 2px;
-            margin-bottom: 12px;
-        }
-        .timeline-scroll {
-            display: flex;
-            overflow-x: auto;
-            overflow-y: hidden;
+        .timeline-modal .modal-card h3 { margin-bottom: 12px; }
+        .timeline-list {
+            flex: 1; overflow-y: auto; overflow-x: hidden;
             -webkit-overflow-scrolling: touch;
-            padding: 4px 16px 8px 16px;
-            gap: 0;
-            scrollbar-width: none;
+            scrollbar-width: thin; scrollbar-color: rgba(255,255,255,0.15) transparent;
         }
-        .timeline-scroll::-webkit-scrollbar { display: none; }
-        .timeline-day {
-            flex-shrink: 0;
-            width: 52px;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            gap: 4px;
-            padding: 6px 0;
-            cursor: pointer;
-            border-radius: 10px;
+        .timeline-list::-webkit-scrollbar { width: 4px; }
+        .timeline-list::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.15); border-radius: 2px; }
+        .timeline-item {
+            display: flex; align-items: center; gap: 12px;
+            padding: 10px 12px; border-radius: 10px; cursor: pointer;
             transition: background 0.2s;
         }
-        .timeline-day:hover { background: rgba(255,255,255,0.06); }
-        .timeline-day.active { background: rgba(57,255,20,0.12); }
-        .timeline-day-dot {
-            width: 10px;
-            height: 10px;
-            border-radius: 50%;
-            background: rgba(57,255,20,0.6);
-            box-shadow: 0 0 6px rgba(57,255,20,0.4);
-            transition: all 0.2s;
+        .timeline-item:hover { background: rgba(255,255,255,0.06); }
+        .timeline-item.active { background: rgba(57,255,20,0.12); }
+        .timeline-dot {
+            width: 10px; height: 10px; border-radius: 50%;
+            background: rgba(57,255,20,0.6); box-shadow: 0 0 6px rgba(57,255,20,0.4);
+            flex-shrink: 0; transition: all 0.2s;
         }
-        .timeline-day.active .timeline-day-dot {
-            width: 14px;
-            height: 14px;
-            background: #39ff14;
+        .timeline-item.active .timeline-dot {
+            width: 14px; height: 14px; background: #39ff14;
             box-shadow: 0 0 12px rgba(57,255,20,0.8);
         }
-        .timeline-day-date {
-            font-size: 11px;
-            color: rgba(255,255,255,0.45);
-            white-space: nowrap;
-        }
-        .timeline-day.active .timeline-day-date {
-            color: #39ff14;
-            font-weight: bold;
-        }
-        .timeline-month-sep {
-            flex-shrink: 0;
-            width: 1px;
-            height: 36px;
-            background: rgba(255,255,255,0.08);
-            margin: 0 4px;
-            align-self: center;
+        .timeline-item-date { font-size: 14px; color: rgba(255,255,255,0.7); flex: 1; }
+        .timeline-item.active .timeline-item-date { color: #39ff14; font-weight: bold; }
+        .timeline-item-photo { font-size: 16px; opacity: 0.5; }
+        .timeline-month-label {
+            font-size: 12px; color: rgba(255,255,255,0.3);
+            padding: 8px 12px 4px; letter-spacing: 2px;
         }
     </style>
 </head>
 <body>
     <audio id="bgMusic" preload="auto"></audio>
-    <button id="musicBtn" title="音乐静音">🔇</button>
-    <button id="uploadBtn" title="上传图片">📷</button>
+    <button id="musicBtn" class="float-btn" title="音乐静音" onclick="toggleMusic()">🔇</button>
+    <button id="uploadBtn" class="float-btn" title="上传图片" onclick="document.getElementById('uploadInput').click()">📷</button>
     <input type="file" id="uploadInput" accept="image/*">
-
-    <!-- 拉手条 & 时间轴 -->
-    <button id="timelineBtn" title="时间轴">📅</button>
-    <div class="timeline-sheet" id="timelineSheet">
-        <div class="timeline-sheet-handle" id="sheetHandle"></div>
-        <div class="timeline-title">萤火虫时间轴</div>
-        <div class="timeline-scroll" id="timelineScroll"></div>
-    </div>
+    <button id="timelineBtn" class="float-btn" title="时间轴" onclick="showTimeline()">📅</button>
 
     <div class="curtain" id="curtain">
         <div class="curtain-stars"></div>
         <div class="curtain-title">✨ 和你在一起总能遇见萤火虫 ✨</div>
-        <button class="story-btn" id="storyBtn">开始我们的故事</button>
+        <button class="story-btn" id="storyBtn" onclick="startStory()">开始我们的故事</button>
     </div>
 
     <div class="star-field" id="starField"></div>
@@ -551,22 +279,21 @@
         <div class="hearts"></div>
     </div>
 
+    <!-- Supabase 异步加载，不阻塞主脚本 -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2" async></script>
     <script>
+    // ========== 全局配置（不依赖任何外部库） ==========
     var SUPABASE_URL = 'https://osdxiibthsytrpnovlik.supabase.co';
     var SUPABASE_ANON = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im9zZHhpaWJ0aHN5dHJwbm92bGlrIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzY5MjMzOTEsImV4cCI6MjA5MjQ5OTM5MX0.OLWo36xHhQTGPQk1O9ZWGISIxTjwX5SSolAL2zkHJbc';
-    var supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON);
-
+    var supabase = null;
     var photoMap = {};
+    var pendingFile = null;
 
     function fmtDateISO(d) {
-        return d.getFullYear() + '-' +
-               String(d.getMonth()+1).padStart(2,'0') + '-' +
-               String(d.getDate()).padStart(2,'0');
+        return d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0') + '-' + String(d.getDate()).padStart(2,'0');
     }
     function fmtDate(d) {
-        return d.getFullYear() + '.' +
-               String(d.getMonth()+1).padStart(2,'0') + '.' +
-               String(d.getDate()).padStart(2,'0');
+        return d.getFullYear() + '.' + String(d.getMonth()+1).padStart(2,'0') + '.' + String(d.getDate()).padStart(2,'0');
     }
 
     var STAR_START = new Date('2026-01-14T00:00:00+08:00');
@@ -576,7 +303,25 @@
     var STAR_MIN = fmtDateISO(STAR_START);
     var STAR_MAX = fmtDateISO(bjNow);
 
+    // ========== Supabase 安全初始化（等 CDN 加载完再 init） ==========
+    function initSupabase() {
+        try {
+            if (window.supabase && window.supabase.createClient) {
+                supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON);
+                loadAllPhotos();
+            } else {
+                // CDN 还没加载完，100ms 后重试
+                setTimeout(initSupabase, 100);
+            }
+        } catch(e) {
+            console.warn('Supabase 初始化失败，照片功能不可用:', e);
+        }
+    }
+    // 页面加载后延迟初始化，绝不阻塞主功能
+    setTimeout(initSupabase, 200);
+
     async function loadAllPhotos() {
+        if (!supabase) return;
         try {
             var { data, error } = await supabase.storage.from('photos').list('', { limit: 1000 });
             if (error || !data) return;
@@ -586,175 +331,47 @@
                     photoMap[datePart] = SUPABASE_URL + '/storage/v1/object/public/photos/' + file.name;
                 }
             });
-        } catch(e) { console.log('加载照片列表失败:', e); }
-    }
-    loadAllPhotos();
-
-    function removeModals() {
-        document.querySelectorAll('.modal-overlay').forEach(function(el){ el.remove(); });
+        } catch(e) { console.warn('加载照片列表失败:', e); }
     }
 
-    // 先选照片，再选日期
-    var pendingFile = null;
-
-    function showDateModal() {
-        removeModals();
-        var overlay = document.createElement('div');
-        overlay.className = 'modal-overlay';
-        overlay.innerHTML =
-            '<div class="modal-card">' +
-                '<h3>选择萤火虫日期</h3>' +
-                '<input type="date" class="modal-date" id="datePicker" min="' + STAR_MIN + '" max="' + STAR_MAX + '" value="' + fmtDateISO(bjNow) + '">' +
-                '<p class="modal-hint">萤火虫从 ' + STAR_START.getFullYear() + ' 年 ' + (STAR_START.getMonth()+1) + ' 月 ' + STAR_START.getDate() + ' 日开始，每天一只</p>' +
-                '<div class="modal-btn-row">' +
-                    '<button class="modal-btn" id="dateCancel">取消</button>' +
-                    '<button class="modal-btn primary" id="dateConfirm">确认上传</button>' +
-                '</div>' +
-            '</div>';
-        document.body.appendChild(overlay);
-        document.getElementById('dateCancel').onclick = function() {
-            removeModals();
-            pendingFile = null;
-        };
-        document.getElementById('dateConfirm').onclick = function() {
-            var selectedDate = document.getElementById('datePicker').value;
-            if (!selectedDate) return;
-            removeModals();
-            // 如果该日期已有照片，弹确认
-            if (photoMap[selectedDate]) {
-                showConfirmModal(selectedDate);
-            } else {
-                doUpload(selectedDate);
-            }
-        };
-        overlay.addEventListener('click', function(e) { if (e.target === overlay) { removeModals(); pendingFile = null; } });
-    }
-
-    function showConfirmModal(selectedDate) {
-        removeModals();
-        var overlay = document.createElement('div');
-        overlay.className = 'modal-overlay';
-        overlay.innerHTML =
-            '<div class="modal-card">' +
-                '<h3>' + selectedDate + ' 已有照片</h3>' +
-                '<p class="modal-hint" style="color:#ff9f43;margin-bottom:20px;">该日期已有一张照片，上传会覆盖它</p>' +
-                '<div class="modal-btn-row">' +
-                    '<button class="modal-btn" id="confirmCancel">取消</button>' +
-                    '<button class="modal-btn primary" id="confirmOverwrite">覆盖上传</button>' +
-                '</div>' +
-            '</div>';
-        document.body.appendChild(overlay);
-        document.getElementById('confirmCancel').onclick = function() { removeModals(); pendingFile = null; };
-        document.getElementById('confirmOverwrite').onclick = function() {
-            removeModals();
-            doUpload(selectedDate);
-        };
-        overlay.addEventListener('click', function(e) { if (e.target === overlay) { removeModals(); pendingFile = null; } });
-    }
-
-    async function doUpload(dateStr) {
-        if (!pendingFile) return;
-        var uploadBtn = document.getElementById('uploadBtn');
-        uploadBtn.textContent = '⏳';
-        uploadBtn.classList.add('uploading');
-
-        var ext = pendingFile.name.split('.').pop().toLowerCase();
-        var fileName = dateStr + '.' + ext;
-
-        try {
-            var { data, error } = await supabase.storage.from('photos').upload(fileName, pendingFile, { upsert: true });
-            console.log('Upload result:', { data: data, error: error });
-            if (error) throw error;
-            photoMap[dateStr] = SUPABASE_URL + '/storage/v1/object/public/photos/' + fileName;
-            uploadBtn.textContent = '✅';
-            setTimeout(function() { uploadBtn.textContent = '📷'; }, 2000);
-        } catch(err) {
-            console.error('Upload error:', err);
-            alert('上传失败: ' + (err.message || err.error_description || JSON.stringify(err)));
-            uploadBtn.textContent = '📷';
-        }
-
-        uploadBtn.classList.remove('uploading');
-        pendingFile = null;
-    }
-
-    // 点击上传按钮 → 先选文件
-    document.getElementById('uploadBtn').addEventListener('click', function() {
-        document.getElementById('uploadInput').click();
-    });
-
-    // 选好文件后 → 验证 → 弹出日期选择
-    document.getElementById('uploadInput').addEventListener('change', function(e) {
-        var file = e.target.files[0];
-        if (!file) return;
-
-        if (file.size > 10 * 1024 * 1024) {
-            alert('文件不能超过 10MB');
-            e.target.value = '';
-            return;
-        }
-
-        var ext = file.name.split('.').pop().toLowerCase();
-        var validExts = ['jpg','jpeg','png','gif','webp'];
-        if (validExts.indexOf(ext) === -1) {
-            alert('仅支持 jpg / png / gif / webp 格式');
-            e.target.value = '';
-            return;
-        }
-
-        pendingFile = file;
-        e.target.value = '';
-        showDateModal();
-    });
-
+    // ========== 音乐 ==========
     var bgMusic = document.getElementById('bgMusic');
-    var musicBtn = document.getElementById('musicBtn');
     bgMusic.src = 'https://kdyykl.github.io/xin/bgm.mp3';
     bgMusic.loop = true;
     bgMusic.preload = 'auto';
-    // 缓冲策略：等可播放再开始，减少卡顿
-    bgMusic.addEventListener('canplaythrough', function() {
-        if (!bgMusic.paused && bgMusic.readyState < 4) {
-            bgMusic.pause();
-            bgMusic.play().catch(function(){});
-        }
-    });
 
-    musicBtn.addEventListener('click', function(e) {
-        e.stopPropagation();
+    function toggleMusic() {
         bgMusic.muted = !bgMusic.muted;
-        musicBtn.classList.toggle('muted', bgMusic.muted);
-        musicBtn.textContent = bgMusic.muted ? '🔇' : '🔊';
-        musicBtn.title = bgMusic.muted ? '取消静音' : '音乐静音';
-    });
+        var btn = document.getElementById('musicBtn');
+        btn.classList.toggle('muted', bgMusic.muted);
+        btn.textContent = bgMusic.muted ? '🔇' : '🔊';
+        btn.title = bgMusic.muted ? '取消静音' : '音乐静音';
+    }
 
-    document.getElementById('storyBtn').addEventListener('click', function() {
+    function startStory() {
         var curtain = document.getElementById('curtain');
         curtain.classList.add('hide');
         bgMusic.play().then(function() {
-            musicBtn.style.display = 'flex';
-            musicBtn.textContent = '🔊';
-            musicBtn.classList.remove('muted');
+            var btn = document.getElementById('musicBtn');
+            btn.style.display = 'flex'; btn.textContent = '🔊'; btn.classList.remove('muted');
         }).catch(function() {
-            musicBtn.style.display = 'flex';
-            musicBtn.textContent = '🔇';
-            musicBtn.classList.add('muted');
+            var btn = document.getElementById('musicBtn');
+            btn.style.display = 'flex'; btn.textContent = '🔇'; btn.classList.add('muted');
         });
         setTimeout(function() { curtain.remove(); }, 1200);
-    });
+    }
 
+    // ========== 天数计算 ==========
     var BASE_DATE = new Date('2026-04-16T00:00:00+08:00');
     var BASE_DAYS = 92;
 
     function calcDays() {
-        var now = new Date();
-        var bj = new Date(now.getTime() + (480 + now.getTimezoneOffset()) * 60000);
+        var n = new Date();
+        var bj = new Date(n.getTime() + (480 + n.getTimezoneOffset()) * 60000);
         bj.setHours(0,0,0,0);
-        var base = new Date(BASE_DATE);
-        base.setHours(0,0,0,0);
+        var base = new Date(BASE_DATE); base.setHours(0,0,0,0);
         return BASE_DAYS + Math.floor((bj - base) / 86400000);
     }
-
     function updateDisplay() {
         document.getElementById('daysText').textContent = '亚克力与可达鸭已经' + calcDays() + '天';
         document.getElementById('dateText').textContent = fmtDate(new Date());
@@ -762,9 +379,11 @@
     updateDisplay();
     setInterval(updateDisplay, 60000);
 
+    // ========== 萤火虫 ==========
     var todayIdx = Math.floor((bjNow - STAR_START) / 86400000) + 1;
     var totalStars = todayIdx + 15;
     var field = document.getElementById('starField');
+    var allStarEls = [];
 
     for (var i = 0; i < totalStars; i++) {
         var star = document.createElement('div');
@@ -802,23 +421,28 @@
             var sd = new Date(STAR_START);
             sd.setDate(sd.getDate() + i);
             var labelText = fmtDate(sd);
-            star.addEventListener('click', (function(lt, el, d) {
-                return function(e) {
-                    e.stopPropagation();
-                    flyToCenter(lt, el, d);
-                };
-            })(labelText, star, sd));
+            star.dataset.date = fmtDateISO(sd);
+            star.dataset.label = labelText;
         }
+        allStarEls.push(star);
         field.appendChild(star);
     }
 
+    // 点击萤火虫飞到中间（用事件委托，更可靠）
+    field.addEventListener('click', function(e) {
+        var starEl = e.target.closest('.star');
+        if (!starEl || !starEl.dataset.date) return;
+        e.stopPropagation();
+        flyToCenter(starEl.dataset.label, starEl, new Date(starEl.dataset.date + 'T00:00:00+08:00'));
+    });
+
     function flyToCenter(text, starEl, starDate) {
+        // 清理之前的状态
         document.querySelectorAll('.star-label').forEach(function(el){ el.remove(); });
         document.querySelectorAll('.star.centered').forEach(function(el){
             el.classList.remove('centered');
             el.style.transform = '';
-            el.style.left = el._origLeft;
-            el.style.top  = el._origTop;
+            if (el._origLeft) { el.style.left = el._origLeft; el.style.top = el._origTop; }
             el.style.boxShadow = '';
         });
         document.querySelectorAll('.photo-modal').forEach(function(el){ el.remove(); });
@@ -838,7 +462,7 @@
         label.style.transform = 'translate(-50%,-180%)';
         document.body.appendChild(label);
 
-        // 等萤火虫飞到中间后（1.2s），慢慢显示照片
+        // 萤火虫飞到中间后（1.2s），慢慢显示照片
         var photoDate = fmtDateISO(starDate);
         var photoUrl = photoMap[photoDate];
         if (photoUrl) {
@@ -846,28 +470,25 @@
                 var modal = document.createElement('div');
                 modal.className = 'photo-modal';
                 var img = document.createElement('img');
-                img.src = photoUrl;
-                img.alt = '回忆';
+                img.src = photoUrl; img.alt = '回忆';
                 var lbl = document.createElement('div');
                 lbl.className = 'photo-label';
                 lbl.textContent = '📸 ' + text;
-                modal.appendChild(img);
-                modal.appendChild(lbl);
+                modal.appendChild(img); modal.appendChild(lbl);
                 document.body.appendChild(modal);
                 requestAnimationFrame(function() {
-                    requestAnimationFrame(function() {
-                        img.classList.add('visible');
-                    });
+                    requestAnimationFrame(function() { img.classList.add('visible'); });
                 });
             }, 1300);
         }
 
+        // 点击其他地方复位
         setTimeout(function() {
             function reset(e) {
                 if (e && e.target.closest('.star')) return;
                 document.removeEventListener('click', reset);
-                label.style.transition = 'opacity 0.4s';
-                label.style.opacity = '0';
+                document.removeEventListener('touchend', reset);
+                label.style.transition = 'opacity 0.4s'; label.style.opacity = '0';
                 setTimeout(function(){ label.remove(); }, 400);
                 var m = document.querySelector('.photo-modal');
                 if (m) {
@@ -877,124 +498,186 @@
                 }
                 starEl.classList.remove('centered');
                 starEl.style.transform = '';
-                starEl.style.left = starEl._origLeft;
-                starEl.style.top  = starEl._origTop;
+                if (starEl._origLeft) { starEl.style.left = starEl._origLeft; starEl.style.top = starEl._origTop; }
                 starEl.style.boxShadow = '';
             }
             document.addEventListener('click', reset);
+            document.addEventListener('touchend', reset);
         }, 200);
     }
 
+    // 流星
     (function spawnStar() {
         var s = document.createElement('div');
         s.className = 'shooting-star';
         s.style.cssText =
-            'left:' + (20+Math.random()*60) + '%;' +
-            'top:'  + (5+Math.random()*45)  + '%;' +
-            'width:' + (100+Math.random()*150) + 'px;' +
-            'animation-duration:' + (0.7+Math.random()*0.6) + 's;';
+            'left:' + (20+Math.random()*60) + '%;top:' + (5+Math.random()*45) + '%;' +
+            'width:' + (100+Math.random()*150) + 'px;animation-duration:' + (0.7+Math.random()*0.6) + 's;';
         field.appendChild(s);
         setTimeout(function(){ s.remove(); }, 2000);
         setTimeout(spawnStar, 6000 + Math.random() * 12000);
     })();
-    for (var j = 0; j < 4; j++) {
-        setTimeout(spawnStar, j * 5000 + Math.random() * 3000);
-    }
+    for (var j = 0; j < 4; j++) { setTimeout(function(){ (function spawnStar() {
+        var s = document.createElement('div'); s.className = 'shooting-star';
+        s.style.cssText = 'left:' + (20+Math.random()*60) + '%;top:' + (5+Math.random()*45) + '%;width:' + (100+Math.random()*150) + 'px;animation-duration:' + (0.7+Math.random()*0.6) + 's;';
+        field.appendChild(s); setTimeout(function(){ s.remove(); }, 2000);
+    })(); }, j * 5000 + Math.random() * 3000); }
 
-    // ========== 时间轴按钮 & Bottom Sheet ==========
-    var allStarEls = field.querySelectorAll('.star');
-    var timelineSheet = document.getElementById('timelineSheet');
-    var sheetHandle = document.getElementById('sheetHandle');
-    var timelineScroll = document.getElementById('timelineScroll');
-    var sheetOpen = false;
-    var activeDayEl = null;
-
-    // 全局函数
-    window.openSheet = function() {
-        sheetOpen = true;
-        timelineSheet.classList.add('open');
-        timelineSheet.style.transform = '';
-        var todayDay = timelineScroll.querySelector('[data-idx="' + (todayIdx - 1) + '"]');
-        if (todayDay) {
-            setTimeout(function() { todayDay.scrollIntoView({ behavior: 'smooth', inline: 'center', block: 'nearest' }); }, 150);
-        }
-    };
-    window.closeSheet = function() {
-        sheetOpen = false;
-        timelineSheet.classList.remove('open');
-        timelineSheet.style.transform = '';
-    };
-
-    // 时间轴按钮点击
-    document.getElementById('timelineBtn').addEventListener('click', function(e) {
-        e.stopPropagation();
-        if (sheetOpen) window.closeSheet(); else window.openSheet();
+    // ========== 上传功能 ==========
+    document.getElementById('uploadInput').addEventListener('change', function(e) {
+        var file = e.target.files[0];
+        if (!file) return;
+        if (file.size > 10 * 1024 * 1024) { alert('文件不能超过 10MB'); e.target.value = ''; return; }
+        var ext = file.name.split('.').pop().toLowerCase();
+        if (['jpg','jpeg','png','gif','webp'].indexOf(ext) === -1) { alert('仅支持 jpg/png/gif/webp'); e.target.value = ''; return; }
+        pendingFile = file;
+        e.target.value = '';
+        showDateModal();
     });
 
-    // 生成时间轴节点
-    (function buildTimeline() {
+    function removeModals() {
+        document.querySelectorAll('.modal-overlay').forEach(function(el){ el.remove(); });
+    }
+
+    function showDateModal() {
+        removeModals();
+        var overlay = document.createElement('div');
+        overlay.className = 'modal-overlay';
+        overlay.innerHTML =
+            '<div class="modal-card">' +
+                '<h3>选择萤火虫日期</h3>' +
+                '<input type="date" class="modal-date" id="datePicker" min="' + STAR_MIN + '" max="' + STAR_MAX + '" value="' + fmtDateISO(bjNow) + '">' +
+                '<p class="modal-hint">萤火虫从 ' + STAR_START.getFullYear() + '年' + (STAR_START.getMonth()+1) + '月' + STAR_START.getDate() + '日开始，每天一只</p>' +
+                '<div class="modal-btn-row">' +
+                    '<button class="modal-btn" onclick="removeModals();pendingFile=null;">取消</button>' +
+                    '<button class="modal-btn primary" onclick="confirmDate()">确认上传</button>' +
+                '</div>' +
+            '</div>';
+        document.body.appendChild(overlay);
+        overlay.addEventListener('click', function(e) { if (e.target === overlay) { removeModals(); pendingFile = null; } });
+    }
+
+    function confirmDate() {
+        var selectedDate = document.getElementById('datePicker').value;
+        if (!selectedDate) return;
+        removeModals();
+        if (photoMap[selectedDate]) { showConfirmModal(selectedDate); }
+        else { doUpload(selectedDate); }
+    }
+
+    function showConfirmModal(selectedDate) {
+        removeModals();
+        var overlay = document.createElement('div');
+        overlay.className = 'modal-overlay';
+        overlay.innerHTML =
+            '<div class="modal-card">' +
+                '<h3>' + selectedDate + ' 已有照片</h3>' +
+                '<p class="modal-hint" style="color:#ff9f43;margin-bottom:20px;">该日期已有一张照片，上传会覆盖它</p>' +
+                '<div class="modal-btn-row">' +
+                    '<button class="modal-btn" onclick="removeModals();pendingFile=null;">取消</button>' +
+                    '<button class="modal-btn primary" onclick="removeModals();doUpload(\'' + selectedDate + '\')">覆盖上传</button>' +
+                '</div>' +
+            '</div>';
+        document.body.appendChild(overlay);
+        overlay.addEventListener('click', function(e) { if (e.target === overlay) { removeModals(); pendingFile = null; } });
+    }
+
+    async function doUpload(dateStr) {
+        if (!pendingFile) return;
+        var uploadBtn = document.getElementById('uploadBtn');
+        uploadBtn.textContent = '⏳'; uploadBtn.classList.add('uploading');
+        var ext = pendingFile.name.split('.').pop().toLowerCase();
+        var fileName = dateStr + '.' + ext;
+        try {
+            if (!supabase) { alert('照片服务未就绪，请稍后重试'); throw new Error('supabase not ready'); }
+            var { data, error } = await supabase.storage.from('photos').upload(fileName, pendingFile, { upsert: true });
+            if (error) throw error;
+            photoMap[dateStr] = SUPABASE_URL + '/storage/v1/object/public/photos/' + fileName;
+            uploadBtn.textContent = '✅';
+            setTimeout(function() { uploadBtn.textContent = '📷'; }, 2000);
+        } catch(err) {
+            console.error('Upload error:', err);
+            alert('上传失败: ' + (err.message || JSON.stringify(err)));
+            uploadBtn.textContent = '📷';
+        }
+        uploadBtn.classList.remove('uploading');
+        pendingFile = null;
+    }
+
+    // ========== 时间轴模态面板 ==========
+    function showTimeline() {
+        removeModals();
+        var overlay = document.createElement('div');
+        overlay.className = 'modal-overlay timeline-modal';
+        var card = document.createElement('div');
+        card.className = 'modal-card';
+        var h3 = document.createElement('h3');
+        h3.textContent = '📅 萤火虫时间轴';
+        card.appendChild(h3);
+
+        var list = document.createElement('div');
+        list.className = 'timeline-list';
+
+        // 从最新到最旧
         var lastMonth = -1;
-        for (var i = 0; i < todayIdx; i++) {
+        for (var i = todayIdx - 1; i >= 0; i--) {
             var sd = new Date(STAR_START);
             sd.setDate(sd.getDate() + i);
             var m = sd.getMonth();
-            if (m !== lastMonth && i > 0) {
-                var sep = document.createElement('div');
-                sep.className = 'timeline-month-sep';
-                timelineScroll.appendChild(sep);
+            if (m !== lastMonth) {
+                var ml = document.createElement('div');
+                ml.className = 'timeline-month-label';
+                ml.textContent = sd.getFullYear() + '年' + (m+1) + '月';
+                list.appendChild(ml);
+                lastMonth = m;
             }
-            lastMonth = m;
-
-            var day = document.createElement('div');
-            day.className = 'timeline-day';
-            day.dataset.idx = i;
+            var item = document.createElement('div');
+            item.className = 'timeline-item';
             var dot = document.createElement('div');
-            dot.className = 'timeline-day-dot';
-            var label = document.createElement('div');
-            label.className = 'timeline-day-date';
-            label.textContent = (sd.getMonth()+1) + '.' + sd.getDate();
-            day.appendChild(dot);
-            day.appendChild(label);
-
-            day.addEventListener('click', (function(idx, starEl, dateObj) {
-                return function(e) {
+            dot.className = 'timeline-dot';
+            var dateDiv = document.createElement('div');
+            dateDiv.className = 'timeline-item-date';
+            dateDiv.textContent = fmtDate(sd);
+            item.appendChild(dot);
+            item.appendChild(dateDiv);
+            // 如果有照片加个标记
+            var photoDate = fmtDateISO(sd);
+            if (photoMap[photoDate]) {
+                var photoIcon = document.createElement('span');
+                photoIcon.className = 'timeline-item-photo';
+                photoIcon.textContent = '📸';
+                item.appendChild(photoIcon);
+            }
+            // 绑定点击（闭包）
+            (function(idx, starEl, dateObj) {
+                item.addEventListener('click', function(e) {
                     e.stopPropagation();
-                    // 高亮当前
-                    if (activeDayEl) activeDayEl.classList.remove('active');
-                    this.classList.add('active');
-                    activeDayEl = this;
-                    // 飞到中间
+                    removeModals();
                     var lt = fmtDate(dateObj);
                     flyToCenter(lt, starEl, dateObj);
-                    // 延迟收起
-                    setTimeout(function() { window.closeSheet(); }, 600);
-                };
-            })(i, allStarEls[i], sd));
-
-            timelineScroll.appendChild(day);
+                });
+            })(i, allStarEls[i], sd);
+            list.appendChild(item);
         }
-    })();
 
+        card.appendChild(list);
 
+        var closeRow = document.createElement('div');
+        closeRow.className = 'modal-btn-row';
+        closeRow.style.marginTop = '12px';
+        var closeBtn = document.createElement('button');
+        closeBtn.className = 'modal-btn';
+        closeBtn.textContent = '关闭';
+        closeBtn.onclick = function() { removeModals(); };
+        closeRow.appendChild(closeBtn);
+        card.appendChild(closeRow);
 
-    // 简单拖拽：sheet打开时下拉可关闭
-    var dragStartY = 0;
-    var isDragging = false;
+        overlay.appendChild(card);
+        document.body.appendChild(overlay);
 
-    sheetHandle.addEventListener('touchstart', function(e) { dragStartY = e.touches[0].clientY; isDragging = true; }, { passive: true });
-    document.addEventListener('touchmove', function(e) {
-        if (!isDragging || !sheetOpen) return;
-        var dy = e.touches[0].clientY - dragStartY;
-        if (dy > 50) { window.closeSheet(); isDragging = false; }
-    }, { passive: true });
-    document.addEventListener('touchend', function() { isDragging = false; });
-
-    // 点击sheet外关闭
-    document.addEventListener('click', function(e) {
-        if (sheetOpen && !timelineSheet.contains(e.target) && e.target.id !== 'timelineBtn') {
-            window.closeSheet();
-        }
-    });
+        // 点击遮罩关闭
+        overlay.addEventListener('click', function(e) { if (e.target === overlay) removeModals(); });
+    }
     </script>
 </body>
 </html>
