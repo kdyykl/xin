@@ -664,7 +664,13 @@
             setTimeout(loadAllPhotos, 500);
         } catch(err) {
             console.error('Upload error:', err);
-            alert('上传失败: ' + (err.message || JSON.stringify(err)));
+            var msg = err.message || '';
+            if (msg.includes('row-level security') || msg.includes('new row violates')) {
+                msg = '权限不足：请检查 Supabase 存储桶的 UPDATE 权限是否开启';
+            } else if (msg.includes('duplicate')) {
+                msg = '文件已存在，覆盖失败（请检查 upsert 权限）';
+            }
+            alert('上传失败: ' + msg);
             uploadBtn.textContent = '📷';
         }
         uploadBtn.classList.remove('uploading');
