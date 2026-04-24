@@ -338,12 +338,17 @@
         try {
             var { data, error } = await supabase.storage.from('photos').list('', { limit: 1000 });
             if (error || !data) return;
+            // 按日期前缀匹配，支持多版本文件名如 2026-04-14_1713.jpg
+            var latestMap = {};
             data.forEach(function(file) {
-                var datePart = file.name.replace(/\.[^.]+$/, '');
-                if (/^\d{4}-\d{2}-\d{2}$/.test(datePart)) {
-                    photoMap[datePart] = SUPABASE_URL + '/storage/v1/object/public/photos/' + file.name;
+                var m = file.name.match(/^(\d{4}-\d{2}-\d{2})/);
+                if (m) {
+                    latestMap[m[1]] = file.name; // 后遍历的覆盖先前的，自然取最新
                 }
             });
+            for (var d in latestMap) {
+                photoMap[d] = SUPABASE_URL + '/storage/v1/object/public/photos/' + latestMap[d];
+            }
         } catch(e) { console.warn('加载照片列表失败:', e); }
     }
 
@@ -652,21 +657,15 @@
         var uploadBtn = document.getElementById('uploadBtn');
         uploadBtn.textContent = '⏳'; uploadBtn.classList.add('uploading');
         var ext = pendingFile.name.split('.').pop().toLowerCase();
-        var fileName = dateStr + '.' + ext;
+        // 唯一文件名：日期_时间戳，避免覆盖冲突
+        var fileName = dateStr + '_' + Date.now() + '.' + ext;
         try {
             if (!supabase) { alert('照片服务未就绪，请稍后重试'); throw new Error('supabase not ready'); }
-
-            // 如果文件已存在，先删除（绕过 UPDATE 权限限制）
-            if (photoMap[dateStr]) {
-                await supabase.storage.from('photos').remove([fileName]);
-            }
-
-            var { data, error } = await supabase.storage.from('photos').upload(fileName, pendingFile, { upsert: false });
+            var { data, error } = await supabase.storage.from('photos').upload(fileName, pendingFile);
             if (error) throw error;
             photoMap[dateStr] = SUPABASE_URL + '/storage/v1/object/public/photos/' + fileName;
             uploadBtn.textContent = '✅';
             setTimeout(function() { uploadBtn.textContent = '📷'; }, 2000);
-            // 刷新照片列表（解决CDN缓存问题）
             setTimeout(loadAllPhotos, 500);
         } catch(err) {
             console.error('Upload error:', err);
