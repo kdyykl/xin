@@ -35,6 +35,7 @@
             opacity: 0.08 !important;
             filter: grayscale(0.8);
             animation-play-state: paused !important;
+            transition: opacity 2s ease, filter 2s ease, box-shadow 2s ease !important;
         }
         .star.highlighted {
             box-shadow: 0 0 50px 20px rgba(57,255,20,1), 0 0 100px 40px rgba(57,255,20,0.6) !important;
@@ -465,12 +466,18 @@
         }
     });
 
-    // 清除高亮状态
+    // 清除高亮状态（带渐变）
     function clearHighlight() {
         if (highlightedStar) {
             highlightedStar.classList.remove('highlighted');
             highlightedStar = null;
         }
+        // 先移除 dimmed，让 CSS transition 自然渐变恢复
+        allStarEls.forEach(function(el) { el.classList.remove('dimmed'); });
+    }
+
+    // 渐变恢复所有萤火虫（用于飞到中间后）
+    function restoreAllStarsGradually() {
         allStarEls.forEach(function(el) { el.classList.remove('dimmed'); });
     }
 
@@ -536,8 +543,8 @@
                     requestAnimationFrame(function() { img.classList.add('visible'); });
                 });
             }
-            // 恢复所有萤火虫
-            allStarEls.forEach(function(el) { el.classList.remove('dimmed'); });
+            // 渐变恢复所有萤火虫（2秒过渡）
+            restoreAllStarsGradually();
         }, 2600);
 
         // 点击其他地方复位
@@ -653,6 +660,8 @@
             photoMap[dateStr] = SUPABASE_URL + '/storage/v1/object/public/photos/' + fileName;
             uploadBtn.textContent = '✅';
             setTimeout(function() { uploadBtn.textContent = '📷'; }, 2000);
+            // 刷新照片列表（解决CDN缓存问题）
+            setTimeout(loadAllPhotos, 500);
         } catch(err) {
             console.error('Upload error:', err);
             alert('上传失败: ' + (err.message || JSON.stringify(err)));
