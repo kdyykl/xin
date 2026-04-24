@@ -385,22 +385,13 @@
     var field = document.getElementById('starField');
     var allStarEls = [];
 
-    // 中间区域避开萤火虫（中心 20% x 20% 区域不生成）
-    function isInCenter(x, y) {
-        return x > 40 && x < 60 && y > 40 && y < 60;
-    }
-
     for (var i = 0; i < totalStars; i++) {
         var star = document.createElement('div');
         star.className = 'star';
         var hasDate = i < todayIdx;
         var size = hasDate ? Math.random() * 3 + 2 : Math.random() * 2 + 1;
-        var x, y;
-        // 避开中间区域
-        do {
-            x = 3 + Math.random() * 94;
-            y = 3 + Math.random() * 94;
-        } while (isInCenter(x, y));
+        var x = 3 + Math.random() * 94;
+        var y = 3 + Math.random() * 94;
         var dur = (Math.random() * 4 + 2.5).toFixed(1);
         var delay = (Math.random() * 8).toFixed(1);
         var glow = size * 4;
@@ -442,11 +433,10 @@
         var starEl = e.target.closest('.star');
         if (!starEl || !starEl.dataset.date) return;
         e.stopPropagation();
-        flyToCenter(starEl.dataset.label, starEl, new Date(starEl.dataset.date + 'T00:00:00+08:00'), false);
+        flyToCenter(starEl.dataset.label, starEl, new Date(starEl.dataset.date + 'T00:00:00+08:00'));
     });
 
-    // fromTimeline: true = 时间轴选择（其他熄灭，不自动飞）, false = 直接点击萤火虫
-    function flyToCenter(text, starEl, starDate, fromTimeline) {
+    function flyToCenter(text, starEl, starDate) {
         // 清理之前的状态
         document.querySelectorAll('.star-label').forEach(function(el){ el.remove(); });
         document.querySelectorAll('.star.centered').forEach(function(el){
@@ -456,18 +446,6 @@
             el.style.boxShadow = '';
         });
         document.querySelectorAll('.photo-modal').forEach(function(el){ el.remove(); });
-
-        // 如果是时间轴选择：其他萤火虫熄灭，当前萤火虫亮，然后飞到中间
-        if (fromTimeline) {
-            // 熄灭所有萤火虫
-            allStarEls.forEach(function(s) {
-                s.style.opacity = '0.15';
-                s.style.pointerEvents = 'none';
-            });
-            // 当前萤火虫亮起
-            starEl.style.opacity = '';
-            starEl.style.pointerEvents = '';
-        }
 
         starEl._origLeft = starEl.style.left;
         starEl._origTop  = starEl.style.top;
@@ -522,13 +500,6 @@
                 starEl.style.transform = '';
                 if (starEl._origLeft) { starEl.style.left = starEl._origLeft; starEl.style.top = starEl._origTop; }
                 starEl.style.boxShadow = '';
-                // 恢复所有萤火虫亮起
-                if (fromTimeline) {
-                    allStarEls.forEach(function(s) {
-                        s.style.opacity = '';
-                        s.style.pointerEvents = '';
-                    });
-                }
             }
             document.addEventListener('click', reset);
             document.addEventListener('touchend', reset);
@@ -683,7 +654,7 @@
                     e.stopPropagation();
                     removeModals();
                     var lt = fmtDate(dateObj);
-                    flyToCenter(lt, starEl, dateObj, true);  // fromTimeline = true
+                    flyToCenter(lt, starEl, dateObj);
                 });
             })(i, allStarEls[i], sd);
             list.appendChild(item);
