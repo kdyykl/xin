@@ -436,7 +436,7 @@
             left: 0;
             right: 0;
             bottom: 0;
-            z-index: 99999;
+            z-index: 99990;
             background: rgba(8,12,28,0.96);
             border-top: 1px solid rgba(255,255,255,0.1);
             border-radius: 16px 16px 0 0;
@@ -450,6 +450,7 @@
         .timeline-sheet.open {
             transform: translateY(0);
             pointer-events: auto;
+            z-index: 99999;
         }
         .timeline-sheet-handle {
             width: 28px;
@@ -661,13 +662,15 @@
         var fileName = dateStr + '.' + ext;
 
         try {
-            var { error } = await supabase.storage.from('photos').upload(fileName, pendingFile, { upsert: true });
+            var { data, error } = await supabase.storage.from('photos').upload(fileName, pendingFile, { upsert: true });
+            console.log('Upload result:', { data: data, error: error });
             if (error) throw error;
             photoMap[dateStr] = SUPABASE_URL + '/storage/v1/object/public/photos/' + fileName;
             uploadBtn.textContent = '✅';
             setTimeout(function() { uploadBtn.textContent = '📷'; }, 2000);
         } catch(err) {
-            alert('上传失败: ' + err.message);
+            console.error('Upload error:', err);
+            alert('上传失败: ' + (err.message || err.error_description || JSON.stringify(err)));
             uploadBtn.textContent = '📷';
         }
 
