@@ -26,15 +26,22 @@
             transition: left 1.2s cubic-bezier(0.4, 0, 0.2, 1),
                         top 1.2s cubic-bezier(0.4, 0, 0.2, 1),
                         transform 1.2s cubic-bezier(0.4, 0, 0.2, 1),
-                        box-shadow 0.8s ease, opacity 0.5s ease;
+                        box-shadow 0.8s ease, opacity 0.5s ease, filter 0.5s ease;
             will-change: transform;
         }
         .star:hover { filter: brightness(1.8); }
+        .star.dimmed {
+            opacity: 0.08 !important;
+            filter: grayscale(0.8);
+            animation-play-state: paused !important;
+        }
         .star.centered {
             animation: twinkle var(--dur) ease-in-out infinite,
                        centerFloat 3s ease-in-out infinite !important;
             animation-delay: var(--delay), 0s !important;
             z-index: 10000;
+            opacity: 1 !important;
+            filter: none !important;
         }
         @keyframes centerFloat {
             0%   { margin-left: 0;    margin-top: 0; }
@@ -165,8 +172,6 @@
         #uploadBtn.uploading { animation: spin 1s linear infinite; }
         @keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
         #uploadInput { display: none; }
-
-        /* 时间轴按钮 */
         #timelineBtn { bottom: 88px; right: 28px; }
 
         /* 模态框通用 */
@@ -279,10 +284,9 @@
         <div class="hearts"></div>
     </div>
 
-    <!-- Supabase 异步加载，不阻塞主脚本 -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2" async></script>
     <script>
-    // ========== 全局配置（不依赖任何外部库） ==========
+    // ========== 全局配置 ==========
     var SUPABASE_URL = 'https://osdxiibthsytrpnovlik.supabase.co';
     var SUPABASE_ANON = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im9zZHhpaWJ0aHN5dHJwbm92bGlrIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzY5MjMzOTEsImV4cCI6MjA5MjQ5OTM5MX0.OLWo36xHhQTGPQk1O9ZWGISIxTjwX5SSolAL2zkHJbc';
     var supabase = null;
@@ -303,21 +307,20 @@
     var STAR_MIN = fmtDateISO(STAR_START);
     var STAR_MAX = fmtDateISO(bjNow);
 
-    // ========== Supabase 安全初始化（等 CDN 加载完再 init） ==========
+    // 中间禁区：40%-60% 的区域
+    var CENTER_MIN = 40, CENTER_MAX = 60;
+
+    // ========== Supabase ==========
     function initSupabase() {
         try {
             if (window.supabase && window.supabase.createClient) {
                 supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON);
                 loadAllPhotos();
             } else {
-                // CDN 还没加载完，100ms 后重试
                 setTimeout(initSupabase, 100);
             }
-        } catch(e) {
-            console.warn('Supabase 初始化失败，照片功能不可用:', e);
-        }
+        } catch(e) { console.warn('Supabase 初始化失败:', e); }
     }
-    // 页面加载后延迟初始化，绝不阻塞主功能
     setTimeout(initSupabase, 200);
 
     async function loadAllPhotos() {
@@ -385,13 +388,22 @@
     var field = document.getElementById('starField');
     var allStarEls = [];
 
+    // 生成避开中间禁区的位置
+    function getSafePos() {
+        var x, y;
+        do {
+            x = 3 + Math.random() * 94;
+            y = 3 + Math.random() * 94;
+        } while (x >= CENTER_MIN && x <= CENTER_MAX && y >= CENTER_MIN && y <= CENTER_MAX);
+        return { x: x, y: y };
+    }
+
     for (var i = 0; i < totalStars; i++) {
         var star = document.createElement('div');
         star.className = 'star';
         var hasDate = i < todayIdx;
         var size = hasDate ? Math.random() * 3 + 2 : Math.random() * 2 + 1;
-        var x = 3 + Math.random() * 94;
-        var y = 3 + Math.random() * 94;
+        var pos = getSafePos();
         var dur = (Math.random() * 4 + 2.5).toFixed(1);
         var delay = (Math.random() * 8).toFixed(1);
         var glow = size * 4;
@@ -409,7 +421,7 @@
 
         star.style.cssText =
             'width:' + size + 'px;height:' + size + 'px;' +
-            'left:' + x.toFixed(2) + '%;top:' + y.toFixed(2) + '%;' +
+            'left:' + pos.x.toFixed(2) + '%;top:' + pos.y.toFixed(2) + '%;' +
             '--dur:' + dur + 's;--delay:' + delay + 's;' +
             '--flyDur:' + flyDur + 's;--flyDelay:' + flyDelay + 's;' +
             '--dx1:' + dx1 + 'px;--dy1:' + dy1 + 'px;' +
@@ -423,12 +435,13 @@
             var labelText = fmtDate(sd);
             star.dataset.date = fmtDateISO(sd);
             star.dataset.label = labelText;
+            star.dataset.idx = i;
         }
         allStarEls.push(star);
         field.appendChild(star);
     }
 
-    // 点击萤火虫飞到中间（用事件委托，更可靠）
+    // 点击萤火虫飞到中间
     field.addEventListener('click', function(e) {
         var starEl = e.target.closest('.star');
         if (!starEl || !starEl.dataset.date) return;
@@ -436,7 +449,24 @@
         flyToCenter(starEl.dataset.label, starEl, new Date(starEl.dataset.date + 'T00:00:00+08:00'));
     });
 
-    function flyToCenter(text, starEl, starDate) {
+    // ========== 选中萤火虫高亮，其他熄灭，飞到中间后全部亮起 ==========
+    function highlightAndFly(idx, starEl, starDate) {
+        // 1. 先熄灭所有萤火虫（加 dimmed 类）
+        allStarEls.forEach(function(el) { el.classList.add('dimmed'); });
+
+        // 2. 选中的萤火虫保持高亮
+        starEl.classList.remove('dimmed');
+
+        // 3. 关闭时间轴弹窗
+        removeModals();
+
+        // 4. 延迟一下让用户看到"选中高亮、其他熄灭"的效果，然后飞到中间
+        setTimeout(function() {
+            flyToCenter(starEl.dataset.label, starEl, starDate, true); // true = 从时间轴触发，需要恢复其他萤火虫
+        }, 400);
+    }
+
+    function flyToCenter(text, starEl, starDate, fromTimeline) {
         // 清理之前的状态
         document.querySelectorAll('.star-label').forEach(function(el){ el.remove(); });
         document.querySelectorAll('.star.centered').forEach(function(el){
@@ -462,11 +492,13 @@
         label.style.transform = 'translate(-50%,-180%)';
         document.body.appendChild(label);
 
-        // 萤火虫飞到中间后（1.2s），慢慢显示照片
+        // 萤火虫飞到中间后（1.2s），显示照片 + 恢复所有萤火虫
         var photoDate = fmtDateISO(starDate);
         var photoUrl = photoMap[photoDate];
-        if (photoUrl) {
-            setTimeout(function() {
+
+        setTimeout(function() {
+            // 显示照片（如果有）
+            if (photoUrl) {
                 var modal = document.createElement('div');
                 modal.className = 'photo-modal';
                 var img = document.createElement('img');
@@ -479,8 +511,11 @@
                 requestAnimationFrame(function() {
                     requestAnimationFrame(function() { img.classList.add('visible'); });
                 });
-            }, 1300);
-        }
+            }
+
+            // 恢复所有萤火虫（移除 dimmed）
+            allStarEls.forEach(function(el) { el.classList.remove('dimmed'); });
+        }, 1300);
 
         // 点击其他地方复位
         setTimeout(function() {
@@ -618,7 +653,6 @@
         var list = document.createElement('div');
         list.className = 'timeline-list';
 
-        // 从最新到最旧
         var lastMonth = -1;
         for (var i = todayIdx - 1; i >= 0; i--) {
             var sd = new Date(STAR_START);
@@ -640,7 +674,6 @@
             dateDiv.textContent = fmtDate(sd);
             item.appendChild(dot);
             item.appendChild(dateDiv);
-            // 如果有照片加个标记
             var photoDate = fmtDateISO(sd);
             if (photoMap[photoDate]) {
                 var photoIcon = document.createElement('span');
@@ -648,13 +681,11 @@
                 photoIcon.textContent = '📸';
                 item.appendChild(photoIcon);
             }
-            // 绑定点击（闭包）
+            // 时间轴点击：高亮选中，熄灭其他，然后飞到中间
             (function(idx, starEl, dateObj) {
                 item.addEventListener('click', function(e) {
                     e.stopPropagation();
-                    removeModals();
-                    var lt = fmtDate(dateObj);
-                    flyToCenter(lt, starEl, dateObj);
+                    highlightAndFly(idx, starEl, dateObj);
                 });
             })(i, allStarEls[i], sd);
             list.appendChild(item);
@@ -674,8 +705,6 @@
 
         overlay.appendChild(card);
         document.body.appendChild(overlay);
-
-        // 点击遮罩关闭
         overlay.addEventListener('click', function(e) { if (e.target === overlay) removeModals(); });
     }
     </script>
