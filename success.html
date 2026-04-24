@@ -23,9 +23,10 @@
             animation: twinkle var(--dur) ease-in-out infinite,
                        fireflyMove var(--flyDur, 15s) ease-in-out infinite;
             animation-delay: var(--delay), var(--flyDelay, 0s);
-            transition: left 1.2s cubic-bezier(0.4, 0, 0.2, 1),
-                        top 1.2s cubic-bezier(0.4, 0, 0.2, 1),
-                        transform 1.2s cubic-bezier(0.4, 0, 0.2, 1),
+            /* 飞行速度变慢：2.5s */
+            transition: left 2.5s cubic-bezier(0.4, 0, 0.2, 1),
+                        top 2.5s cubic-bezier(0.4, 0, 0.2, 1),
+                        transform 2.5s cubic-bezier(0.4, 0, 0.2, 1),
                         box-shadow 0.8s ease, opacity 0.5s ease, filter 0.5s ease;
             will-change: transform;
         }
@@ -34,6 +35,15 @@
             opacity: 0.08 !important;
             filter: grayscale(0.8);
             animation-play-state: paused !important;
+        }
+        .star.highlighted {
+            box-shadow: 0 0 50px 20px rgba(57,255,20,1), 0 0 100px 40px rgba(57,255,20,0.6) !important;
+            animation: twinkleFast 0.8s ease-in-out infinite !important;
+            z-index: 9998;
+        }
+        @keyframes twinkleFast {
+            0%, 100% { opacity: 1; transform: scale(1.3); }
+            50% { opacity: 0.7; transform: scale(1.6); }
         }
         .star.centered {
             animation: twinkle var(--dur) ease-in-out infinite,
@@ -156,7 +166,7 @@
         .story-btn:hover { transform: scale(1.08); box-shadow: 0 0 30px rgba(255,255,255,0.3); }
         @keyframes glow { 0%, 100% { box-shadow: 0 0 15px rgba(255,255,255,0.1); } 50% { box-shadow: 0 0 30px rgba(255,255,255,0.25); } }
 
-        /* 底部按钮通用 */
+        /* 底部按钮 */
         .float-btn {
             position: fixed; width: 48px; height: 48px; border-radius: 50%;
             background: rgba(10, 10, 30, 0.75); border: 1.5px solid rgba(255,255,255,0.3);
@@ -174,7 +184,7 @@
         #uploadInput { display: none; }
         #timelineBtn { bottom: 88px; right: 28px; }
 
-        /* 模态框通用 */
+        /* 模态框 */
         .modal-overlay {
             position: fixed; inset: 0; z-index: 100000;
             background: rgba(0,0,0,0.75);
@@ -225,7 +235,7 @@
             border-radius: 20px; font-size: 14px; border: 1px solid rgba(255,215,0,0.4);
         }
 
-        /* 时间轴模态面板 */
+        /* 时间轴 */
         .timeline-modal .modal-card {
             width: 92vw; max-width: 480px; max-height: 75vh;
             display: flex; flex-direction: column; padding: 20px 16px;
@@ -292,6 +302,7 @@
     var supabase = null;
     var photoMap = {};
     var pendingFile = null;
+    var highlightedStar = null; // 当前高亮的萤火虫
 
     function fmtDateISO(d) {
         return d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0') + '-' + String(d.getDate()).padStart(2,'0');
@@ -306,8 +317,6 @@
     bjNow.setHours(0,0,0,0);
     var STAR_MIN = fmtDateISO(STAR_START);
     var STAR_MAX = fmtDateISO(bjNow);
-
-    // 中间禁区：40%-60% 的区域
     var CENTER_MIN = 40, CENTER_MAX = 60;
 
     // ========== Supabase ==========
@@ -388,7 +397,6 @@
     var field = document.getElementById('starField');
     var allStarEls = [];
 
-    // 生成避开中间禁区的位置
     function getSafePos() {
         var x, y;
         do {
@@ -441,29 +449,46 @@
         field.appendChild(star);
     }
 
-    // 点击萤火虫飞到中间
+    // 点击萤火虫：如果是高亮状态就飞，否则普通飞
     field.addEventListener('click', function(e) {
         var starEl = e.target.closest('.star');
         if (!starEl || !starEl.dataset.date) return;
         e.stopPropagation();
-        flyToCenter(starEl.dataset.label, starEl, new Date(starEl.dataset.date + 'T00:00:00+08:00'));
+
+        // 如果这只萤火虫是高亮状态（从时间轴选的），先清除高亮状态再飞
+        if (starEl.classList.contains('highlighted')) {
+            clearHighlight();
+            flyToCenter(starEl.dataset.label, starEl, new Date(starEl.dataset.date + 'T00:00:00+08:00'), true);
+        } else {
+            // 普通点击，直接飞
+            flyToCenter(starEl.dataset.label, starEl, new Date(starEl.dataset.date + 'T00:00:00+08:00'), false);
+        }
     });
 
-    // ========== 选中萤火虫高亮，其他熄灭，飞到中间后全部亮起 ==========
-    function highlightAndFly(idx, starEl, starDate) {
-        // 1. 先熄灭所有萤火虫（加 dimmed 类）
+    // 清除高亮状态
+    function clearHighlight() {
+        if (highlightedStar) {
+            highlightedStar.classList.remove('highlighted');
+            highlightedStar = null;
+        }
+        allStarEls.forEach(function(el) { el.classList.remove('dimmed'); });
+    }
+
+    // 时间轴点击：高亮选中，熄灭其他，等待用户点击
+    function highlightFromTimeline(idx, starEl, starDate) {
+        // 清除之前的高亮
+        clearHighlight();
+
+        // 熄灭所有
         allStarEls.forEach(function(el) { el.classList.add('dimmed'); });
 
-        // 2. 选中的萤火虫保持高亮
+        // 选中的高亮
         starEl.classList.remove('dimmed');
+        starEl.classList.add('highlighted');
+        highlightedStar = starEl;
 
-        // 3. 关闭时间轴弹窗
+        // 关闭时间轴
         removeModals();
-
-        // 4. 延迟一下让用户看到"选中高亮、其他熄灭"的效果，然后飞到中间
-        setTimeout(function() {
-            flyToCenter(starEl.dataset.label, starEl, starDate, true); // true = 从时间轴触发，需要恢复其他萤火虫
-        }, 400);
     }
 
     function flyToCenter(text, starEl, starDate, fromTimeline) {
@@ -492,12 +517,11 @@
         label.style.transform = 'translate(-50%,-180%)';
         document.body.appendChild(label);
 
-        // 萤火虫飞到中间后（1.2s），显示照片 + 恢复所有萤火虫
+        // 2.5s 后飞到中间，显示照片
         var photoDate = fmtDateISO(starDate);
         var photoUrl = photoMap[photoDate];
 
         setTimeout(function() {
-            // 显示照片（如果有）
             if (photoUrl) {
                 var modal = document.createElement('div');
                 modal.className = 'photo-modal';
@@ -512,10 +536,9 @@
                     requestAnimationFrame(function() { img.classList.add('visible'); });
                 });
             }
-
-            // 恢复所有萤火虫（移除 dimmed）
+            // 恢复所有萤火虫
             allStarEls.forEach(function(el) { el.classList.remove('dimmed'); });
-        }, 1300);
+        }, 2600);
 
         // 点击其他地方复位
         setTimeout(function() {
@@ -533,7 +556,7 @@
                 }
                 starEl.classList.remove('centered');
                 starEl.style.transform = '';
-                if (starEl._origLeft) { starEl.style.left = starEl._origLeft; starEl.style.top = starEl._origTop; }
+                if (starEl._origLeft) { starEl.style.left = starEl._origLeft; el.style.top = starEl._origTop; }
                 starEl.style.boxShadow = '';
             }
             document.addEventListener('click', reset);
@@ -681,11 +704,11 @@
                 photoIcon.textContent = '📸';
                 item.appendChild(photoIcon);
             }
-            // 时间轴点击：高亮选中，熄灭其他，然后飞到中间
+            // 时间轴点击：只高亮，不飞，等用户点击萤火虫
             (function(idx, starEl, dateObj) {
                 item.addEventListener('click', function(e) {
                     e.stopPropagation();
-                    highlightAndFly(idx, starEl, dateObj);
+                    highlightFromTimeline(idx, starEl, dateObj);
                 });
             })(i, allStarEls[i], sd);
             list.appendChild(item);
