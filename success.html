@@ -349,6 +349,10 @@
             for (var d in latestMap) {
                 photoMap[d] = SUPABASE_URL + '/storage/v1/object/public/photos/' + latestMap[d];
             }
+            // 预热所有图片到浏览器缓存
+            for (var d in photoMap) {
+                (new Image()).src = photoMap[d];
+            }
         } catch(e) { console.warn('加载照片列表失败:', e); }
     }
 
@@ -533,12 +537,20 @@
         var photoDate = fmtDateISO(starDate);
         var photoUrl = photoMap[photoDate];
 
+        // 立即开始预加载图片（与飞行动画并行）
+        var preloadedImg = null;
+        if (photoUrl) {
+            preloadedImg = new Image();
+            preloadedImg.src = photoUrl;
+        }
+
         setTimeout(function() {
             if (photoUrl) {
                 var modal = document.createElement('div');
                 modal.className = 'photo-modal';
-                var img = document.createElement('img');
-                img.src = photoUrl; img.alt = '回忆';
+                var img = preloadedImg || document.createElement('img');
+                if (!preloadedImg) { img.src = photoUrl; }
+                img.alt = '回忆';
                 var lbl = document.createElement('div');
                 lbl.className = 'photo-label';
                 lbl.textContent = '📸 ' + text;
