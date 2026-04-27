@@ -23,7 +23,6 @@
             animation: twinkle var(--dur) ease-in-out infinite,
                        fireflyMove var(--flyDur, 15s) ease-in-out infinite;
             animation-delay: var(--delay), var(--flyDelay, 0s);
-            /* 飞行速度变慢：2.5s */
             transition: left 2.5s cubic-bezier(0.4, 0, 0.2, 1),
                         top 2.5s cubic-bezier(0.4, 0, 0.2, 1),
                         transform 2.5s cubic-bezier(0.4, 0, 0.2, 1),
@@ -303,7 +302,8 @@
     var supabase = null;
     var photoMap = {};
     var pendingFile = null;
-    var highlightedStar = null; // 当前高亮的萤火虫
+    var highlightedStar =    null; // 当前高亮的萤火虫
+    var allStarEls = [];
 
     function fmtDateISO(d) {
         return d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0') + '-' + String(d.getDate()).padStart(2,'0');
@@ -312,13 +312,17 @@
         return d.getFullYear() + '.' + String(d.getMonth()+1).padStart(2,'0') + '.' + String(d.getDate()).padStart(2,'0');
     }
 
+    // ========== 时间工具 ==========
     var STAR_START = new Date('2026-01-14T00:00:00+08:00');
-    var now = new Date();
-    var bjNow = new Date(now.getTime() + (480 + now.getTimezoneOffset()) * 60000);
-    bjNow.setHours(0,0,0,0);
+    function bjToday() {
+        var n = new Date();
+        var bj = new Date(n.getTime() + (480 + n.getTimezoneOffset()) * 60000);
+        bj.setHours(0,0,0,0);
+        return bj;
+    }
+    var bjNow = bjToday();
     var STAR_MIN = fmtDateISO(STAR_START);
     var STAR_MAX = fmtDateISO(bjNow);
-    var CENTER_MIN = 40, CENTER_MAX = 60;
 
     // ========== Supabase ==========
     function initSupabase() {
@@ -338,20 +342,14 @@
         try {
             var { data, error } = await supabase.storage.from('photos').list('', { limit: 1000 });
             if (error || !data) return;
-            // 按日期前缀匹配，支持多版本文件名如 2026-04-14_1713.jpg
             var latestMap = {};
             data.forEach(function(file) {
                 var m = file.name.match(/^(\d{4}-\d{2}-\d{2})/);
-                if (m) {
-                    latestMap[m[1]] = file.name; // 后遍历的覆盖先前的，自然取最新
-                }
+                if (m) latestMap[m[1]] = file.name;
             });
             for (var d in latestMap) {
                 photoMap[d] = SUPABASE_URL + '/storage/v1/object/public/photos/' + latestMap[d];
-            }
-            // 预热所有图片到浏览器缓存
-            for (var d in photoMap) {
-                (new Image()).src = photoMap[d];
+                (new Image()).src = photoMap[d]; // 预热缓存
             }
         } catch(e) { console.warn('加载照片列表失败:', e); }
     }
@@ -367,7 +365,6 @@
         var btn = document.getElementById('musicBtn');
         btn.classList.toggle('muted', bgMusic.muted);
         btn.textContent = bgMusic.muted ? '🔇' : '🔊';
-        btn.title = bgMusic.muted ? '取消静音' : '音乐静音';
     }
 
     function startStory() {
@@ -375,10 +372,10 @@
         curtain.classList.add('hide');
         bgMusic.play().then(function() {
             var btn = document.getElementById('musicBtn');
-            btn.style.display = 'flex'; btn.textContent = '🔊'; btn.classList.remove('muted');
+            btn.textContent = '🔊'; btn.classList.remove('muted');
         }).catch(function() {
             var btn = document.getElementById('musicBtn');
-            btn.style.display = 'flex'; btn.textContent = '🔇'; btn.classList.add('muted');
+            btn.textContent = '🔇'; btn.classList.add('muted');
         });
         setTimeout(function() { curtain.remove(); }, 1200);
     }
@@ -388,9 +385,7 @@
     var BASE_DAYS = 92;
 
     function calcDays() {
-        var n = new Date();
-        var bj = new Date(n.getTime() + (480 + n.getTimezoneOffset()) * 60000);
-        bj.setHours(0,0,0,0);
+        var bj = bjToday();
         var base = new Date(BASE_DATE); base.setHours(0,0,0,0);
         return BASE_DAYS + Math.floor((bj - base) / 86400000);
     }
@@ -405,14 +400,13 @@
     var todayIdx = Math.floor((bjNow - STAR_START) / 86400000) + 1;
     var totalStars = todayIdx + 15;
     var field = document.getElementById('starField');
-    var allStarEls = [];
 
     function getSafePos() {
         var x, y;
         do {
             x = 3 + Math.random() * 94;
             y = 3 + Math.random() * 94;
-        } while (x >= CENTER_MIN && x <= CENTER_MAX && y >= CENTER_MIN && y <= CENTER_MAX);
+        } while (x >= 40 && x <= 60 && y >= 40 && y <= 60);
         return { x: x, y: y };
     }
 
@@ -422,17 +416,7 @@
         var hasDate = i < todayIdx;
         var size = hasDate ? Math.random() * 3 + 2 : Math.random() * 2 + 1;
         var pos = getSafePos();
-        var dur = (Math.random() * 4 + 2.5).toFixed(1);
-        var delay = (Math.random() * 8).toFixed(1);
         var glow = size * 4;
-        var flyDur = (Math.random() * 12 + 10).toFixed(1);
-        var flyDelay = (Math.random() * 8).toFixed(1);
-        var dx1 = (Math.random()*60-30).toFixed(0);
-        var dy1 = (Math.random()*60-30).toFixed(0);
-        var dx2 = (Math.random()*60-30).toFixed(0);
-        var dy2 = (Math.random()*60-30).toFixed(0);
-        var dx3 = (Math.random()*60-30).toFixed(0);
-        var dy3 = (Math.random()*60-30).toFixed(0);
         var glowColor = hasDate
             ? 'rgba(57,255,20,0.9), 0 0 ' + (glow*2) + 'px rgba(57,255,20,0.5)'
             : 'rgba(57,255,20,0.7), 0 0 ' + (glow*2) + 'px rgba(57,255,20,0.3)';
@@ -440,83 +424,48 @@
         star.style.cssText =
             'width:' + size + 'px;height:' + size + 'px;' +
             'left:' + pos.x.toFixed(2) + '%;top:' + pos.y.toFixed(2) + '%;' +
-            '--dur:' + dur + 's;--delay:' + delay + 's;' +
-            '--flyDur:' + flyDur + 's;--flyDelay:' + flyDelay + 's;' +
-            '--dx1:' + dx1 + 'px;--dy1:' + dy1 + 'px;' +
-            '--dx2:' + dx2 + 'px;--dy2:' + dy2 + 'px;' +
-            '--dx3:' + dx3 + 'px;--dy3:' + dy3 + 'px;' +
+            '--dur:' + (Math.random()*4+2.5).toFixed(1) + 's;' +
+            '--delay:' + (Math.random()*8).toFixed(1) + 's;' +
+            '--flyDur:' + (Math.random()*12+10).toFixed(1) + 's;' +
+            '--flyDelay:' + (Math.random()*8).toFixed(1) + 's;' +
+            '--dx1:' + (Math.random()*60-30).toFixed(0) + 'px;--dy1:' + (Math.random()*60-30).toFixed(0) + 'px;' +
+            '--dx2:' + (Math.random()*60-30).toFixed(0) + 'px;--dy2:' + (Math.random()*60-30).toFixed(0) + 'px;' +
+            '--dx3:' + (Math.random()*60-30).toFixed(0) + 'px;--dy3:' + (Math.random()*60-30).toFixed(0) + 'px;' +
             'box-shadow:0 0 ' + glow + 'px ' + (glow/2) + 'px ' + glowColor + ';';
 
         if (hasDate) {
             var sd = new Date(STAR_START);
             sd.setDate(sd.getDate() + i);
-            var labelText = fmtDate(sd);
             star.dataset.date = fmtDateISO(sd);
-            star.dataset.label = labelText;
-            star.dataset.idx = i;
+            star.dataset.label = fmtDate(sd);
         }
         allStarEls.push(star);
         field.appendChild(star);
     }
 
-    // 点击萤火虫：如果是高亮状态就飞，否则普通飞
+    // 点击萤火虫
     field.addEventListener('click', function(e) {
         var starEl = e.target.closest('.star');
         if (!starEl || !starEl.dataset.date) return;
         e.stopPropagation();
-
-        // 如果这只萤火虫是高亮状态（从时间轴选的），先清除高亮状态再飞
-        if (starEl.classList.contains('highlighted')) {
-            clearHighlight();
-            flyToCenter(starEl.dataset.label, starEl, new Date(starEl.dataset.date + 'T00:00:00+08:00'), true);
-        } else {
-            // 普通点击，直接飞
-            flyToCenter(starEl.dataset.label, starEl, new Date(starEl.dataset.date + 'T00:00:00+08:00'), false);
-        }
+        if (starEl.classList.contains('highlighted')) clearHighlight();
+        flyToCenter(starEl.dataset.label, starEl, new Date(starEl.dataset.date + 'T00:00:00+08:00'));
     });
 
-    // 清除高亮状态（带渐变）
     function clearHighlight() {
-        if (highlightedStar) {
-            highlightedStar.classList.remove('highlighted');
-            highlightedStar = null;
-        }
-        // 先移除 dimmed，让 CSS transition 自然渐变恢复
+        if (highlightedStar) { highlightedStar.classList.remove('highlighted'); highlightedStar = null; }
         allStarEls.forEach(function(el) { el.classList.remove('dimmed'); });
     }
 
-    // 渐变恢复所有萤火虫（用于飞到中间后）
-    function restoreAllStarsGradually() {
-        allStarEls.forEach(function(el) { el.classList.remove('dimmed'); });
-    }
-
-    // 时间轴点击：高亮选中，熄灭其他，等待用户点击
-    function highlightFromTimeline(idx, starEl, starDate) {
-        // 清除之前的高亮
-        clearHighlight();
-
-        // 熄灭所有
-        allStarEls.forEach(function(el) { el.classList.add('dimmed'); });
-
-        // 选中的高亮
-        starEl.classList.remove('dimmed');
-        starEl.classList.add('highlighted');
-        highlightedStar = starEl;
-
-        // 关闭时间轴
-        removeModals();
-    }
-
-    function flyToCenter(text, starEl, starDate, fromTimeline) {
+    function flyToCenter(text, starEl, starDate) {
         // 清理之前的状态
-        document.querySelectorAll('.star-label').forEach(function(el){ el.remove(); });
+        document.querySelectorAll('.star-label,.photo-modal').forEach(function(el){ el.remove(); });
         document.querySelectorAll('.star.centered').forEach(function(el){
             el.classList.remove('centered');
             el.style.transform = '';
             if (el._origLeft) { el.style.left = el._origLeft; el.style.top = el._origTop; }
             el.style.boxShadow = '';
         });
-        document.querySelectorAll('.photo-modal').forEach(function(el){ el.remove(); });
 
         starEl._origLeft = starEl.style.left;
         starEl._origTop  = starEl.style.top;
@@ -528,40 +477,31 @@
         var label = document.createElement('div');
         label.className = 'star-label';
         label.textContent = '✨ ' + text;
-        label.style.left = '50%';
-        label.style.top  = '50%';
+        label.style.left = '50%'; label.style.top = '50%';
         label.style.transform = 'translate(-50%,-180%)';
         document.body.appendChild(label);
 
-        // 2.5s 后飞到中间，显示照片
+        // 立即预加载，并行于飞行动画
         var photoDate = fmtDateISO(starDate);
         var photoUrl = photoMap[photoDate];
-
-        // 立即开始预加载图片（与飞行动画并行）
-        var preloadedImg = null;
-        if (photoUrl) {
-            preloadedImg = new Image();
-            preloadedImg.src = photoUrl;
-        }
+        var preloadedImg = photoUrl ? new Image() : null;
+        if (preloadedImg) preloadedImg.src = photoUrl;
 
         setTimeout(function() {
             if (photoUrl) {
                 var modal = document.createElement('div');
                 modal.className = 'photo-modal';
                 var img = preloadedImg || document.createElement('img');
-                if (!preloadedImg) { img.src = photoUrl; }
+                if (!preloadedImg) img.src = photoUrl;
                 img.alt = '回忆';
                 var lbl = document.createElement('div');
                 lbl.className = 'photo-label';
                 lbl.textContent = '📸 ' + text;
                 modal.appendChild(img); modal.appendChild(lbl);
                 document.body.appendChild(modal);
-                requestAnimationFrame(function() {
-                    requestAnimationFrame(function() { img.classList.add('visible'); });
-                });
+                requestAnimationFrame(function() { requestAnimationFrame(function() { img.classList.add('visible'); }); });
             }
-            // 渐变恢复所有萤火虫（2秒过渡）
-            restoreAllStarsGradually();
+            clearHighlight();
         }, 2600);
 
         // 点击其他地方复位
@@ -573,14 +513,10 @@
                 label.style.transition = 'opacity 0.4s'; label.style.opacity = '0';
                 setTimeout(function(){ label.remove(); }, 400);
                 var m = document.querySelector('.photo-modal');
-                if (m) {
-                    var im = m.querySelector('img');
-                    if (im) im.classList.remove('visible');
-                    setTimeout(function(){ m.remove(); }, 500);
-                }
+                if (m) { var im = m.querySelector('img'); if (im) im.classList.remove('visible'); setTimeout(function(){ m.remove(); }, 500); }
                 starEl.classList.remove('centered');
                 starEl.style.transform = '';
-                if (starEl._origLeft) { starEl.style.left = starEl._origLeft; el.style.top = starEl._origTop; }
+                if (starEl._origLeft) { starEl.style.left = starEl._origLeft; starEl.style.top = starEl._origTop; }
                 starEl.style.boxShadow = '';
             }
             document.addEventListener('click', reset);
@@ -588,22 +524,26 @@
         }, 200);
     }
 
-    // 流星
+    // ========== 流星 ==========
     (function spawnStar() {
         var s = document.createElement('div');
         s.className = 'shooting-star';
-        s.style.cssText =
-            'left:' + (20+Math.random()*60) + '%;top:' + (5+Math.random()*45) + '%;' +
+        s.style.cssText = 'left:' + (20+Math.random()*60) + '%;top:' + (5+Math.random()*45) + '%;' +
             'width:' + (100+Math.random()*150) + 'px;animation-duration:' + (0.7+Math.random()*0.6) + 's;';
         field.appendChild(s);
         setTimeout(function(){ s.remove(); }, 2000);
         setTimeout(spawnStar, 6000 + Math.random() * 12000);
     })();
-    for (var j = 0; j < 4; j++) { setTimeout(function(){ (function spawnStar() {
-        var s = document.createElement('div'); s.className = 'shooting-star';
-        s.style.cssText = 'left:' + (20+Math.random()*60) + '%;top:' + (5+Math.random()*45) + '%;width:' + (100+Math.random()*150) + 'px;animation-duration:' + (0.7+Math.random()*0.6) + 's;';
-        field.appendChild(s); setTimeout(function(){ s.remove(); }, 2000);
-    })(); }, j * 5000 + Math.random() * 3000); }
+    for (var j = 0; j < 4; j++) {
+        setTimeout(function(){
+            var s = document.createElement('div');
+            s.className = 'shooting-star';
+            s.style.cssText = 'left:' + (20+Math.random()*60) + '%;top:' + (5+Math.random()*45) + '%;' +
+                'width:' + (100+Math.random()*150) + 'px;animation-duration:' + (0.7+Math.random()*0.6) + 's;';
+            field.appendChild(s);
+            setTimeout(function(){ s.remove(); }, 2000);
+        }, j * 5000 + Math.random() * 3000);
+    }
 
     // ========== 上传功能 ==========
     document.getElementById('uploadInput').addEventListener('change', function(e) {
@@ -617,9 +557,7 @@
         showDateModal();
     });
 
-    function removeModals() {
-        document.querySelectorAll('.modal-overlay').forEach(function(el){ el.remove(); });
-    }
+    function removeModals() { document.querySelectorAll('.modal-overlay').forEach(function(el){ el.remove(); }); }
 
     function showDateModal() {
         removeModals();
@@ -628,7 +566,7 @@
         overlay.innerHTML =
             '<div class="modal-card">' +
                 '<h3>选择萤火虫日期</h3>' +
-                '<input type="date" class="modal-date" id="datePicker" min="' + STAR_MIN + '" max="' + STAR_MAX + '" value="' + fmtDateISO(bjNow) + '">' +
+                '<input type="date" class="modal-date" id="datePicker" min="' + STAR_MIN + '" max="' + STAR_MAX + '" value="' + STAR_MAX + '">' +
                 '<p class="modal-hint">萤火虫从 ' + STAR_START.getFullYear() + '年' + (STAR_START.getMonth()+1) + '月' + STAR_START.getDate() + '日开始，每天一只</p>' +
                 '<div class="modal-btn-row">' +
                     '<button class="modal-btn" onclick="removeModals();pendingFile=null;">取消</button>' +
@@ -643,8 +581,8 @@
         var selectedDate = document.getElementById('datePicker').value;
         if (!selectedDate) return;
         removeModals();
-        if (photoMap[selectedDate]) { showConfirmModal(selectedDate); }
-        else { doUpload(selectedDate); }
+        if (photoMap[selectedDate]) showConfirmModal(selectedDate);
+        else doUpload(selectedDate);
     }
 
     function showConfirmModal(selectedDate) {
@@ -654,10 +592,10 @@
         overlay.innerHTML =
             '<div class="modal-card">' +
                 '<h3>' + selectedDate + ' 已有照片</h3>' +
-                '<p class="modal-hint" style="color:#ff9f43;margin-bottom:20px;">该日期已有一张照片，上传会覆盖它</p>' +
+                '<p class="modal-hint" style="color:#ff9f43;margin-bottom:20px;">该日期已有一张照片，上传会作为新版本保存</p>' +
                 '<div class="modal-btn-row">' +
                     '<button class="modal-btn" onclick="removeModals();pendingFile=null;">取消</button>' +
-                    '<button class="modal-btn primary" onclick="removeModals();doUpload(\'' + selectedDate + '\')">覆盖上传</button>' +
+                    '<button class="modal-btn primary" onclick="removeModals();doUpload(\'' + selectedDate + '\')">继续上传</button>' +
                 '</div>' +
             '</div>';
         document.body.appendChild(overlay);
@@ -669,13 +607,13 @@
         var uploadBtn = document.getElementById('uploadBtn');
         uploadBtn.textContent = '⏳'; uploadBtn.classList.add('uploading');
         var ext = pendingFile.name.split('.').pop().toLowerCase();
-        // 唯一文件名：日期_时间戳，避免覆盖冲突
         var fileName = dateStr + '_' + Date.now() + '.' + ext;
         try {
-            if (!supabase) { alert('照片服务未就绪，请稍后重试'); throw new Error('supabase not ready'); }
-            var { data, error } = await supabase.storage.from('photos').upload(fileName, pendingFile);
+            if (!supabase) throw new Error('supabase not ready');
+            var { error } = await supabase.storage.from('photos').upload(fileName, pendingFile);
             if (error) throw error;
             photoMap[dateStr] = SUPABASE_URL + '/storage/v1/object/public/photos/' + fileName;
+            (new Image()).src = photoMap[dateStr]; // 立即预热新上传
             uploadBtn.textContent = '✅';
             setTimeout(function() { uploadBtn.textContent = '📷'; }, 2000);
             setTimeout(loadAllPhotos, 500);
@@ -688,7 +626,16 @@
         pendingFile = null;
     }
 
-    // ========== 时间轴模态面板 ==========
+    // ========== 时间轴 ==========
+    function highlightFromTimeline(starEl) {
+        clearHighlight();
+        allStarEls.forEach(function(el) { el.classList.add('dimmed'); });
+        starEl.classList.remove('dimmed');
+        starEl.classList.add('highlighted');
+        highlightedStar = starEl;
+        removeModals();
+    }
+
     function showTimeline() {
         removeModals();
         var overlay = document.createElement('div');
@@ -698,10 +645,8 @@
         var h3 = document.createElement('h3');
         h3.textContent = '📅 萤火虫时间轴';
         card.appendChild(h3);
-
         var list = document.createElement('div');
         list.className = 'timeline-list';
-
         var lastMonth = -1;
         for (var i = todayIdx - 1; i >= 0; i--) {
             var sd = new Date(STAR_START);
@@ -716,32 +661,17 @@
             }
             var item = document.createElement('div');
             item.className = 'timeline-item';
-            var dot = document.createElement('div');
-            dot.className = 'timeline-dot';
-            var dateDiv = document.createElement('div');
-            dateDiv.className = 'timeline-item-date';
-            dateDiv.textContent = fmtDate(sd);
-            item.appendChild(dot);
-            item.appendChild(dateDiv);
-            var photoDate = fmtDateISO(sd);
-            if (photoMap[photoDate]) {
-                var photoIcon = document.createElement('span');
-                photoIcon.className = 'timeline-item-photo';
-                photoIcon.textContent = '📸';
-                item.appendChild(photoIcon);
-            }
-            // 时间轴点击：只高亮，不飞，等用户点击萤火虫
-            (function(idx, starEl, dateObj) {
+            item.innerHTML = '<div class="timeline-dot"></div><div class="timeline-item-date">' + fmtDate(sd) + '</div>' +
+                (photoMap[fmtDateISO(sd)] ? '<span class="timeline-item-photo">📸</span>' : '');
+            (function(starEl) {
                 item.addEventListener('click', function(e) {
                     e.stopPropagation();
-                    highlightFromTimeline(idx, starEl, dateObj);
+                    highlightFromTimeline(starEl);
                 });
-            })(i, allStarEls[i], sd);
+            })(allStarEls[i]);
             list.appendChild(item);
         }
-
         card.appendChild(list);
-
         var closeRow = document.createElement('div');
         closeRow.className = 'modal-btn-row';
         closeRow.style.marginTop = '12px';
@@ -751,7 +681,6 @@
         closeBtn.onclick = function() { removeModals(); };
         closeRow.appendChild(closeBtn);
         card.appendChild(closeRow);
-
         overlay.appendChild(card);
         document.body.appendChild(overlay);
         overlay.addEventListener('click', function(e) { if (e.target === overlay) removeModals(); });
