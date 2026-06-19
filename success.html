@@ -16,42 +16,22 @@
             font-family: 'PingFang SC', 'Microsoft YaHei', sans-serif;
             color: white;
         }
-        .star-field { position: fixed; inset: 0; pointer-events: none; z-index: 1; }
-        .star-field .star { position: absolute; pointer-events: all; cursor: pointer; }
-        .star {
-            border-radius: 50%; background: #39ff14;
-            animation: twinkle var(--dur) ease-in-out infinite,
-                       fireflyMove var(--flyDur, 15s) ease-in-out infinite;
-            animation-delay: var(--delay), var(--flyDelay, 0s);
+
+        /* Canvas 星场 */
+        canvas#starCanvas { position: fixed; inset: 0; z-index: 1; }
+
+        /* 临时居中萤火虫 DOM（点击后飞行+漂浮动画） */
+        .temp-star {
+            position: fixed; border-radius: 50%; background: #39ff14;
+            pointer-events: none; z-index: 10000;
             transition: left 2.5s cubic-bezier(0.4, 0, 0.2, 1),
                         top 2.5s cubic-bezier(0.4, 0, 0.2, 1),
                         transform 2.5s cubic-bezier(0.4, 0, 0.2, 1),
-                        box-shadow 0.8s ease, opacity 0.5s ease, filter 0.5s ease;
-            will-change: transform;
+                        box-shadow 0.8s ease, opacity 0.5s ease;
         }
-        .star:hover { filter: brightness(1.8); }
-        .star.dimmed {
-            opacity: 0.08 !important;
-            filter: grayscale(0.8);
-            animation-play-state: paused !important;
-            transition: opacity 2s ease, filter 2s ease, box-shadow 2s ease !important;
-        }
-        .star.highlighted {
-            box-shadow: 0 0 50px 20px rgba(57,255,20,1), 0 0 100px 40px rgba(57,255,20,0.6) !important;
-            animation: twinkleFast 0.8s ease-in-out infinite !important;
-            z-index: 9998;
-        }
-        @keyframes twinkleFast {
-            0%, 100% { opacity: 1; transform: scale(1.3); }
-            50% { opacity: 0.7; transform: scale(1.6); }
-        }
-        .star.centered {
-            animation: twinkle var(--dur) ease-in-out infinite,
-                       centerFloat 3s ease-in-out infinite !important;
-            animation-delay: var(--delay), 0s !important;
-            z-index: 10000;
-            opacity: 1 !important;
-            filter: none !important;
+        .temp-star.centered {
+            animation: centerFloat 3s ease-in-out infinite !important;
+            z-index: 10000; opacity: 1 !important;
         }
         @keyframes centerFloat {
             0%   { margin-left: 0;    margin-top: 0; }
@@ -60,22 +40,6 @@
             60%  { margin-left: 5px;  margin-top: 9px; }
             80%  { margin-left: -5px; margin-top: -6px; }
             100% { margin-left: 0;    margin-top: 0; }
-        }
-        @keyframes twinkle {
-            0%   { opacity: 0.15; transform: scale(0.6); }
-            15%  { opacity: 0.9;  transform: scale(1.4); }
-            30%  { opacity: 0.5;  transform: scale(1); }
-            50%  { opacity: 0.15; transform: scale(0.5); }
-            65%  { opacity: 0.85; transform: scale(1.3); }
-            80%  { opacity: 0.3;  transform: scale(0.8); }
-            100% { opacity: 0.15; transform: scale(0.6); }
-        }
-        @keyframes fireflyMove {
-            0%   { margin-left: 0;  margin-top: 0; }
-            25%  { margin-left: var(--dx1, 30px); margin-top: var(--dy1, -20px); }
-            50%  { margin-left: var(--dx2, -20px); margin-top: var(--dy2, 25px); }
-            75%  { margin-left: var(--dx3, 15px); margin-top: var(--dy3, -30px); }
-            100% { margin-left: 0; margin-top: 0; }
         }
         .star-label {
             position: fixed; background: rgba(10,40,5,0.92); color: #ffd700;
@@ -91,9 +55,10 @@
             100% { opacity: 1; transform: translate(-50%, -140%) scale(1); }
         }
         .shooting-star {
-            position: absolute; height: 2px;
+            position: fixed; height: 2px;
             background: linear-gradient(to right, rgba(255,255,255,0.9), transparent);
             border-radius: 2px; animation: shoot linear forwards; opacity: 0;
+            pointer-events: none; z-index: 2;
         }
         @keyframes shoot {
             0%   { transform: translateX(0) translateY(0) rotate(-45deg); opacity: 0; }
@@ -286,7 +251,7 @@
         <button class="story-btn" id="storyBtn" onclick="startStory()">开始我们的故事</button>
     </div>
 
-    <div class="star-field" id="starField"></div>
+    <canvas id="starCanvas"></canvas>
 
     <div class="main-text">
         <div class="days-text" id="daysText">加载中...</div>
@@ -302,8 +267,6 @@
     var supabase = null;
     var photoMap = {};
     var pendingFile = null;
-    var highlightedStar =    null; // 当前高亮的萤火虫
-    var allStarEls = [];
 
     function fmtDateISO(d) {
         return d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0') + '-' + String(d.getDate()).padStart(2,'0');
@@ -396,10 +359,64 @@
     updateDisplay();
     setInterval(updateDisplay, 60000);
 
-    // ========== 萤火虫 ==========
+    // ============================================================
+    //  ========== Canvas 萤火虫渲染 ==========
+    // ============================================================
+    var canvas = document.getElementById('starCanvas');
+    var ctx = canvas.getContext('2d');
+
+    // --- 预渲染发光纹理（径向渐变，模拟原 box-shadow 效果） ---
+    var glowTex = document.createElement('canvas');
+    glowTex.width = 64; glowTex.height = 64;
+    var gctx = glowTex.getContext('2d');
+    var gradient = gctx.createRadialGradient(32, 32, 0, 32, 32, 32);
+    gradient.addColorStop(0, 'rgba(57,255,20,1)');
+    gradient.addColorStop(0.12, 'rgba(57,255,20,0.9)');
+    gradient.addColorStop(0.35, 'rgba(57,255,20,0.3)');
+    gradient.addColorStop(0.65, 'rgba(57,255,20,0.06)');
+    gradient.addColorStop(1, 'rgba(57,255,20,0)');
+    gctx.fillStyle = gradient;
+    gctx.fillRect(0, 0, 64, 64);
+
+    // --- Twinkle 关键帧查表（原 CSS @keyframes twinkle） ---
+    var TWINKLE_KEYFRAMES = [
+        [0,    { opacity: 0.15, scale: 0.6 }],
+        [0.15, { opacity: 0.9,  scale: 1.4 }],
+        [0.30, { opacity: 0.5,  scale: 1 }],
+        [0.50, { opacity: 0.15, scale: 0.5 }],
+        [0.65, { opacity: 0.85, scale: 1.3 }],
+        [0.80, { opacity: 0.3,  scale: 0.8 }],
+        [1,    { opacity: 0.15, scale: 0.6 }]
+    ];
+    var TWINKLE_FAST_KEYFRAMES = [
+        [0,    { opacity: 1,   scale: 1.3 }],
+        [0.5,  { opacity: 0.7, scale: 1.6 }],
+        [1,    { opacity: 1,   scale: 1.3 }]
+    ];
+
+    function interpolateKeyframes(kf, t) {
+        for (var i = 0; i < kf.length - 1; i++) {
+            if (t <= kf[i+1][0]) {
+                var segLen = kf[i+1][0] - kf[i][0];
+                var local = segLen > 0 ? (t - kf[i][0]) / segLen : 0;
+                var a = kf[i][1], b = kf[i+1][1];
+                return {
+                    opacity: a.opacity + (b.opacity - a.opacity) * local,
+                    scale: a.scale + (b.scale - a.scale) * local
+                };
+            }
+        }
+        return kf[kf.length-1][1];
+    }
+
+    function easeInOut(t) {
+        return t < 0.5 ? 2 * t * t : -1 + (4 - 2 * t) * t;
+    }
+
+    // --- 生成 fireflies 数组 ---
     var todayIdx = Math.floor((bjNow - STAR_START) / 86400000) + 1;
     var totalStars = todayIdx + 15;
-    var field = document.getElementById('starField');
+    var fireflies = [];
 
     function getSafePos() {
         var x, y;
@@ -411,68 +428,196 @@
     }
 
     for (var i = 0; i < totalStars; i++) {
-        var star = document.createElement('div');
-        star.className = 'star';
         var hasDate = i < todayIdx;
         var size = hasDate ? Math.random() * 3 + 2 : Math.random() * 2 + 1;
         var pos = getSafePos();
-        var glow = size * 4;
-        var glowColor = hasDate
-            ? 'rgba(57,255,20,0.9), 0 0 ' + (glow*2) + 'px rgba(57,255,20,0.5)'
-            : 'rgba(57,255,20,0.7), 0 0 ' + (glow*2) + 'px rgba(57,255,20,0.3)';
-
-        star.style.cssText =
-            'width:' + size + 'px;height:' + size + 'px;' +
-            'left:' + pos.x.toFixed(2) + '%;top:' + pos.y.toFixed(2) + '%;' +
-            '--dur:' + (Math.random()*4+2.5).toFixed(1) + 's;' +
-            '--delay:' + (Math.random()*8).toFixed(1) + 's;' +
-            '--flyDur:' + (Math.random()*12+10).toFixed(1) + 's;' +
-            '--flyDelay:' + (Math.random()*8).toFixed(1) + 's;' +
-            '--dx1:' + (Math.random()*60-30).toFixed(0) + 'px;--dy1:' + (Math.random()*60-30).toFixed(0) + 'px;' +
-            '--dx2:' + (Math.random()*60-30).toFixed(0) + 'px;--dy2:' + (Math.random()*60-30).toFixed(0) + 'px;' +
-            '--dx3:' + (Math.random()*60-30).toFixed(0) + 'px;--dy3:' + (Math.random()*60-30).toFixed(0) + 'px;' +
-            'box-shadow:0 0 ' + glow + 'px ' + (glow/2) + 'px ' + glowColor + ';';
-
+        var sd = null, dateStr = null, labelText = null;
         if (hasDate) {
-            var sd = new Date(STAR_START);
+            sd = new Date(STAR_START);
             sd.setDate(sd.getDate() + i);
-            star.dataset.date = fmtDateISO(sd);
-            star.dataset.label = fmtDate(sd);
+            dateStr = fmtDateISO(sd);
+            labelText = fmtDate(sd);
         }
-        allStarEls.push(star);
-        field.appendChild(star);
+        fireflies.push({
+            baseX: pos.x,
+            baseY: pos.y,
+            size: size,
+            twinkleSpeed: Math.random() * 4 + 2.5,
+            twinklePhase: Math.random(),
+            flySpeed: Math.random() * 12 + 10,
+            flyPhase: Math.random(),
+            waypoints: [
+                { dx: (Math.random()*60-30), dy: (Math.random()*60-30) },
+                { dx: (Math.random()*60-30), dy: (Math.random()*60-30) },
+                { dx: (Math.random()*60-30), dy: (Math.random()*60-30) }
+            ],
+            glow: size * 4,
+            hasDate: hasDate,
+            date: dateStr,
+            label: labelText,
+            state: 'normal',
+            visible: true
+        });
     }
 
-    // 点击萤火虫
-    field.addEventListener('click', function(e) {
-        var starEl = e.target.closest('.star');
-        if (!starEl || !starEl.dataset.date) return;
-        e.stopPropagation();
-        if (starEl.classList.contains('highlighted')) clearHighlight();
-        flyToCenter(starEl.dataset.label, starEl, new Date(starEl.dataset.date + 'T00:00:00+08:00'));
+    // --- 渲染循环 ---
+    function resizeCanvas() {
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight;
+    }
+    resizeCanvas();
+    window.addEventListener('resize', resizeCanvas);
+
+    function render(timestamp) {
+        requestAnimationFrame(render);
+
+        var w = canvas.width, h = canvas.height;
+        ctx.clearRect(0, 0, w, h);
+
+        for (var i = 0; i < fireflies.length; i++) {
+            var f = fireflies[i];
+            if (!f.visible && f.state !== 'centered') continue;
+
+            var twinkleCycle = ((timestamp / 1000) / f.twinkleSpeed + f.twinklePhase) % 1;
+            if (twinkleCycle < 0) twinkleCycle += 1;
+
+            var tw;
+            if (f.state === 'highlighted') {
+                tw = interpolateKeyframes(TWINKLE_FAST_KEYFRAMES, twinkleCycle);
+            } else {
+                tw = interpolateKeyframes(TWINKLE_KEYFRAMES, twinkleCycle);
+            }
+
+            var opacity = tw.opacity;
+            var scale = tw.scale;
+
+            if (f.state === 'dimmed') {
+                opacity = 0.08;
+                ctx.save();
+                ctx.filter = 'grayscale(0.8)';
+            }
+
+            var flyCycle = ((timestamp / 1000) / f.flySpeed + f.flyPhase) % 1;
+            if (flyCycle < 0) flyCycle += 1;
+            var wp = f.waypoints;
+            var waypoints = [{dx:0,dy:0}, wp[0], wp[1], wp[2], {dx:0,dy:0}];
+            var segIdx = Math.floor(flyCycle * 4);
+            if (segIdx >= 4) segIdx = 3;
+            var segT = (flyCycle - segIdx * 0.25) / 0.25;
+            var easedT = easeInOut(segT);
+            var wa = waypoints[segIdx], wb = waypoints[segIdx+1];
+            var dx = wa.dx + (wb.dx - wa.dx) * easedT;
+            var dy = wa.dy + (wb.dy - wa.dy) * easedT;
+
+            var px = f.baseX / 100 * w + dx;
+            var py = f.baseY / 100 * h + dy;
+
+            var glowPixel = f.glow * scale * 3.2;
+            var drawSize = Math.max(glowPixel, 4);
+
+            ctx.globalAlpha = opacity;
+            ctx.drawImage(glowTex, px - drawSize/2, py - drawSize/2, drawSize, drawSize);
+
+            if (f.state === 'dimmed') {
+                ctx.filter = 'none';
+                ctx.restore();
+            }
+            ctx.globalAlpha = 1;
+        }
+    }
+
+    requestAnimationFrame(render);
+
+    // --- Canvas 点击检测 ---
+    canvas.addEventListener('click', function(e) {
+        var rect = canvas.getBoundingClientRect();
+        var cx = e.clientX - rect.left;
+        var cy = e.clientY - rect.top;
+
+        if (highlightedStarIdx >= 0) clearHighlight();
+
+        var bestIdx = -1, bestDist = Infinity;
+        var now = performance.now();
+        for (var i = 0; i < fireflies.length; i++) {
+            var f = fireflies[i];
+            if (!f.hasDate || !f.visible || f.state === 'centered') continue;
+            var flyCycle = ((now / 1000) / f.flySpeed + f.flyPhase) % 1;
+            if (flyCycle < 0) flyCycle += 1;
+            var wp = f.waypoints;
+            var wps = [{dx:0,dy:0}, wp[0], wp[1], wp[2], {dx:0,dy:0}];
+            var segIdx = Math.floor(flyCycle * 4);
+            if (segIdx >= 4) segIdx = 3;
+            var segT = (flyCycle - segIdx * 0.25) / 0.25;
+            var easedT = easeInOut(segT);
+            var wa = wps[segIdx], wb = wps[segIdx+1];
+            var dx = wa.dx + (wb.dx - wa.dx) * easedT;
+            var dy = wa.dy + (wb.dy - wa.dy) * easedT;
+
+            var px = f.baseX / 100 * canvas.width + dx;
+            var py = f.baseY / 100 * canvas.height + dy;
+            var dist = Math.hypot(cx - px, cy - py);
+            if (dist < bestDist) { bestDist = dist; bestIdx = i; }
+        }
+
+        if (bestIdx >= 0 && bestDist < 35) {
+            var f = fireflies[bestIdx];
+            flyToCenter(bestIdx, f.label, f, new Date(f.date + 'T00:00:00+08:00'));
+        }
     });
 
+    // ========== 居中飞行 + 高亮 ==========
+    var highlightedStarIdx = -1;
+
     function clearHighlight() {
-        if (highlightedStar) { highlightedStar.classList.remove('highlighted'); highlightedStar = null; }
-        allStarEls.forEach(function(el) { el.classList.remove('dimmed'); });
+        for (var i = 0; i < fireflies.length; i++) {
+            if (fireflies[i].state === 'highlighted' || fireflies[i].state === 'dimmed') {
+                fireflies[i].state = 'normal';
+                fireflies[i].visible = true;
+            }
+        }
+        highlightedStarIdx = -1;
     }
 
-    function flyToCenter(text, starEl, starDate) {
-        // 清理之前的状态
-        document.querySelectorAll('.star-label,.photo-modal').forEach(function(el){ el.remove(); });
-        document.querySelectorAll('.star.centered').forEach(function(el){
-            el.classList.remove('centered');
-            el.style.transform = '';
-            if (el._origLeft) { el.style.left = el._origLeft; el.style.top = el._origTop; }
-            el.style.boxShadow = '';
-        });
+    function highlightFromTimeline(idx) {
+        clearHighlight();
+        highlightedStarIdx = idx;
+        for (var i = 0; i < fireflies.length; i++) {
+            fireflies[i].state = 'dimmed';
+        }
+        fireflies[idx].state = 'highlighted';
+        fireflies[idx].visible = true;
+        removeModals();
+    }
 
-        starEl._origLeft = starEl.style.left;
-        starEl._origTop  = starEl.style.top;
-        starEl.classList.add('centered');
-        starEl.style.left = '50%';
-        starEl.style.top  = '50%';
-        starEl.style.boxShadow = '0 0 40px 15px rgba(57,255,20,0.9), 0 0 80px 30px rgba(57,255,20,0.4)';
+    function flyToCenter(idx, text, firefly, starDate) {
+        document.querySelectorAll('.temp-star,.star-label,.photo-modal').forEach(function(el){ el.remove(); });
+        for (var i = 0; i < fireflies.length; i++) {
+            if (fireflies[i].state === 'centered') {
+                fireflies[i].state = 'normal';
+                fireflies[i].visible = true;
+            }
+        }
+
+        firefly.state = 'centered';
+        firefly.visible = false;
+
+        var tempStar = document.createElement('div');
+        tempStar.className = 'temp-star';
+        var starSize = firefly.size * 1.5;
+        var glow = firefly.glow;
+        tempStar.style.cssText =
+            'width:' + starSize + 'px;height:' + starSize + 'px;' +
+            'left:' + firefly.baseX + '%;top:' + firefly.baseY + '%;' +
+            'box-shadow:0 0 ' + glow + 'px ' + (glow/2) + 'px rgba(57,255,20,0.9);';
+        document.body.appendChild(tempStar);
+
+        requestAnimationFrame(function() {
+            tempStar.classList.add('centered');
+            tempStar.style.left = '50%';
+            tempStar.style.top = '50%';
+            tempStar.style.transform = 'translate(-50%,-50%)';
+            tempStar.style.boxShadow = '0 0 40px 15px rgba(57,255,20,0.9), 0 0 80px 30px rgba(57,255,20,0.4)';
+        });
 
         var label = document.createElement('div');
         label.className = 'star-label';
@@ -481,7 +626,6 @@
         label.style.transform = 'translate(-50%,-180%)';
         document.body.appendChild(label);
 
-        // 立即预加载，并行于飞行动画
         var photoDate = fmtDateISO(starDate);
         var photoUrl = photoMap[photoDate];
         var preloadedImg = photoUrl ? new Image() : null;
@@ -501,23 +645,21 @@
                 document.body.appendChild(modal);
                 requestAnimationFrame(function() { requestAnimationFrame(function() { img.classList.add('visible'); }); });
             }
-            clearHighlight();
         }, 2600);
 
-        // 点击其他地方复位
         setTimeout(function() {
             function reset(e) {
-                if (e && e.target.closest('.star')) return;
+                if (e && e.target.closest('.temp-star,.star-label,.photo-modal')) return;
                 document.removeEventListener('click', reset);
                 document.removeEventListener('touchend', reset);
                 label.style.transition = 'opacity 0.4s'; label.style.opacity = '0';
                 setTimeout(function(){ label.remove(); }, 400);
                 var m = document.querySelector('.photo-modal');
                 if (m) { var im = m.querySelector('img'); if (im) im.classList.remove('visible'); setTimeout(function(){ m.remove(); }, 500); }
-                starEl.classList.remove('centered');
-                starEl.style.transform = '';
-                if (starEl._origLeft) { starEl.style.left = starEl._origLeft; starEl.style.top = starEl._origTop; }
-                starEl.style.boxShadow = '';
+                tempStar.style.transition = 'opacity 0.5s'; tempStar.style.opacity = '0';
+                setTimeout(function(){ tempStar.remove(); }, 500);
+                firefly.state = 'normal';
+                firefly.visible = true;
             }
             document.addEventListener('click', reset);
             document.addEventListener('touchend', reset);
@@ -530,7 +672,7 @@
         s.className = 'shooting-star';
         s.style.cssText = 'left:' + (20+Math.random()*60) + '%;top:' + (5+Math.random()*45) + '%;' +
             'width:' + (100+Math.random()*150) + 'px;animation-duration:' + (0.7+Math.random()*0.6) + 's;';
-        field.appendChild(s);
+        document.body.appendChild(s);
         setTimeout(function(){ s.remove(); }, 2000);
         setTimeout(spawnStar, 6000 + Math.random() * 12000);
     })();
@@ -540,7 +682,7 @@
             s.className = 'shooting-star';
             s.style.cssText = 'left:' + (20+Math.random()*60) + '%;top:' + (5+Math.random()*45) + '%;' +
                 'width:' + (100+Math.random()*150) + 'px;animation-duration:' + (0.7+Math.random()*0.6) + 's;';
-            field.appendChild(s);
+            document.body.appendChild(s);
             setTimeout(function(){ s.remove(); }, 2000);
         }, j * 5000 + Math.random() * 3000);
     }
@@ -613,7 +755,7 @@
             var { error } = await supabase.storage.from('photos').upload(fileName, pendingFile);
             if (error) throw error;
             photoMap[dateStr] = SUPABASE_URL + '/storage/v1/object/public/photos/' + fileName;
-            (new Image()).src = photoMap[dateStr]; // 立即预热新上传
+            (new Image()).src = photoMap[dateStr];
             uploadBtn.textContent = '✅';
             setTimeout(function() { uploadBtn.textContent = '📷'; }, 2000);
             setTimeout(loadAllPhotos, 500);
@@ -627,15 +769,6 @@
     }
 
     // ========== 时间轴 ==========
-    function highlightFromTimeline(starEl) {
-        clearHighlight();
-        allStarEls.forEach(function(el) { el.classList.add('dimmed'); });
-        starEl.classList.remove('dimmed');
-        starEl.classList.add('highlighted');
-        highlightedStar = starEl;
-        removeModals();
-    }
-
     function showTimeline() {
         removeModals();
         var overlay = document.createElement('div');
@@ -663,12 +796,12 @@
             item.className = 'timeline-item';
             item.innerHTML = '<div class="timeline-dot"></div><div class="timeline-item-date">' + fmtDate(sd) + '</div>' +
                 (photoMap[fmtDateISO(sd)] ? '<span class="timeline-item-photo">📸</span>' : '');
-            (function(starEl) {
+            (function(idx) {
                 item.addEventListener('click', function(e) {
                     e.stopPropagation();
-                    highlightFromTimeline(starEl);
+                    highlightFromTimeline(idx);
                 });
-            })(allStarEls[i]);
+            })(i);
             list.appendChild(item);
         }
         card.appendChild(list);
