@@ -587,25 +587,23 @@
         }
 
         // --- 底部居中狐狸兔子角色 ---
-        var _charH = Math.min(h * 0.26, 280); // 手机上不超过 280px 高
-        var _gap = Math.max(w * 0.02, 8);     // 狐狸兔子之间缝隙
-        if (_foxImg.complete && _foxImg.naturalWidth > 0) {
+        var _charH = Math.min(h * 0.26, 200); // 移动端不超过 200px
+        var _edgeMargin = 4;
+        if (_foxImg.complete && _foxImg.naturalWidth > 0 && _rabbitImg.complete && _rabbitImg.naturalWidth > 0) {
             var _foxW = _charH * (_foxImg.naturalWidth / _foxImg.naturalHeight);
-            var _fx = (w - _foxW - _gap) / 2;  // 右侧偏移半个缝隙
-            var _fy = h - _charH - 4;
-            ctx.globalAlpha = 0.72;
-            ctx.drawImage(_foxImg, _fx, _fy, _foxW, _charH);
-            ctx.globalAlpha = 1;
-        }
-        if (_rabbitImg.complete && _rabbitImg.naturalWidth > 0) {
             var _rabH = _charH * 0.78;
             var _rabW = _rabH * (_rabbitImg.naturalWidth / _rabbitImg.naturalHeight);
-            // 狐狸画完后，兔子放在狐狸左侧（缝隙已在 _fx 拼算中留出）
-            var _foxW2 = _charH * (_foxImg.naturalWidth / _foxImg.naturalHeight);
-            var _rx = (w - _foxW2 - _gap) / 2 - _rabW;
-            var _ry = h - _rabH - 4;
+            var _gap = Math.max(w * 0.015, 6);
+            // 以中心为基准：狐狸在右半边，兔子在左半边
+            var _totalW = _rabW + _gap + _foxW;
+            var _startX = (w - _totalW) / 2;
+            var _rx = _startX;
+            var _fx = _startX + _rabW + _gap;
+            var _baseY = h - _charH - _edgeMargin;
+            var _ry = h - _rabH - _edgeMargin;
             ctx.globalAlpha = 0.72;
             ctx.drawImage(_rabbitImg, _rx, _ry, _rabW, _rabH);
+            ctx.drawImage(_foxImg, _fx, _baseY, _foxW, _charH);
             ctx.globalAlpha = 1;
         }
     }
