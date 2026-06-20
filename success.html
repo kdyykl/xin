@@ -418,8 +418,12 @@
     var canvas = document.getElementById('starCanvas');
     var ctx = canvas.getContext('2d');
 
-    // --- 预渲染发光纹理（径向渐变，模拟原 box-shadow 效果） ---
+    // --- 预渲染发光纹理 ---
     var glowTex = document.createElement('canvas');
+
+    // --- 预加载角色素材 ---
+    var _foxImg = new Image(); _foxImg.src = 'fox.png';
+    var _rabbitImg = new Image(); _rabbitImg.src = 'rabbit.png';
     glowTex.width = 64; glowTex.height = 64;
     var gctx = glowTex.getContext('2d');
     var gradient = gctx.createRadialGradient(32, 32, 0, 32, 32, 32);
@@ -579,6 +583,24 @@
                 ctx.filter = 'none';
                 ctx.restore();
             }
+            ctx.globalAlpha = 1;
+        }
+
+        // --- 右下角狐狸兔子角色 ---
+        var _grassLine = h * 0.88;  // 假设草地在底部 12%
+        var _charH = h * 0.28;
+        if (_foxImg.complete && _foxImg.naturalWidth > 0) {
+            var _foxW = _charH * (_foxImg.naturalWidth / _foxImg.naturalHeight);
+            if (_foxW > w * 0.25) { _foxW = w * 0.25; _charH = _foxW * (_foxImg.naturalHeight / _foxImg.naturalWidth); }
+            ctx.globalAlpha = 0.72;
+            ctx.drawImage(_foxImg, w - _foxW - 8, h - _charH - 8, _foxW, _charH);
+            ctx.globalAlpha = 1;
+        }
+        if (_rabbitImg.complete && _rabbitImg.naturalWidth > 0) {
+            var _rabH = _charH * 0.8;
+            var _rabW = _rabH * (_rabbitImg.naturalWidth / _rabbitImg.naturalHeight);
+            ctx.globalAlpha = 0.72;
+            ctx.drawImage(_rabbitImg, w - _rabW - _foxW * 0.65, h - _rabH - 8, _rabW, _rabH);
             ctx.globalAlpha = 1;
         }
     }
