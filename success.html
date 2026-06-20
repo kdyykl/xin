@@ -256,7 +256,7 @@
     <div class="main-text">
         <div class="days-text" id="daysText">加载中...</div>
         <div class="sub-text" id="dateText"></div>
-        <div class="hearts"></div>
+        <div class="hearts">💚💚💚</div>
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2" async></script>
@@ -288,13 +288,18 @@
     var STAR_MAX = fmtDateISO(bjNow);
 
     // ========== Supabase ==========
+    var _supabaseRetries = 0;
+    var _SUPABASE_MAX_RETRIES = 30;
     function initSupabase() {
         try {
             if (window.supabase && window.supabase.createClient) {
                 supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON);
                 loadAllPhotos();
-            } else {
+            } else if (_supabaseRetries < _SUPABASE_MAX_RETRIES) {
+                _supabaseRetries++;
                 setTimeout(initSupabase, 100);
+            } else {
+                console.warn('Supabase CDN 加载超时，照片功能不可用');
             }
         } catch(e) { console.warn('Supabase 初始化失败:', e); }
     }
@@ -466,7 +471,11 @@
         canvas.height = window.innerHeight;
     }
     resizeCanvas();
-    window.addEventListener('resize', resizeCanvas);
+    var _resizeTimer = 0;
+    window.addEventListener('resize', function() {
+        clearTimeout(_resizeTimer);
+        _resizeTimer = setTimeout(resizeCanvas, 150);
+    });
 
     function render(timestamp) {
         requestAnimationFrame(render);
@@ -808,6 +817,11 @@
         var closeRow = document.createElement('div');
         closeRow.className = 'modal-btn-row';
         closeRow.style.marginTop = '12px';
+        var resetBtn = document.createElement('button');
+        resetBtn.className = 'modal-btn primary';
+        resetBtn.textContent = '恢复全部';
+        resetBtn.onclick = function() { clearHighlight(); removeModals(); };
+        closeRow.appendChild(resetBtn);
         var closeBtn = document.createElement('button');
         closeBtn.className = 'modal-btn';
         closeBtn.textContent = '关闭';
