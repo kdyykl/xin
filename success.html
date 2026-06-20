@@ -85,9 +85,8 @@
             background-clip: text; animation: shimmer 4s linear infinite; white-space: nowrap;
         }
         @keyframes shimmer { 0% { background-position: 0% center; } 100% { background-position: 200% center; } }
+
         .sub-text { margin-top: 14px; font-size: clamp(0.85rem, 2.5vw, 1.1rem); color: rgba(255,255,255,0.45); letter-spacing: 2px; }
-        .hearts { margin-top: clamp(20px, 4vh, 40px); font-size: clamp(2rem, 6vw, 3.5rem); animation: heartbeat 1.5s ease-in-out infinite; line-height: 1; }
-        @keyframes heartbeat { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.12); } }
 
         /* 幕布 */
         .curtain {
@@ -306,7 +305,6 @@
     <div class="main-text">
         <div class="days-text" id="daysText">加载中...</div>
         <div class="sub-text" id="dateText"></div>
-        <div class="hearts">💚💚💚</div>
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2" async></script>
@@ -1040,7 +1038,7 @@
                 }
             }
             playNext();
-        }, 3000);
+        }, 5000);
     }
 
     function stopSlideshow() {
