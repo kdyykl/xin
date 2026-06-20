@@ -649,7 +649,7 @@
 
         setTimeout(function() {
             function reset(e) {
-                if (e && e.target.closest('.temp-star,.star-label,.photo-modal')) return;
+                if (e && e.target.closest('.temp-star,.star-label')) return;
                 document.removeEventListener('click', reset);
                 document.removeEventListener('touchend', reset);
                 label.style.transition = 'opacity 0.4s'; label.style.opacity = '0';
