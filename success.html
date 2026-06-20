@@ -148,6 +148,55 @@
         @keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
         #uploadInput { display: none; }
         #timelineBtn { bottom: 88px; right: 28px; }
+        #slideshowBtn { bottom: 148px; right: 28px; }
+
+        /* 统计面板 */
+        .stats-section { text-align: left; margin-bottom: 16px; }
+        .stats-section h4 { font-size: 13px; color: rgba(255,255,255,0.5); margin-bottom: 6px; letter-spacing: 1px; }
+        .stats-row { display: flex; justify-content: space-between; padding: 6px 0; font-size: 14px; }
+        .stats-row .val { color: #39ff14; font-weight: bold; }
+        .stats-bars { display: flex; flex-wrap: wrap; gap: 4px 12px; font-size: 12px; color: rgba(255,255,255,0.6); padding: 4px 0; }
+        .stats-bars span { white-space: nowrap; }
+        .slideshow-progress {
+            position: fixed; bottom: 30px; left: 50%; transform: translateX(-50%);
+            z-index: 99999; background: rgba(10,40,5,0.9); color: #39ff14;
+            padding: 8px 20px; border-radius: 20px; font-size: 14px;
+            border: 1px solid rgba(57,255,20,0.4); pointer-events: none;
+        }
+
+        /* 白天主题 */
+        body.daytime {
+            background: #fdf6e3;
+            background-image:
+                radial-gradient(ellipse at 50% 0%, rgba(255,180,100,0.5) 0%, transparent 55%),
+                radial-gradient(ellipse at 20% 30%, rgba(255,200,150,0.3) 0%, transparent 50%),
+                radial-gradient(ellipse at 80% 20%, rgba(255,160,80,0.35) 0%, transparent 50%);
+            color: #3a2a1a;
+        }
+        body.daytime .days-text {
+            background: linear-gradient(135deg, #d44a00 0%, #ff8c00 50%, #d44a00 100%);
+            background-size: 200% auto;
+            -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+            background-clip: text; text-shadow: none;
+        }
+        body.daytime .sub-text { color: rgba(90,50,20,0.6); }
+        body.daytime .modal-card { background: rgba(255,245,230,0.95); border-color: rgba(0,0,0,0.1); }
+        body.daytime .modal-card h3 { color: rgba(60,30,10,0.9); }
+        body.daytime .modal-hint { color: rgba(60,30,10,0.5); }
+        body.daytime .modal-btn { color: #3a2a1a; border-color: rgba(0,0,0,0.15); background: rgba(0,0,0,0.04); }
+        body.daytime .modal-btn.primary { background: rgba(255,140,0,0.2); border-color: rgba(255,140,0,0.5); color: #d44a00; }
+        body.daytime .float-btn { background: rgba(255,245,230,0.85); border-color: rgba(0,0,0,0.15); color: #3a2a1a; }
+        body.daytime .curtain { background: radial-gradient(ellipse at center, #fff8f0 0%, #ffe8d0 100%); }
+        body.daytime .curtain-title { color: rgba(100,50,20,0.7); }
+        body.daytime .story-btn { color: #3a2a1a; border-color: rgba(0,0,0,0.25); }
+        body.daytime .modal-date { color: #3a2a1a; border-color: rgba(0,0,0,0.2); background: rgba(255,255,255,0.7); }
+        body.daytime .modal-date::-webkit-calendar-picker-indicator { filter: none; }
+        body.daytime .timeline-item-date { color: rgba(60,30,10,0.7); }
+        body.daytime .timeline-item.active .timeline-item-date { color: #39ff14; }
+        body.daytime .timeline-month-label { color: rgba(60,30,10,0.35); }
+        body.daytime .shooting-star { background: linear-gradient(to right, rgba(255,140,0,0.7), transparent); }
+        body.daytime .stats-section h4 { color: rgba(60,30,10,0.5); }
+        body.daytime .stats-row { color: #3a2a1a; }
 
         /* 模态框 */
         .modal-overlay {
@@ -244,6 +293,7 @@
     <button id="uploadBtn" class="float-btn" title="上传图片" onclick="document.getElementById('uploadInput').click()">📷</button>
     <input type="file" id="uploadInput" accept="image/*">
     <button id="timelineBtn" class="float-btn" title="时间轴" onclick="showTimeline()">📅</button>
+    <button id="slideshowBtn" class="float-btn" title="纪念册" onclick="showStats()">🎬</button>
 
     <div class="curtain" id="curtain">
         <div class="curtain-stars"></div>
@@ -832,6 +882,178 @@
         document.body.appendChild(overlay);
         overlay.addEventListener('click', function(e) { if (e.target === overlay) removeModals(); });
     }
+
+    // ========== 主题切换 ==========
+    function updateTheme() {
+        var n = new Date();
+        var bjH = n.getHours() + Math.floor((n.getTimezoneOffset() + 480) / 60);
+        if (bjH < 0) bjH += 24;
+        if (bjH >= 24) bjH -= 24;
+        var isDaytime = bjH >= 6 && bjH < 18;
+        document.body.classList.toggle('daytime', isDaytime);
+    }
+    updateTheme();
+    setInterval(updateTheme, 3600000);
+
+    // ========== 统计面板 + 轮播 ==========
+    var _slideshowTimer = null;
+    var _slideshowIdx = 0;
+
+    function getPhotosByDate() {
+        var result = [];
+        for (var d in photoMap) {
+            if (photoMap.hasOwnProperty(d)) result.push(d);
+        }
+        result.sort();
+        return result;
+    }
+
+    function showStats() {
+        removeModals();
+        stopSlideshow();
+        var photosByDate = getPhotosByDate();
+        var totalDays = calcDays();
+        var photoCount = photosByDate.length;
+        var earliest = photosByDate.length > 0 ? photosByDate[0] : '无';
+        var latest   = photosByDate.length > 0 ? photosByDate[photosByDate.length-1] : '无';
+
+        var monthCount = {};
+        for (var i = 0; i < photosByDate.length; i++) {
+            var m = photosByDate[i].substring(0, 7);
+            monthCount[m] = (monthCount[m] || 0) + 1;
+        }
+        var monthLabels = [];
+        for (var k in monthCount) {
+            if (monthCount.hasOwnProperty(k)) monthLabels.push(k + ' ■ '.repeat(Math.min(monthCount[k], 15)) + ' ' + monthCount[k] + '张');
+        }
+        monthLabels.sort();
+
+        var overlay = document.createElement('div');
+        overlay.className = 'modal-overlay';
+        var card = document.createElement('div');
+        card.className = 'modal-card';
+        card.style.width = '92vw';
+        card.style.maxWidth = '440px';
+
+        var h3 = document.createElement('h3');
+        h3.textContent = '📊 我们的纪念册';
+        card.appendChild(h3);
+
+        var stats = document.createElement('div');
+        stats.className = 'stats-section';
+        stats.innerHTML =
+            '<div class="stats-row"><span>在一起</span><span class="val">' + totalDays + ' 天</span></div>' +
+            '<div class="stats-row"><span>照片总数</span><span class="val">' + photoCount + ' 张</span></div>' +
+            '<div class="stats-row"><span>最早回忆</span><span class="val">' + earliest + '</span></div>' +
+            '<div class="stats-row"><span>最新回忆</span><span class="val">' + latest + '</span></div>';
+        card.appendChild(stats);
+
+        if (monthLabels.length > 0) {
+            var monthH4 = document.createElement('h4');
+            monthH4.textContent = '📅 每月照片分布';
+            monthH4.style.cssText = 'font-size:13px;color:rgba(255,255,255,0.5);margin-bottom:6px;letter-spacing:1px;';
+            card.appendChild(monthH4);
+            var bars = document.createElement('div');
+            bars.className = 'stats-bars';
+            for (var j = 0; j < monthLabels.length; j++) {
+                var sp = document.createElement('span');
+                sp.textContent = monthLabels[j];
+                bars.appendChild(sp);
+            }
+            card.appendChild(bars);
+        }
+
+        var closeRow = document.createElement('div');
+        closeRow.className = 'modal-btn-row';
+        closeRow.style.marginTop = '18px';
+
+        if (photoCount > 0) {
+            var playBtn = document.createElement('button');
+            playBtn.className = 'modal-btn primary';
+            playBtn.textContent = '▶ 开始轮播';
+            playBtn.onclick = function() { removeModals(); startSlideshow(); };
+            closeRow.appendChild(playBtn);
+        } else {
+            var hint = document.createElement('p');
+            hint.className = 'modal-hint';
+            hint.textContent = '还没有上传照片哦';
+            hint.style.marginBottom = '12px';
+            card.appendChild(hint);
+        }
+
+        var closeBtn = document.createElement('button');
+        closeBtn.className = 'modal-btn';
+        closeBtn.textContent = '关闭';
+        closeBtn.onclick = function() { removeModals(); };
+        closeRow.appendChild(closeBtn);
+        card.appendChild(closeRow);
+        overlay.appendChild(card);
+        document.body.appendChild(overlay);
+        overlay.addEventListener('click', function(e) { if (e.target === overlay) removeModals(); });
+    }
+
+    function startSlideshow() {
+        stopSlideshow();
+        var photosByDate = getPhotosByDate();
+        if (photosByDate.length === 0) return;
+        _slideshowIdx = 0;
+
+        function playNext() {
+            if (_slideshowIdx >= photosByDate.length) {
+                stopSlideshow();
+                var done = document.createElement('div');
+                done.className = 'slideshow-progress';
+                done.textContent = '🎬 已播完全部 ' + photosByDate.length + ' 张照片';
+                done.id = 'slideshowDone';
+                document.body.appendChild(done);
+                setTimeout(function() { var d = document.getElementById('slideshowDone'); if (d) d.remove(); }, 4000);
+                return;
+            }
+            var dateStr = photosByDate[_slideshowIdx];
+            var ffIdx = -1;
+            for (var i = 0; i < fireflies.length; i++) {
+                if (fireflies[i].date === dateStr) { ffIdx = i; break; }
+            }
+            if (ffIdx >= 0) {
+                var f = fireflies[ffIdx];
+                var sd = new Date(dateStr + 'T00:00:00+08:00');
+                flyToCenter(ffIdx, f.label, f, sd);
+            }
+            var prog = document.getElementById('slideshowProgress');
+            if (!prog) {
+                prog = document.createElement('div');
+                prog.className = 'slideshow-progress';
+                prog.id = 'slideshowProgress';
+                document.body.appendChild(prog);
+            }
+            prog.textContent = '🎬 ' + (_slideshowIdx + 1) + ' / ' + photosByDate.length + ' — ' + photosByDate[_slideshowIdx];
+            _slideshowIdx++;
+        }
+
+        playNext();
+        _slideshowTimer = setInterval(function() {
+            document.querySelectorAll('.temp-star,.star-label,.photo-modal').forEach(function(el){ el.remove(); });
+            for (var i = 0; i < fireflies.length; i++) {
+                if (fireflies[i].state === 'centered') {
+                    fireflies[i].state = 'normal';
+                    fireflies[i].visible = true;
+                }
+            }
+            playNext();
+        }, 3000);
+    }
+
+    function stopSlideshow() {
+        if (_slideshowTimer) { clearInterval(_slideshowTimer); _slideshowTimer = null; }
+        var prog = document.getElementById('slideshowProgress');
+        if (prog) prog.remove();
+    }
+
+    document.addEventListener('click', function(e) {
+        if (_slideshowTimer && !e.target.closest('.temp-star,.star-label,.photo-modal,.modal-overlay,.float-btn')) {
+            stopSlideshow();
+        }
+    });
     </script>
 </body>
 </html>
