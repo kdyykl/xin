@@ -76,10 +76,10 @@
             to   { opacity: 1; transform: translate(-50%, -50%); }
         }
         .days-text {
-            font-size: clamp(1.4rem, 4.5vw, 3.5rem); font-weight: 300;
-            letter-spacing: clamp(1px, 0.8vw, 5px); line-height: 1.4;
-            text-shadow: 0 0 40px rgba(255,255,255,0.6);
-            background: linear-gradient(135deg, #fff 0%, #ffd700 50%, #fff 100%);
+            font-size: clamp(1.5rem, 5vw, 4rem); font-weight: 200;
+            letter-spacing: clamp(2px, 1vw, 8px); line-height: 1.5;
+            text-shadow: 0 0 60px rgba(255,255,255,0.5);
+            background: linear-gradient(135deg, #ffffff 0%, #ffd700 40%, #fff8dc 60%, #ffffff 100%);
             background-size: 200% auto;
             -webkit-background-clip: text; -webkit-text-fill-color: transparent;
             background-clip: text; animation: shimmer 4s linear infinite; white-space: nowrap;
@@ -119,27 +119,32 @@
         }
         @keyframes pulse { 0%, 100% { opacity: 0.6; } 50% { opacity: 1; } }
         .story-btn {
-            padding: 18px 50px; font-size: clamp(1rem, 3vw, 1.3rem);
-            font-family: inherit; font-weight: 500; color: white;
-            background: linear-gradient(135deg, rgba(255,100,150,0.3), rgba(100,150,255,0.3));
-            border: 2px solid rgba(255,255,255,0.4); border-radius: 50px;
-            cursor: pointer; backdrop-filter: blur(10px);
-            transition: all 0.4s cubic-bezier(0.34,1.56,0.64,1);
-            animation: glow 2s ease-in-out infinite;
+            padding: 20px 56px; font-size: clamp(1.05rem, 3vw, 1.35rem);
+            font-family: inherit; font-weight: 500; color: white; letter-spacing: 2px;
+            background: linear-gradient(135deg, rgba(255,120,160,0.35), rgba(120,160,255,0.35));
+            border: 2px solid rgba(255,255,255,0.3); border-radius: 50px;
+            cursor: pointer; backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
+            transition: all 0.45s cubic-bezier(0.34,1.56,0.64,1);
+            animation: glow 2.5s ease-in-out infinite;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.4);
         }
-        .story-btn:hover { transform: scale(1.08); box-shadow: 0 0 30px rgba(255,255,255,0.3); }
-        @keyframes glow { 0%, 100% { box-shadow: 0 0 15px rgba(255,255,255,0.1); } 50% { box-shadow: 0 0 30px rgba(255,255,255,0.25); } }
+        .story-btn:hover { transform: scale(1.06); box-shadow: 0 0 40px rgba(255,255,255,0.3); }
+        @keyframes glow { 0%, 100% { box-shadow: 0 0 20px rgba(255,255,255,0.08), 0 8px 32px rgba(0,0,0,0.4); } 50% { box-shadow: 0 0 36px rgba(255,255,255,0.2), 0 8px 40px rgba(0,0,0,0.5); } }
 
-        /* 底部按钮 */
+        /* 底部按钮 - 玻璃磨砂 */
         .float-btn {
-            position: fixed; width: 48px; height: 48px; border-radius: 50%;
-            background: rgba(10, 10, 30, 0.75); border: 1.5px solid rgba(255,255,255,0.3);
-            color: white; font-size: 22px; cursor: pointer; z-index: 99998;
-            backdrop-filter: blur(8px); transition: all 0.3s ease;
+            position: fixed; width: 52px; height: 52px; border-radius: 50%;
+            background: rgba(15, 15, 40, 0.65); border: 1.5px solid rgba(255,255,255,0.2);
+            color: rgba(255,255,255,0.9); font-size: 22px; cursor: pointer; z-index: 99998;
+            backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
+            transition: all 0.35s cubic-bezier(0.34,1.56,0.64,1);
             display: flex; align-items: center; justify-content: center; line-height: 1;
-            padding: 0; outline: none;
+            padding: 0; outline: none; box-shadow: 0 4px 20px rgba(0,0,0,0.3);
         }
-        .float-btn:hover { background: rgba(20, 20, 50, 0.9); transform: scale(1.1); box-shadow: 0 0 20px rgba(255,255,255,0.2); }
+        .float-btn:hover {
+            background: rgba(25, 25, 60, 0.85); transform: scale(1.12);
+            box-shadow: 0 6px 28px rgba(57,255,20,0.15); border-color: rgba(57,255,20,0.4);
+        }
         #musicBtn { bottom: 28px; right: 28px; }
         #musicBtn.muted { opacity: 0.55; border-color: rgba(255,255,255,0.2); }
         #uploadBtn { bottom: 28px; left: 28px; }
