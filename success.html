@@ -426,9 +426,13 @@
     // --- 预渲染发光纹理 ---
     var glowTex = document.createElement('canvas');
 
-    // --- 预加载角色素材 ---
+    // --- 手机端也渲染角色（无需预加载完成即可尝试） ---
     var _foxImg = new Image(); _foxImg.src = 'fox.png';
     var _rabbitImg = new Image(); _rabbitImg.src = 'rabbit.png';
+    // 如果图片加载慢，首次渲染几帧后它们就会出现
+    var _charsDrawn = false;
+    _foxImg.onload = function() { _charsDrawn = false; };
+    _rabbitImg.onload = function() { _charsDrawn = false; };
     glowTex.width = 64; glowTex.height = 64;
     var gctx = glowTex.getContext('2d');
     var gradient = gctx.createRadialGradient(32, 32, 0, 32, 32, 32);
@@ -591,15 +595,14 @@
             ctx.globalAlpha = 1;
         }
 
-        // --- 底部居中狐狸兔子角色 ---
-        var _charH = Math.min(h * 0.26, 200); // 移动端不超过 200px
-        var _edgeMargin = 4;
+        // --- 底部居中狐狸兔子角色（图片加载完成后持续绘制） ---
         if (_foxImg.complete && _foxImg.naturalWidth > 0 && _rabbitImg.complete && _rabbitImg.naturalWidth > 0) {
+            var _charH = Math.min(h * 0.26, 200);
+            var _edgeMargin = 4;
             var _foxW = _charH * (_foxImg.naturalWidth / _foxImg.naturalHeight);
             var _rabH = _charH * 0.78;
             var _rabW = _rabH * (_rabbitImg.naturalWidth / _rabbitImg.naturalHeight);
             var _gap = Math.max(w * 0.015, 6);
-            // 以中心为基准：狐狸在右半边，兔子在左半边
             var _totalW = _rabW + _gap + _foxW;
             var _startX = (w - _totalW) / 2;
             var _rx = _startX;
@@ -1058,21 +1061,78 @@
             _slideshowIdx++;
         }
 
-        playNext();
-        _slideshowTimer = setInterval(function() {
-            document.querySelectorAll('.temp-star,.star-label,.photo-modal').forEach(function(el){ el.remove(); });
-            for (var i = 0; i < fireflies.length; i++) {
-                if (fireflies[i].state === 'centered') {
-                    fireflies[i].state = 'normal';
-                    fireflies[i].visible = true;
-                }
+        function playNext() {
+            if (_slideshowIdx >= photosByDate.length) {
+                stopSlideshow();
+                var done = document.createElement('div');
+                done.className = 'slideshow-progress';
+                done.textContent = '🎬 已播完全部 ' + photosByDate.length + ' 张照片';
+                done.id = 'slideshowDone';
+                document.body.appendChild(done);
+                setTimeout(function() { var d = document.getElementById('slideshowDone'); if (d) d.remove(); }, 4000);
+                return;
             }
-            playNext();
-        }, 5000);
+            var dateStr = photosByDate[_slideshowIdx];
+            var ffIdx = -1;
+            for (var i = 0; i < fireflies.length; i++) {
+                if (fireflies[i].date === dateStr) { ffIdx = i; break; }
+            }
+            if (ffIdx >= 0) {
+                var f = fireflies[ffIdx];
+                var sd = new Date(dateStr + 'T00:00:00+08:00');
+                flyToCenter(ffIdx, f.label, f, sd);
+            }
+            var prog = document.getElementById('slideshowProgress');
+            if (!prog) {
+                prog = document.createElement('div');
+                prog.className = 'slideshow-progress';
+                prog.id = 'slideshowProgress';
+                document.body.appendChild(prog);
+            }
+            prog.textContent = '🎬 ' + (_slideshowIdx + 1) + ' / ' + photosByDate.length + ' — ' + photosByDate[_slideshowIdx];
+            _slideshowIdx++;
+        }
+
+        function scheduleNext() {
+            if (!_slideshowTimer) return;
+            // 等当前照片完全加载或最多等 2.5 秒再播下一张
+            var photoDate = photosByDate[_slideshowIdx - 1];
+            var photoUrl = photoMap[photoDate];
+            if (photoUrl) {
+                var tester = new Image();
+                tester.src = photoUrl;
+                var _settled = false;
+                function go() { if (!_settled) { _settled = true; scheduleTick(); } }
+                tester.onload = go;
+                tester.onerror = go;
+                setTimeout(go, 2500);
+            } else {
+                scheduleTick();
+            }
+        }
+
+        function scheduleTick() {
+            if (!_slideshowTimer) return;
+            _slideshowTimer = setTimeout(function() {
+                document.querySelectorAll('.temp-star,.star-label,.photo-modal').forEach(function(el){ el.remove(); });
+                for (var i = 0; i < fireflies.length; i++) {
+                    if (fireflies[i].state === 'centered') {
+                        fireflies[i].state = 'normal';
+                        fireflies[i].visible = true;
+                    }
+                }
+                playNext();
+                if (_slideshowTimer) scheduleNext();
+            }, 500);
+        }
+
+        playNext();
+        _slideshowTimer = 1; // 非空标记
+        scheduleNext();
     }
 
     function stopSlideshow() {
-        if (_slideshowTimer) { clearInterval(_slideshowTimer); _slideshowTimer = null; }
+        if (_slideshowTimer) { clearTimeout(_slideshowTimer); _slideshowTimer = null; }
         var prog = document.getElementById('slideshowProgress');
         if (prog) prog.remove();
     }
