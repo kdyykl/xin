@@ -429,10 +429,6 @@
     // --- 手机端也渲染角色（无需预加载完成即可尝试） ---
     var _foxImg = new Image(); _foxImg.src = 'fox.png';
     var _rabbitImg = new Image(); _rabbitImg.src = 'rabbit.png';
-    // 图片加载完成后触发强制重绘
-    _foxImg.onload = function() { _charsDrawn = false; };
-    _rabbitImg.onload = function() { _charsDrawn = false; };
-    var _charsDrawn = false;
     glowTex.width = 64; glowTex.height = 64;
     var gctx = glowTex.getContext('2d');
     var gradient = gctx.createRadialGradient(32, 32, 0, 32, 32, 32);
