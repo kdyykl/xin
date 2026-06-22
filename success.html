@@ -595,7 +595,7 @@
             ctx.globalAlpha = 1;
         }
 
-        // --- 底部居中狐狸兔子角色（每帧持续绘制） ---
+        // --- 底部居中狐狸兔子角色（图片加载完成后持续绘制） ---
         if (_foxImg.complete && _foxImg.naturalWidth > 0 && _rabbitImg.complete && _rabbitImg.naturalWidth > 0) {
             var _charH = Math.min(h * 0.26, 200);
             var _edgeMargin = 4;
