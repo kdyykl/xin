@@ -429,10 +429,10 @@
     // --- 手机端也渲染角色（无需预加载完成即可尝试） ---
     var _foxImg = new Image(); _foxImg.src = 'fox.png';
     var _rabbitImg = new Image(); _rabbitImg.src = 'rabbit.png';
-    // 如果图片加载慢，首次渲染几帧后它们就会出现
-    var _charsDrawn = false;
+    // 图片加载完成后触发强制重绘
     _foxImg.onload = function() { _charsDrawn = false; };
     _rabbitImg.onload = function() { _charsDrawn = false; };
+    var _charsDrawn = false;
     glowTex.width = 64; glowTex.height = 64;
     var gctx = glowTex.getContext('2d');
     var gradient = gctx.createRadialGradient(32, 32, 0, 32, 32, 32);
@@ -595,8 +595,11 @@
             ctx.globalAlpha = 1;
         }
 
-        // --- 底部居中狐狸兔子角色（图片加载完成后持续绘制） ---
-        if (_foxImg.complete && _foxImg.naturalWidth > 0 && _rabbitImg.complete && _rabbitImg.naturalWidth > 0) {
+        // --- 底部居中狐狸兔子角色（持续绘制，加载完立即出现） ---
+        if (!_charsDrawn && _foxImg.complete && _foxImg.naturalWidth > 0 && _rabbitImg.complete && _rabbitImg.naturalWidth > 0) {
+            _charsDrawn = true;
+        }
+        if (_charsDrawn) {
             var _charH = Math.min(h * 0.26, 200);
             var _edgeMargin = 4;
             var _foxW = _charH * (_foxImg.naturalWidth / _foxImg.naturalHeight);
