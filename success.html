@@ -419,10 +419,6 @@
 
     // --- 预渲染发光纹理（径向渐变，模拟原 box-shadow 效果） ---
     var glowTex = document.createElement('canvas');
-
-    // --- 角色素材 ---
-    var _foxImg = new Image(); _foxImg.src = 'fox.webp';
-    var _rabbitImg = new Image(); _rabbitImg.src = 'rabbit.webp';
     glowTex.width = 64; glowTex.height = 64;
     var gctx = glowTex.getContext('2d');
     var gradient = gctx.createRadialGradient(32, 32, 0, 32, 32, 32);
@@ -582,21 +578,6 @@
                 ctx.filter = 'none';
                 ctx.restore();
             }
-            ctx.globalAlpha = 1;
-        }
-
-        // --- 底部居中狐狸兔子 ---
-        if (_foxImg.complete && _foxImg.naturalWidth > 0 && _rabbitImg.complete && _rabbitImg.naturalWidth > 0) {
-            var _charH = Math.min(h * 0.26, 200);
-            var _foxW = _charH * (_foxImg.naturalWidth / _foxImg.naturalHeight);
-            var _rabH = _charH * 0.78;
-            var _rabW = _rabH * (_rabbitImg.naturalWidth / _rabbitImg.naturalHeight);
-            var _gap = Math.max(w * 0.015, 6);
-            var _totalW = _rabW + _gap + _foxW;
-            var _startX = (w - _totalW) / 2;
-            ctx.globalAlpha = 0.72;
-            ctx.drawImage(_rabbitImg, _startX, h - _rabH - 4, _rabW, _rabH);
-            ctx.drawImage(_foxImg, _startX + _rabW + _gap, h - _charH - 4, _foxW, _charH);
             ctx.globalAlpha = 1;
         }
     }
