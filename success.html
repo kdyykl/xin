@@ -434,6 +434,8 @@
     var _foxImg = new Image(); _foxImg.src = 'fox.webp';
     var _rabbitImg = new Image(); _rabbitImg.src = 'rabbit.webp';
 
+    // 图片加载完下一帧重绘（不等 requestAnimationFrame 下一帧自然到来）
+
     glowTex.width = 64; glowTex.height = 64;
     var gctx = glowTex.getContext('2d');
     var gradient = gctx.createRadialGradient(32, 32, 0, 32, 32, 32);
