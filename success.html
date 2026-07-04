@@ -382,10 +382,9 @@
         bgMusic.play().then(function() {
             _musicStarted = true;
             var btn = document.getElementById('musicBtn');
-            btn.style.display = 'flex'; btn.textContent = '🔊'; btn.classList.remove('muted');
+            btn.textContent = '🔊'; btn.classList.remove('muted');
         }).catch(function() {});
     }
-    // 用户首次交互后播放（点击幕布按钮触发 startStory 时也会播放）
     document.addEventListener('click', function once() {
         document.removeEventListener('click', once);
         tryPlayMusic();
