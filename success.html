@@ -364,7 +364,7 @@
             });
             for (var d in latestMap) {
                 photoMap[d] = SUPABASE_URL + '/storage/v1/object/public/photos/' + latestMap[d];
-                (new Image()).src = photoMap[d]; // 预热缓存
+                // 按需加载，不预热全部照片
             }
         } catch(e) { console.warn('加载照片列表失败:', e); }
     }
@@ -840,6 +840,7 @@
             var { error } = await supabase.storage.from('photos').upload(fileName, pendingFile);
             if (error) throw error;
             photoMap[dateStr] = SUPABASE_URL + '/storage/v1/object/public/photos/' + fileName;
+            // 预加载刚上传的照片，后续点击/轮播可立即显示
             (new Image()).src = photoMap[dateStr];
             uploadBtn.textContent = '✅';
             setTimeout(function() { uploadBtn.textContent = '📷'; }, 2000);
