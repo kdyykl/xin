@@ -375,6 +375,22 @@
     bgMusic.loop = true;
     bgMusic.preload = 'auto';
 
+    // 音乐立即开始尝试，不再等图片加载
+    var _musicStarted = false;
+    function tryPlayMusic() {
+        if (_musicStarted) return;
+        bgMusic.play().then(function() {
+            _musicStarted = true;
+            var btn = document.getElementById('musicBtn');
+            btn.style.display = 'flex'; btn.textContent = '🔊'; btn.classList.remove('muted');
+        }).catch(function() {});
+    }
+    // 用户首次交互后播放（点击幕布按钮触发 startStory 时也会播放）
+    document.addEventListener('click', function once() {
+        document.removeEventListener('click', once);
+        tryPlayMusic();
+    }, { once: true });
+
     function toggleMusic() {
         bgMusic.muted = !bgMusic.muted;
         var btn = document.getElementById('musicBtn');
@@ -385,13 +401,7 @@
     function startStory() {
         var curtain = document.getElementById('curtain');
         curtain.classList.add('hide');
-        bgMusic.play().then(function() {
-            var btn = document.getElementById('musicBtn');
-            btn.textContent = '🔊'; btn.classList.remove('muted');
-        }).catch(function() {
-            var btn = document.getElementById('musicBtn');
-            btn.textContent = '🔇'; btn.classList.add('muted');
-        });
+        tryPlayMusic();
         setTimeout(function() { curtain.remove(); }, 1200);
     }
 
