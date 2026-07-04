@@ -387,7 +387,8 @@
     }
     document.addEventListener('click', function once() {
         document.removeEventListener('click', once);
-        tryPlayMusic();
+        // 用户首次任意交互即解除静音限制
+        if (bgMusic.paused) tryPlayMusic(); else bgMusic.muted = false;
     }, { once: true });
 
     function toggleMusic() {
@@ -595,18 +596,28 @@
             ctx.globalAlpha = 1;
         }
 
-        // --- 底部居中狐狸兔子 ---
+        // --- 底部居中狐狸兔子（脚贴地） ---
         if (_foxImg.complete && _foxImg.naturalWidth > 0 && _rabbitImg.complete && _rabbitImg.naturalWidth > 0) {
-            var _charH = Math.min(h * 0.26, 200);
-            var _foxW = _charH * (_foxImg.naturalWidth / _foxImg.naturalHeight);
-            var _rabH = _charH * 0.78;
-            var _rabW = _rabH * (_rabbitImg.naturalWidth / _rabbitImg.naturalHeight);
+            var _charH_max = Math.min(h * 0.26, 200);
+            var _fox_ratio = _foxImg.naturalWidth / _foxImg.naturalHeight;
+            var _rab_ratio = _rabbitImg.naturalWidth / _rabbitImg.naturalHeight;
+            var _foxW = _charH_max * _fox_ratio;
+            var _rabH = _charH_max * 0.78;
+            var _rabW = _rabH * _rab_ratio;
             var _gap = Math.max(w * 0.015, 6);
             var _totalW = _rabW + _gap + _foxW;
+            // 尽量不超宽
+            if (_totalW > w * 0.7) {
+                var _scale = (w * 0.7) / _totalW;
+                _charH_max *= _scale;
+                _foxW *= _scale; _rabH *= _scale; _rabW *= _scale;
+                _totalW = _rabW + _gap + _foxW;
+            }
             var _startX = (w - _totalW) / 2;
+            var _baseY = h - _charH_max - 2;  // 紧贴底部
             ctx.globalAlpha = 0.72;
-            ctx.drawImage(_rabbitImg, _startX, h - _rabH - 4, _rabW, _rabH);
-            ctx.drawImage(_foxImg, _startX + _rabW + _gap, h - _charH - 4, _foxW, _charH);
+            ctx.drawImage(_rabbitImg, _startX, _baseY + (_charH_max - _rabH), _rabW, _rabH);
+            ctx.drawImage(_foxImg, _startX + _rabW + _gap, _baseY, _foxW, _charH_max);
             ctx.globalAlpha = 1;
         }
     }
