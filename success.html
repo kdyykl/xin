@@ -366,6 +366,17 @@
     var _supabaseInitTimer = null;
     var _photoTipHideTimer = null;
 
+    // 获取 supabase-js 库。注意：本地自托管版被 IIFE 包裹，库挂在 window.__sbLib 上，
+    // 因为本页也有一个全局变量叫 supabase（客户端实例），同名全局会互相覆盖：
+    // 浏览器缓存命中时外部脚本可能先于本段内联脚本执行，赋值会被下面的 var supabase = null 清掉。
+    var _sbLibCache = null;
+    function getSbLib() {
+        if (_sbLibCache) return _sbLibCache;
+        if (window.__sbLib && window.__sbLib.createClient) { _sbLibCache = window.__sbLib; return _sbLibCache; }
+        if (window.supabase && window.supabase.createClient) { _sbLibCache = window.supabase; return _sbLibCache; }
+        return null;
+    }
+
     function showPhotoTip(text, ok) {
         var el = document.getElementById('photoTip');
         if (!el) return;
@@ -390,9 +401,10 @@
 
     function initSupabase() {
         try {
-            if (window.supabase && window.supabase.createClient) {
+            var lib = getSbLib();
+            if (lib) {
                 if (_supabaseInitTimer) clearTimeout(_supabaseInitTimer);
-                supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON);
+                supabase = lib.createClient(SUPABASE_URL, SUPABASE_ANON);
                 loadAllPhotos();
             } else {
                 _supabaseRetries++;
@@ -1209,7 +1221,7 @@
 
         var conn = '测试中…';
         function render() {
-            var scriptOk = !!(window.supabase && window.supabase.createClient);
+            var scriptOk = !!getSbLib();
             var clientOk = !!(supabase && supabase.storage && typeof supabase.storage.from === 'function');
             var connOk = conn.indexOf('HTTP 200') === 0;
             var lines = [
