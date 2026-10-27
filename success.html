@@ -336,27 +336,39 @@
 
     // ========== Supabase ==========
     var _supabaseRetries = 0;
-    var _SUPABASE_MAX_RETRIES = 30;
+    var _supabaseInitTimer = null;
     function initSupabase() {
         try {
             if (window.supabase && window.supabase.createClient) {
+                if (_supabaseInitTimer) clearTimeout(_supabaseInitTimer);
                 supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON);
                 loadAllPhotos();
-            } else if (_supabaseRetries < _SUPABASE_MAX_RETRIES) {
-                _supabaseRetries++;
-                setTimeout(initSupabase, 100);
             } else {
-                console.warn('Supabase CDN 加载超时，照片功能不可用');
+                _supabaseRetries++;
+                // 渐进式重试：前10次100ms，之后依次递增至最多5s
+                var delay = _supabaseRetries <= 10 ? 100 :
+                            _supabaseRetries <= 30 ? 500 :
+                            _supabaseRetries <= 60 ? 1000 : 5000;
+                _supabaseInitTimer = setTimeout(initSupabase, delay);
+                // 每30秒输出一次日志，避免移动端静默失败
+                if (_supabaseRetries % 150 === 0) {
+                    console.warn('Supabase CDN 仍在加载中...已等待 ' + Math.round(_supabaseRetries * 100 / 1000) + 's');
+                }
             }
-        } catch(e) { console.warn('Supabase 初始化失败:', e); }
+        } catch(e) {
+            console.warn('Supabase 初始化失败:', e);
+            _supabaseInitTimer = setTimeout(initSupabase, 2000);
+        }
     }
     setTimeout(initSupabase, 200);
 
+    var _photoLoadRetries = 0;
     async function loadAllPhotos() {
         if (!supabase) return;
         try {
             var { data, error } = await supabase.storage.from('photos').list('', { limit: 1000 });
-            if (error || !data) return;
+            if (error) throw error;
+            if (!data) { console.warn('loadAllPhotos 返回空数据，稍后重试'); setTimeout(loadAllPhotos, 2000); return; }
             var latestMap = {};
             data.forEach(function(file) {
                 var m = file.name.match(/^(\d{4}-\d{2}-\d{2})/);
@@ -364,9 +376,16 @@
             });
             for (var d in latestMap) {
                 photoMap[d] = SUPABASE_URL + '/storage/v1/object/public/photos/' + latestMap[d];
-                // 按需加载，不预热全部照片
             }
-        } catch(e) { console.warn('加载照片列表失败:', e); }
+            _photoLoadRetries = 0;
+            console.log('照片列表加载成功，共 ' + Object.keys(photoMap).length + ' 张');
+        } catch(e) {
+            _photoLoadRetries++;
+            console.warn('加载照片列表失败 (第' + _photoLoadRetries + '次):', e);
+            // 网络错误时自动重试，间隔递增：1s, 2s, 4s, 8s, 16s... 最多30s
+            var retryDelay = Math.min(1000 * Math.pow(2, _photoLoadRetries - 1), 30000);
+            setTimeout(loadAllPhotos, retryDelay);
+        }
     }
 
     // ========== 音乐 ==========
