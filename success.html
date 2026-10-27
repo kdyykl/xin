@@ -283,6 +283,30 @@
             font-size: 12px; color: rgba(255,255,255,0.3);
             padding: 8px 12px 4px; letter-spacing: 2px;
         }
+
+        /* 照片服务状态提示 */
+        .photo-tip {
+            position: fixed; top: 14px; left: 50%;
+            transform: translateX(-50%) translateY(-10px);
+            z-index: 100000; max-width: 86vw; padding: 9px 16px; border-radius: 999px;
+            background: rgba(255,159,67,0.94); color: #141414; font-size: 13px; line-height: 1.45;
+            text-align: center; cursor: pointer; opacity: 0; pointer-events: none;
+            transition: opacity 0.3s, transform 0.3s; box-shadow: 0 6px 20px rgba(0,0,0,0.35);
+        }
+        .photo-tip.show { opacity: 1; pointer-events: auto; transform: translateX(-50%) translateY(0); }
+        .photo-tip.ok { background: rgba(57,255,20,0.92); }
+
+        /* ?debug=1 诊断面板（正常访问不显示） */
+        #debugPanel {
+            position: fixed; inset: 0; z-index: 100001; background: rgba(0,0,0,0.86);
+            color: #9effa0; font: 12px/1.55 Consolas, "Courier New", monospace;
+            padding: 14px 12px; overflow: auto; white-space: pre-wrap; word-break: break-all;
+        }
+        #debugPanel .dp-close {
+            position: fixed; top: 10px; right: 10px; z-index: 100002; padding: 6px 12px;
+            border: 1px solid rgba(255,255,255,0.4); border-radius: 8px;
+            background: rgba(50,50,50,0.9); color: #fff; font-size: 13px; cursor: pointer;
+        }
     </style>
 </head>
 <body>
@@ -290,6 +314,7 @@
     <button id="musicBtn" class="float-btn" title="音乐静音" onclick="toggleMusic()">🔇</button>
     <button id="uploadBtn" class="float-btn" title="上传图片" onclick="document.getElementById('uploadInput').click()">📷</button>
     <input type="file" id="uploadInput" accept="image/*">
+    <div id="photoTip" class="photo-tip" onclick="retryPhotoService()"></div>
     <button id="timelineBtn" class="float-btn" title="时间轴" onclick="showTimeline()">📅</button>
     <button id="slideshowBtn" class="float-btn" title="纪念册" onclick="showStats()">🎬</button>
 
@@ -306,7 +331,8 @@
         <div class="sub-text" id="dateText"></div>
     </div>
 
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2" async></script>
+    <!-- supabase-js v2.118.0 本地自托管：避免第三方 CDN 在部分手机网络下被拦截 -->
+    <script src="supabase.js" async onerror="window.__sbLocalFail=true"></script>
     <script>
     // ========== 全局配置 ==========
     var SUPABASE_URL = 'https://osdxiibthsytrpnovlik.supabase.co';
@@ -314,6 +340,7 @@
     var supabase = null;
     var photoMap = {};
     var pendingFile = null;
+    var _lastPhotoError = '';
 
     function fmtDateISO(d) {
         return d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0') + '-' + String(d.getDate()).padStart(2,'0');
@@ -337,6 +364,30 @@
     // ========== Supabase ==========
     var _supabaseRetries = 0;
     var _supabaseInitTimer = null;
+    var _photoTipHideTimer = null;
+
+    function showPhotoTip(text, ok) {
+        var el = document.getElementById('photoTip');
+        if (!el) return;
+        el.textContent = text;
+        el.classList.add('show');
+        el.classList.toggle('ok', !!ok);
+        if (_photoTipHideTimer) clearTimeout(_photoTipHideTimer);
+        if (ok) _photoTipHideTimer = setTimeout(function() { el.classList.remove('show'); }, 2500);
+    }
+    function hidePhotoTip() {
+        var el = document.getElementById('photoTip');
+        if (el) el.classList.remove('show');
+    }
+    function retryPhotoService() {
+        _supabaseRetries = 0;
+        _photoLoadRetries = 0;
+        window.__sbErrTipShown = false;
+        showPhotoTip('正在重新连接照片服务…');
+        if (supabase) loadAllPhotos();
+        else initSupabase();
+    }
+
     function initSupabase() {
         try {
             if (window.supabase && window.supabase.createClient) {
@@ -350,13 +401,29 @@
                             _supabaseRetries <= 30 ? 500 :
                             _supabaseRetries <= 60 ? 1000 : 5000;
                 _supabaseInitTimer = setTimeout(initSupabase, delay);
-                // 每30秒输出一次日志，避免移动端静默失败
+                // 本地脚本加载失败时，回退到公共 CDN
+                if (_supabaseRetries === 10 && window.__sbLocalFail && !window.__sbCdnFallbackTried) {
+                    window.__sbCdnFallbackTried = true;
+                    var fs = document.createElement('script');
+                    fs.src = 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2';
+                    fs.async = true;
+                    document.head.appendChild(fs);
+                    console.warn('本地 supabase 脚本加载失败，已回退到 CDN');
+                }
+                // 可见提示：手机端没有控制台，失败不能被静默吞掉
+                if (_supabaseRetries === 18) showPhotoTip('照片服务加载较慢，请稍等…');
+                else if (_supabaseRetries === 40) showPhotoTip('照片服务连接失败，请检查网络后点击重试');
+                // 每150次输出一次日志，避免刷屏
                 if (_supabaseRetries % 150 === 0) {
-                    console.warn('Supabase CDN 仍在加载中...已等待 ' + Math.round(_supabaseRetries * 100 / 1000) + 's');
+                    console.warn('Supabase 脚本仍在加载中...已尝试 ' + _supabaseRetries + ' 次');
                 }
             }
         } catch(e) {
             console.warn('Supabase 初始化失败:', e);
+            if (!window.__sbErrTipShown) {
+                window.__sbErrTipShown = true;
+                showPhotoTip('照片服务初始化失败，点击重试');
+            }
             _supabaseInitTimer = setTimeout(initSupabase, 2000);
         }
     }
@@ -368,7 +435,7 @@
         try {
             var { data, error } = await supabase.storage.from('photos').list('', { limit: 1000 });
             if (error) throw error;
-            if (!data) { console.warn('loadAllPhotos 返回空数据，稍后重试'); setTimeout(loadAllPhotos, 2000); return; }
+            if (!data) { console.warn('loadAllPhotos 返回空数据，稍后重试'); showPhotoTip('照片数据为空，正在重试…'); setTimeout(loadAllPhotos, 2000); return; }
             var latestMap = {};
             data.forEach(function(file) {
                 var m = file.name.match(/^(\d{4}-\d{2}-\d{2})/);
@@ -378,10 +445,16 @@
                 photoMap[d] = SUPABASE_URL + '/storage/v1/object/public/photos/' + latestMap[d];
             }
             _photoLoadRetries = 0;
+            _lastPhotoError = '';
+            hidePhotoTip();
             console.log('照片列表加载成功，共 ' + Object.keys(photoMap).length + ' 张');
         } catch(e) {
             _photoLoadRetries++;
+            _lastPhotoError = (e && (e.message || e.error_description || String(e))) || '未知错误';
             console.warn('加载照片列表失败 (第' + _photoLoadRetries + '次):', e);
+            if (_photoLoadRetries >= 2) {
+                showPhotoTip('照片加载失败，正在自动重试…（点击可手动重试）');
+            }
             // 网络错误时自动重试，间隔递增：1s, 2s, 4s, 8s, 16s... 最多30s
             var retryDelay = Math.min(1000 * Math.pow(2, _photoLoadRetries - 1), 30000);
             setTimeout(loadAllPhotos, retryDelay);
@@ -868,7 +941,7 @@
         var ext = pendingFile.name.split('.').pop().toLowerCase();
         var fileName = dateStr + '_' + Date.now() + '.' + ext;
         try {
-            if (!supabase) throw new Error('supabase not ready');
+            if (!supabase) throw new Error('照片服务还没连接上');
             var { error } = await supabase.storage.from('photos').upload(fileName, pendingFile);
             if (error) throw error;
             photoMap[dateStr] = SUPABASE_URL + '/storage/v1/object/public/photos/' + fileName;
@@ -879,7 +952,8 @@
             setTimeout(loadAllPhotos, 500);
         } catch(err) {
             console.error('Upload error:', err);
-            alert('上传失败: ' + (err.message || JSON.stringify(err)));
+            alert('上传失败: ' + (err.message || JSON.stringify(err)) +
+                '\n\n如果提示网络错误：请检查手机网络后重试；也可以点右上角 ··· 在系统浏览器（Safari / Chrome）中打开本页。');
             uploadBtn.textContent = '📷';
         }
         uploadBtn.classList.remove('uploading');
@@ -1113,6 +1187,94 @@
             stopSlideshow();
         }
     });
+
+    // ========== 诊断面板：网址后加 ?debug=1 打开，方便在手机上排查 ==========
+    function initDebugPanel() {
+        var panel = document.createElement('div');
+        panel.id = 'debugPanel';
+        var copyBtn = document.createElement('button');
+        copyBtn.className = 'dp-close';
+        copyBtn.style.right = '70px';
+        copyBtn.textContent = '复制';
+        var closeBtn = document.createElement('button');
+        closeBtn.className = 'dp-close';
+        closeBtn.textContent = '✕';
+        closeBtn.onclick = function() { panel.remove(); };
+        var text = document.createElement('div');
+        text.id = 'debugText';
+        panel.appendChild(copyBtn);
+        panel.appendChild(closeBtn);
+        panel.appendChild(text);
+        document.body.appendChild(panel);
+
+        var conn = '测试中…';
+        function render() {
+            var scriptOk = !!(window.supabase && window.supabase.createClient);
+            var clientOk = !!(supabase && supabase.storage && typeof supabase.storage.from === 'function');
+            var connOk = conn.indexOf('HTTP 200') === 0;
+            var lines = [
+                '🩺 照片功能诊断  ' + new Date().toLocaleString(),
+                '页面: ' + location.href,
+                '机型/浏览器: ' + navigator.userAgent,
+                '网络: ' + (navigator.onLine ? '在线' : '离线') + '   协议: ' + location.protocol,
+                '屏幕: ' + window.innerWidth + '×' + window.innerHeight + '  dpr ' + (window.devicePixelRatio || 1),
+                '',
+                '— supabase 脚本 —',
+                '本地脚本加载失败: ' + (window.__sbLocalFail ? '是' : '否') + '   CDN 回退: ' + (window.__sbCdnFallbackTried ? '是' : '否'),
+                '脚本文件: ' + (scriptOk || clientOk ? '已加载' : '未加载'),
+                '',
+                '— 照片数据 —',
+                '客户端: ' + (clientOk ? '已创建' : '未创建') + '   初始化重试: ' + _supabaseRetries,
+                '已加载照片日期: ' + Object.keys(photoMap).length + ' 个   列表重试: ' + _photoLoadRetries,
+                '最近错误: ' + (_lastPhotoError || '无'),
+                '',
+                '— 网络请求 —',
+                'Supabase 连通: ' + conn,
+                '',
+                '— 结论建议 —',
+                clientOk
+                    ? (connOk
+                        ? '✅ 脚本和数据接口都正常。若仍看不到照片：刷新页面，或点开带日期的萤火虫再看。'
+                        : '⚠️ 脚本正常，但连不上 Supabase：多半是当前网络拦截了 supabase.co。请换 WiFi/流量，或开代理后重试。')
+                    : (scriptOk
+                        ? '⏳ 脚本已就绪，客户端创建中…请稍等，或点顶部提示手动重试。'
+                        : '❌ supabase 脚本没加载：请换网络或换个浏览器打开（微信里请点右上角 ··· → 在浏览器打开）。'),
+                '把本页截图发给可达鸭即可定位问题。'
+            ];
+            text.textContent = lines.join('\n');
+        }
+        render();
+
+        copyBtn.onclick = function() {
+            var content = text.textContent;
+            if (navigator.clipboard && navigator.clipboard.writeText) {
+                navigator.clipboard.writeText(content).then(function() {
+                    copyBtn.textContent = '已复制';
+                    setTimeout(function() { copyBtn.textContent = '复制'; }, 1500);
+                }).catch(function() {});
+            }
+        };
+
+        var t0 = Date.now();
+        fetch(SUPABASE_URL + '/storage/v1/object/list/photos', {
+            method: 'POST',
+            headers: { 'apikey': SUPABASE_ANON, 'Authorization': 'Bearer ' + SUPABASE_ANON, 'Content-Type': 'application/json' },
+            body: JSON.stringify({ prefix: '', limit: 1, offset: 0 })
+        }).then(function(r) {
+            return r.text().then(function(b) {
+                conn = 'HTTP ' + r.status + ' (' + (Date.now() - t0) + 'ms) ' + b.slice(0, 60);
+            });
+        }).catch(function(e) {
+            conn = '失败 ' + ((e && e.message) || e) + ' (' + (Date.now() - t0) + 'ms)';
+        }).then(function() {
+            render();
+            var iv = setInterval(function() {
+                if (!document.getElementById('debugPanel')) { clearInterval(iv); return; }
+                render();
+            }, 3000);
+        });
+    }
+    if (/[?&]debug=1/.test(location.search)) setTimeout(initDebugPanel, 600);
     </script>
 </body>
 </html>
