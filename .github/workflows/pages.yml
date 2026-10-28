@@ -4,8 +4,8 @@ on:
   push:
     branches: [main]
   workflow_dispatch:
-  # 每 6 小时把 Supabase 里的新照片同步成静态镜像，
-  # 这样访问不了 supabase.co 的网络也能从本站加载照片（页面会自动回退到 photos.json）
+  # 每 6 小时把阿里云 OSS 里的新照片同步成静态镜像，
+  # 这样访问不了 OSS 的网络也能从本站加载照片（页面会自动回退到 photos.json）
   schedule:
     - cron: '17 */6 * * *'
 
@@ -27,11 +27,10 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: 同步照片静态镜像
+      - name: 同步照片静态镜像（阿里云 OSS → 本仓库）
         continue-on-error: true
         env:
-          SUPABASE_URL: https://osdxiibthsytrpnovlik.supabase.co
-          SUPABASE_ANON: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im9zZHhpaWJ0aHN5dHJwbm92bGlrIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzY5MjMzOTEsImV4cCI6MjA5MjQ5OTM5MX0.OLWo36xHhQTGPQk1O9ZWGISIxTjwX5SSolAL2zkHJbc
+          OSS_BASE: https://kdyykl-xin-photos.oss-cn-guangzhou.aliyuncs.com
         run: |
           if ! command -v convert >/dev/null 2>&1; then
             sudo apt-get update -qq
