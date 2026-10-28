@@ -4,9 +4,13 @@ on:
   push:
     branches: [main]
   workflow_dispatch:
+  # 每 6 小时把 Supabase 里的新照片同步成静态镜像，
+  # 这样访问不了 supabase.co 的网络也能从本站加载照片（页面会自动回退到 photos.json）
+  schedule:
+    - cron: '17 */6 * * *'
 
 permissions:
-  contents: read
+  contents: write   # 同步镜像后需要 commit + push（GITHUB_TOKEN 的 push 不会触发新 workflow，不会递归）
   pages: write
   id-token: write
 
@@ -22,6 +26,31 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+
+      - name: 同步照片静态镜像
+        continue-on-error: true
+        env:
+          SUPABASE_URL: https://osdxiibthsytrpnovlik.supabase.co
+          SUPABASE_ANON: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im9zZHhpaWJ0aHN5dHJwbm92bGlrIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzY5MjMzOTEsImV4cCI6MjA5MjQ5OTM5MX0.OLWo36xHhQTGPQk1O9ZWGISIxTjwX5SSolAL2zkHJbc
+        run: |
+          if ! command -v convert >/dev/null 2>&1; then
+            sudo apt-get update -qq
+            sudo apt-get install -y -qq imagemagick
+          fi
+          node scripts/sync-photos.mjs
+
+      - name: 提交镜像变化
+        continue-on-error: true
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add photos photos.json
+          if git diff --cached --quiet; then
+            echo "没有新照片"
+          else
+            git commit -m "chore: 同步照片静态镜像"
+            git push origin HEAD:main
+          fi
 
       - name: Setup Pages
         uses: actions/configure-pages@v4

@@ -393,8 +393,11 @@
     function retryPhotoService() {
         _supabaseRetries = 0;
         _photoLoadRetries = 0;
+        _photoSource = '';
+        _mirrorLoading = false;
         window.__sbErrTipShown = false;
         showPhotoTip('正在重新连接照片服务…');
+        loadStaticPhotos();
         if (supabase) loadAllPhotos();
         else initSupabase();
     }
@@ -442,6 +445,34 @@
     setTimeout(initSupabase, 200);
 
     var _photoLoadRetries = 0;
+    var _photoSource = '';      // 'supabase' | 'mirror'
+    var _mirrorLoading = false;
+
+    // 静态镜像回退：photos.json 由 GitHub Action 从 Supabase 自动同步到仓库，
+    // 这样即使对方网络连不上 supabase.co，也能从本站（GitHub Pages）加载照片。
+    async function loadStaticPhotos() {
+        if (_mirrorLoading) return;
+        _mirrorLoading = true;
+        try {
+            var r = await fetch('photos.json?v=' + Date.now(), { cache: 'no-store' });
+            if (!r.ok) throw new Error('HTTP ' + r.status);
+            var data = await r.json();
+            for (var d in data) {
+                if (!photoMap[d] || _photoSource !== 'supabase') photoMap[d] = data[d];
+            }
+            if (_photoSource !== 'supabase') _photoSource = 'mirror';
+            if (_photoSource === 'mirror') {
+                _lastPhotoError = '';
+                hidePhotoTip();
+                console.log('照片列表加载成功（本地镜像），共 ' + Object.keys(photoMap).length + ' 张');
+            }
+        } catch(e) {
+            console.warn('本地镜像不可用:', e);
+        } finally {
+            _mirrorLoading = false;
+        }
+    }
+
     async function loadAllPhotos() {
         if (!supabase) return;
         try {
@@ -456,6 +487,7 @@
             for (var d in latestMap) {
                 photoMap[d] = SUPABASE_URL + '/storage/v1/object/public/photos/' + latestMap[d];
             }
+            _photoSource = 'supabase';
             _photoLoadRetries = 0;
             _lastPhotoError = '';
             hidePhotoTip();
@@ -465,13 +497,18 @@
             _lastPhotoError = (e && (e.message || e.error_description || String(e))) || '未知错误';
             console.warn('加载照片列表失败 (第' + _photoLoadRetries + '次):', e);
             if (_photoLoadRetries >= 2) {
-                showPhotoTip('照片加载失败，正在自动重试…（点击可手动重试）');
+                // 网络被拦截时回退到站点自带的照片镜像
+                loadStaticPhotos();
+                if (_photoSource !== 'mirror') showPhotoTip('照片加载失败，正在自动重试…（点击可手动重试）');
             }
             // 网络错误时自动重试，间隔递增：1s, 2s, 4s, 8s, 16s... 最多30s
             var retryDelay = Math.min(1000 * Math.pow(2, _photoLoadRetries - 1), 30000);
             setTimeout(loadAllPhotos, retryDelay);
         }
     }
+
+    // 首屏同时读取本地镜像：Supabase 被网络拦截时也能马上看到照片
+    setTimeout(loadStaticPhotos, 100);
 
     // ========== 音乐 ==========
     var bgMusic = document.getElementById('bgMusic');
@@ -1237,6 +1274,7 @@
                 '',
                 '— 照片数据 —',
                 '客户端: ' + (clientOk ? '已创建' : '未创建') + '   初始化重试: ' + _supabaseRetries,
+                '照片来源: ' + (_photoSource === 'supabase' ? 'Supabase（实时）' : _photoSource === 'mirror' ? '本地镜像 photos.json' : '未加载'),
                 '已加载照片日期: ' + Object.keys(photoMap).length + ' 个   列表重试: ' + _photoLoadRetries,
                 '最近错误: ' + (_lastPhotoError || '无'),
                 '',
@@ -1247,7 +1285,9 @@
                 clientOk
                     ? (connOk
                         ? '✅ 脚本和数据接口都正常。若仍看不到照片：刷新页面，或点开带日期的萤火虫再看。'
-                        : '⚠️ 脚本正常，但连不上 Supabase：多半是当前网络拦截了 supabase.co。请换 WiFi/流量，或开代理后重试。')
+                        : (_photoSource === 'mirror'
+                            ? '⚠️ 当前网络连不上 Supabase，已自动改用站点自带的照片镜像，照片正常可看（上传需要能访问 Supabase 的网络）。'
+                            : '⚠️ 脚本正常，但连不上 Supabase：多半是当前网络拦截了 supabase.co。请换 WiFi/流量，或开代理后重试。'))
                     : (scriptOk
                         ? '⏳ 脚本已就绪，客户端创建中…请稍等，或点顶部提示手动重试。'
                         : '❌ supabase 脚本没加载：请换网络或换个浏览器打开（微信里请点右上角 ··· → 在浏览器打开）。'),
